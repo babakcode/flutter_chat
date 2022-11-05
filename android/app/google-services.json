@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "69437946182",
+    "project_id": "babakcode-chat",
+    "storage_bucket": "babakcode-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69437946182:android:38d4bd1a8f25d99e284d47",
+        "android_client_info": {
+          "package_name": "com.babakcode.chat_babakcode"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "69437946182-mt8smq5gq25miqirs2635tl0s52dkkp4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.babakcode.chat_babakcode",
+            "certificate_hash": "3ded17c726a6460c513dd32b05b658519df3d0c6"
+          }
+        },
+        {
+          "client_id": "69437946182-8nc1l9grcpi68smmhnqi2k3vistid6be.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAB-mGCPOJWvvRbNBPDCpYNqvpyUCbnIBE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "69437946182-8nc1l9grcpi68smmhnqi2k3vistid6be.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
