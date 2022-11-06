@@ -108,14 +108,14 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color.fromARGB(255, 218, 241, 255),
           cardColor: const Color.fromARGB(255, 181, 225, 255),
           appBarTheme: AppBarTheme(
-            iconTheme:
-                IconThemeData(color: AppConstants.textColor[100], opacity: 0.8),
+            iconTheme: IconThemeData(color: AppConstants.textColor[900], opacity: 0.8),
             actionsIconTheme:
-                IconThemeData(color: AppConstants.textColor[100], opacity: 0.8),
-            backgroundColor: AppConstants.textColor[700],
+                IconThemeData(color: AppConstants.textColor[900], opacity: 0.8),
+            backgroundColor: AppConstants.scaffoldLightBackground,
             elevation: 10,
+            shadowColor: AppConstants.textColor[50]!.withOpacity(.2),
             titleTextStyle:
-                TextStyle(fontSize: 14, color: AppConstants.textColor[100]),
+                TextStyle(fontSize: 14, color: AppConstants.textColor[900]),
           ),
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: AppConstants.primarySwatch,

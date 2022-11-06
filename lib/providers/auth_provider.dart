@@ -7,22 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 class Auth extends ChangeNotifier {
-
   final me = Hive.box('me');
 
   final CryptoManager _cryptoManager = CryptoManager();
 
+  String? get lastGroupLoadedDate => me.get('lastGroupLoadedDate');
 
   bool get loggedIn => me.get('loggedIn') ?? false;
-  String? get accessToken => _cryptoManager
-      .decryptData(me.get('accessToken') ?? '');
+
+  String? get accessToken =>
+      _cryptoManager.decryptData(me.get('accessToken') ?? '');
 
   User? get myUser => User.fromJson(me.get('myUser'));
 
   Future<void> saveUserDetails(
-      {
-      required Map myUser,
-      required accessToken}) async {
+      {required Map myUser, required accessToken}) async {
     // await me.put('recoveryPhrase', jsonEncode(recoveryPhrase));
     await me.put('accessToken', accessToken);
     await me.put('myUser', myUser);
@@ -36,4 +35,7 @@ class Auth extends ChangeNotifier {
         MaterialPageRoute(builder: (context) => const SplashPage()),
         (route) => false);
   }
+
+  Future<void> setLastGroupLoadedDate(set) async =>
+      await me.put('lastGroupLoadedDate', set);
 }

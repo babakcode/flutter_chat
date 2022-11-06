@@ -20,6 +20,7 @@ class ChatPage extends StatelessWidget {
     ChatProvider chatProvider = context.watch<ChatProvider>();
     Room? room = chatProvider.selectedRoom;
     ChatAppBarModel chatAppBarModel = ChatAppBarModel();
+
     if (_width >= 600 && Navigator.canPop(context)) {
       Future.microtask(() => Navigator.pop(context));
     }
@@ -46,6 +47,8 @@ class ChatPage extends StatelessWidget {
       default:
         {}
     }
+    List<Chat> _chatList = room?.chatList ?? [];
+
     return (room == null)
         ? const Scaffold(
             body: Center(child: AppText('please select chat room')),
@@ -56,11 +59,8 @@ class ChatPage extends StatelessWidget {
                   onPressed: () {
                     if(Navigator.canPop(context)){
                       Navigator.pop(context);
-                    }
-                    if (_width <= 600) {
-                    } else {
-                      // disable selected
-                      // Navigator.pop(context);
+                    }else{
+                      chatProvider.deselectRoom();
                     }
                   },
                   icon: const Icon(Icons.arrow_back_ios_rounded)),
@@ -70,17 +70,20 @@ class ChatPage extends StatelessWidget {
                     onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
               ],
             ),
-            body: Column(
-              children: [
-                Expanded(
-                    child: NotificationListener<ScrollNotification>(
-                  child: ScrollablePositionedList.builder(
-                      reverse: true, itemCount: 20, itemBuilder: chatItem),
-                )),
-                ChatBottomNavComponent(
-                  room: room,
-                )
-              ],
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                      child: ScrollablePositionedList.builder(
+                        shrinkWrap: true,
+                          reverse: false, itemCount: _chatList.length, itemBuilder: chatItem)),
+                  ChatBottomNavComponent(
+                    room: room,
+                  )
+                ],
+              ),
             ),
           );
   }
@@ -88,19 +91,24 @@ class ChatPage extends StatelessWidget {
   Widget chatItem(BuildContext context, int index) {
     double _width = MediaQuery.of(context).size.width;
 
-    int _testIndexForDetectAccount = 5;
+    final chatProvider = context.read<ChatProvider>();
 
-    bool fromMyAccount = (index % _testIndexForDetectAccount) == 0;
-    bool previusChatFromUser = false;
+    final Room room = chatProvider.selectedRoom!;
+    Chat chat = room.chatList![index];
+
+
+    bool fromMyAccount = chat.user!.id == chatProvider.auth!.myUser!.id;
+    bool previousChatFromUser = false;
     bool nextChatFromUser = false;
     bool middleChatFromUser = false;
 
     try {
-      previusChatFromUser =
-          ((index - 1) % _testIndexForDetectAccount == 0) == fromMyAccount;
+
+      previousChatFromUser =
+          (room.chatList![index - 1].user!.id == chatProvider.auth!.myUser!.id) == fromMyAccount;
       nextChatFromUser =
-          ((index + 1) % _testIndexForDetectAccount == 0) == fromMyAccount;
-      middleChatFromUser = (previusChatFromUser && nextChatFromUser);
+          (room.chatList![index + 1].user!.id == chatProvider.auth!.myUser!.id) == fromMyAccount;
+      middleChatFromUser = (previousChatFromUser && nextChatFromUser);
       // ignore: empty_catches
     } catch (e) {}
     // if (kDebugMode) {
@@ -116,15 +124,15 @@ class ChatPage extends StatelessWidget {
           right: 8,
           left: 8,
           bottom: middleChatFromUser
-              ? 4
-              : previusChatFromUser
-                  ? 4
-                  : 8,
-          top: middleChatFromUser
-              ? 4
+              ? 2
               : nextChatFromUser
-                  ? 4
-                  : 8),
+                  ? 2
+                  : previousChatFromUser ? 2 : 16,
+          top: middleChatFromUser
+              ? 2
+              : previousChatFromUser
+                  ? 2
+                  : nextChatFromUser ? 2 : 16),
       alignment: fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -136,7 +144,7 @@ class ChatPage extends StatelessWidget {
               child: SizedBox(
                 height: 36,
                 width: 36,
-                child: previusChatFromUser
+                child: nextChatFromUser
                     ? null
                     : Card(
                         margin: EdgeInsets.zero,
@@ -158,7 +166,7 @@ class ChatPage extends StatelessWidget {
             ),
 
             ///
-            child: ChatTextItem(index, fromMyAccount, previusChatFromUser,
+            child: ChatTextItem(index, fromMyAccount, previousChatFromUser,
                 nextChatFromUser, middleChatFromUser),
           ),
         ],

@@ -192,24 +192,27 @@ class Chat extends HiveObject {
   User? user;
 
   @HiveField(2)
-  String? text;
+  String? roomId;
 
   @HiveField(3)
-  String? fileUrl;
+  String? text;
 
   @HiveField(4)
-  DateTime? utcDate;
+  String? fileUrl;
 
   @HiveField(5)
-  ChatType? type;
+  DateTime? utcDate;
 
   @HiveField(6)
-  bool? edited;
+  ChatType? type;
 
   @HiveField(7)
-  bool? deleted;
+  bool? edited;
 
   @HiveField(8)
+  bool? deleted;
+
+  @HiveField(9)
   String? replyId;
 
   Chat();
@@ -239,6 +242,10 @@ class Chat extends HiveObject {
     }
   }
 
+
+  static List<Chat> getChatsFromJsonList(List jsonList){
+    return jsonList.map((e) => Chat.fromJson(e)).toList();
+  }
   factory Chat.fromJson(Map json) {
     DateTime utcDateUtc = DateTime.parse(json['utcDate']);
     var utcDateLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
@@ -248,6 +255,7 @@ class Chat extends HiveObject {
     return Chat()
       ..id = json['_id']
       ..user = User.fromJson(json['user'])
+      ..roomId = json['room']
       ..text = json['text']
       ..fileUrl = json['removed']
       ..utcDate = utcDateLocal

@@ -2,8 +2,10 @@ import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/home_provider.dart';
+import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
@@ -150,9 +152,14 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       : AppConstants.scaffoldLightBackground
                   : null,
               selected:
-                  GlobalSettingProvider.isPhonePortraitSize ? false : index == 1,
+                  GlobalSettingProvider.isPhonePortraitSize ? false : chatProvider.selectedRoom == room,
               minLeadingWidth: 30,
-              onTap: () {},
+              onTap: () {
+                chatProvider.changeSelectedRoom(room);
+                if(GlobalSettingProvider.isPhonePortraitSize){
+                  Navigator.push(context, CupertinoPageRoute(builder: (context) => const ChatPage()));
+                }
+              },
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),

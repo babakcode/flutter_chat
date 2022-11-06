@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 class ChatProvider extends ChangeNotifier {
+
   io.Socket socket = io.io(
       AppConfig.socketBaseUrl,
       io.OptionBuilder()
@@ -18,35 +19,62 @@ class ChatProvider extends ChangeNotifier {
           .disableAutoConnect()
           .setTransports(['websocket']).build());
 
+  Auth? auth;
+
+  void initAuth(Auth auth) =>
+    this.auth = auth;
+
+
+
   ChatProvider() {
+
     socket.onReconnect((data) => print('socket recconect'));
     socket.onConnect((_) {
       print('socket connected');
-
-      /// todo : send users last read messages of rooms
-      /// {
-      ///   'roomId' : room._id,
-      ///   'lastChatViewedDate' : lastReadChat
-      /// }
-      Future.delayed(
-          const Duration(seconds: 1),
-          () => socket.emit('getAllMessages', null));
+      socket.emit('getAllMessages', auth?.lastGroupLoadedDate);
     });
     socket.onConnectError((data) => print('socket Error $data'));
     socket.onDisconnect((data) => print('socket disconnected'));
     socket.onError(handleErrors);
-    socket.on('newGroup', (data) {
-      print('newGroup => $data');
-    });
-    socket.on('userRooms', (data) {
-      print(data);
-      if(data['success']){
-        // rooms = Room.roomsFromJson(data['groups']);
-        // notifyListeners();
+
+    socket.on('userRoomChats', (data) {
+      print('userRoomChats => $data');
+      try{
+        if(data['success']){
+          final roomId = data['roomId'];
+          rooms.firstWhere((element) => element.id == roomId).chatList = Chat.getChatsFromJsonList(data['chats']);
+          notifyListeners();
+        }
+      }catch(e){
+        print('userRoomChats exception: $e');
       }
+    });
+    socket.on('userRooms', (data){
+      print('userRooms => $data');
+      try{
+        if(data['success']){
+          for (Map room in (data['rooms'] as List)) {
+            if(rooms.where((element) => element.id == room['_id']).isEmpty){
+              rooms.add(Room.fromJson(room));
+            }
+          }
+          notifyListeners();
+        }
+      }catch(e){}
     });
     socket.on('receiveChat', (data) {
       print('receiveChat => $data');
+      Chat chat = Chat.fromJson(data);
+      Room? targetRoom = rooms.firstWhere((element) => element.id == chat.roomId);
+      targetRoom.lastChat = chat;
+      notifyListeners();
+      // if(data['success']){
+      //
+      //   final roomId = data['roomId'];
+      //   Room? targetRoom = rooms.firstWhere((element) => element.id == roomId);
+      //   targetRoom.lastChat = Chat.fromJson(data['chat']);
+      //   notifyListeners();
+      // }
     });
     socket.on('check_update_room_messages', (data) {
       print('check_update_room_messages => $data');
@@ -72,13 +100,7 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  Auth? auth;
-
-  void initAuth(Auth auth) {
-    this.auth = auth;
-  }
-
-  handleErrors(error) async {
+  void handleErrors(error) async {
     try {
       print('socket Error $error');
       if (error['message'] == 'auth_error') {
@@ -207,4 +229,15 @@ class ChatProvider extends ChangeNotifier {
       ..selection = TextSelection.fromPosition(
           TextPosition(offset: chatController.text.length));
   }
+
+  void changeSelectedRoom(Room room) {
+    selectedRoom = room;
+    notifyListeners();
+  }
+
+  void deselectRoom() {
+    selectedRoom = null;
+    notifyListeners();
+  }
+
 }
