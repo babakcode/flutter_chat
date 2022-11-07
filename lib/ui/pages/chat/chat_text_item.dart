@@ -1,8 +1,9 @@
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:intl/intl.dart' as intl;
 import '../../../constants/app_constants.dart';
+import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 
@@ -57,14 +58,29 @@ class ChatTextItem extends StatelessWidget {
                 : AppConstants.textColor[200],
       ),
       padding: const EdgeInsets.all(12),
-      child: Text(
-        chat.text ?? ''
-        ,style: TextStyle(
-            color: globalSettingProvider.isDarkTheme ? 
-            fromMyAccount
-                ? AppConstants.textColor[200] :
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(
+            chat.text ?? ''
+            ,style: TextStyle(
+                color: globalSettingProvider.isDarkTheme ? 
+                fromMyAccount
+                    ? AppConstants.textColor[200] :
+                    AppConstants.textColor[700]
+                    : AppConstants.textColor[700]),
+          ),
+          Text('${intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now())}'
+            ,style: TextStyle(
+              fontSize: 12,
+                color: globalSettingProvider.isDarkTheme ?
+                fromMyAccount
+                    ? AppConstants.textColor[200] :
                 AppConstants.textColor[700]
-                : AppConstants.textColor[700]),
+                    : AppConstants.textColor[700]),
+          )
+        ],
       ),
     );
   }

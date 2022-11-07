@@ -6,13 +6,35 @@ import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import '../../../models/chat.dart';
 import '../../../models/chat_appbar_model.dart';
 import '../../../models/room.dart';
 import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
 
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
+
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+
+  ChatProvider? chatProvider;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
+
+  @override
+  void dispose() {
+    // chatProvider!.itemPositionsListener.itemPositions.removeListener(chatProvider!.changeScrollIndexListener);
+    super.dispose();
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +43,7 @@ class ChatPage extends StatelessWidget {
     Room? room = chatProvider.selectedRoom;
     ChatAppBarModel chatAppBarModel = ChatAppBarModel();
 
-    if (_width >= 600 && Navigator.canPop(context)) {
-      Future.microtask(() => Navigator.pop(context));
-    }
+
     final auth = context.read<Auth>();
     switch (room?.roomType) {
       case RoomType.pvUser:
@@ -54,7 +74,8 @@ class ChatPage extends StatelessWidget {
             body: Center(child: AppText('please select chat room')),
           )
         : Scaffold(
-            appBar: AppBar(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
               leading: IconButton(
                   onPressed: () {
                     if(Navigator.canPop(context)){
@@ -70,14 +91,26 @@ class ChatPage extends StatelessWidget {
                     onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
               ],
             ),
-            body: Align(
-              alignment: Alignment.bottomCenter,
+            body: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: ScrollController(),
+              reverse: true,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Flexible(
+
+                  Container(
+                    alignment: Alignment.bottomCenter,
+                    height: MediaQuery.of(context).size.height - 120,
                       child: ScrollablePositionedList.builder(
-                        shrinkWrap: true,
+                        key: PageStorageKey('${room.id}'),
+                        addAutomaticKeepAlives: true,
+                        scrollDirection: Axis.vertical,
+                        // initialScrollIndex: room.roomPositionIndex!.max,
+                        itemPositionsListener: chatProvider.itemPositionsListener,
+                        itemScrollController: chatProvider.itemScrollController,
+                        shrinkWrap: false,
                           reverse: false, itemCount: _chatList.length, itemBuilder: chatItem)),
                   ChatBottomNavComponent(
                     room: room,
@@ -91,7 +124,7 @@ class ChatPage extends StatelessWidget {
   Widget chatItem(BuildContext context, int index) {
     double _width = MediaQuery.of(context).size.width;
 
-    final chatProvider = context.read<ChatProvider>();
+    final chatProvider = context.watch<ChatProvider>();
 
     final Room room = chatProvider.selectedRoom!;
     Chat chat = room.chatList![index];

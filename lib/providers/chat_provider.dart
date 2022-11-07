@@ -1,14 +1,16 @@
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
 import 'package:chat_babakcode/models/room.dart';
-import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/utils/utils.dart';
-import 'package:emoji_picker_flutter/src/emoji.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
+
+import '../models/chat.dart';
 
 class ChatProvider extends ChangeNotifier {
 
@@ -35,7 +37,7 @@ class ChatProvider extends ChangeNotifier {
     });
     socket.onConnectError((data) => print('socket Error $data'));
     socket.onDisconnect((data) => print('socket disconnected'));
-    socket.onError(handleErrors);
+    socket.onError(_handleSocketErrors);
 
     socket.on('userRoomChats', (data) {
       print('userRoomChats => $data');
@@ -58,23 +60,50 @@ class ChatProvider extends ChangeNotifier {
               rooms.add(Room.fromJson(room));
             }
           }
+          rooms.sort((a, b) => b.lastChat!.utcDate!.compareTo(
+              a.lastChat!.utcDate!));
           notifyListeners();
+
         }
-      }catch(e){}
+      }catch(e){
+        print('userRooms exception $e');
+      }
     });
     socket.on('receiveChat', (data) {
       print('receiveChat => $data');
       Chat chat = Chat.fromJson(data);
       Room? targetRoom = rooms.firstWhere((element) => element.id == chat.roomId);
       targetRoom.lastChat = chat;
+      int lastId = 1;
+      try{
+        lastId = targetRoom.chatList?.last.chatNumberId ?? 1;
+      }catch(e){
+
+      }
+
+      
+      if(( lastId  + 1) == chat.chatNumberId || lastId == 1){
+        targetRoom.chatList!.add(chat);
+        targetRoom.lastChat = chat;
+        targetRoom.changeAt = chat.utcDate;
+      }
+
+      rooms.sort((a, b) => b.changeAt!.compareTo(
+          a.changeAt!));
       notifyListeners();
-      // if(data['success']){
-      //
-      //   final roomId = data['roomId'];
-      //   Room? targetRoom = rooms.firstWhere((element) => element.id == roomId);
-      //   targetRoom.lastChat = Chat.fromJson(data['chat']);
-      //   notifyListeners();
-      // }
+
+      if(lastId != 1){
+        int max = itemPositionsListener.itemPositions.value
+            .where((ItemPosition position) => position.itemLeadingEdge < 1)
+            .reduce((ItemPosition max, ItemPosition position) =>
+        position.itemLeadingEdge > max.itemLeadingEdge
+            ? position
+            : max)
+            .index;
+        if(targetRoom.chatList![max].chatNumberId! >= lastId - 1){
+          itemScrollController.scrollTo(index: targetRoom.chatList!.length - 1, duration: const Duration(milliseconds: 1000));
+        }
+      }
     });
     socket.on('check_update_room_messages', (data) {
       print('check_update_room_messages => $data');
@@ -98,9 +127,34 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
       }
     });
+
   }
 
-  void handleErrors(error) async {
+  void changeScrollIndexListener(){
+      if(selectedRoom == null){
+        return;
+      }
+
+      int min = itemPositionsListener.itemPositions.value
+          .where((ItemPosition position) => position.itemTrailingEdge > 0)
+          .reduce((ItemPosition min, ItemPosition position) =>
+      position.itemTrailingEdge < min.itemTrailingEdge
+          ? position
+          : min)
+          .index;
+      int max = itemPositionsListener.itemPositions.value
+          .where((ItemPosition position) => position.itemLeadingEdge < 1)
+          .reduce((ItemPosition max, ItemPosition position) =>
+      position.itemLeadingEdge > max.itemLeadingEdge
+          ? position
+          : max)
+          .index;
+      print('max = $max');
+      print('min = $min');
+      // selectedRoom!.roomPositionIndex = RoomPositionIndex(min, max);
+  }
+
+  void _handleSocketErrors(error) async {
     try {
       print('socket Error $error');
       if (error['message'] == 'auth_error') {
@@ -118,14 +172,10 @@ class ChatProvider extends ChangeNotifier {
 
   List<Room> rooms = [];
 
-  void sendTestToSocket() {
-    socket.emit('messages', 'hi');
-
-    // socket.emit('create_group', 'hi');
-  }
+  ItemScrollController itemScrollController = ItemScrollController();
+  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
   Room? selectedRoom;
-
 
   void addPvUserRoom({required String token}) {
     socket.emitWithAck('addConversation', {'type': 'pvUser', 'token': token},
@@ -135,20 +185,6 @@ class ChatProvider extends ChangeNotifier {
       if (data['success']) {
 
         selectedRoom = Room.fromJson(data['room']);
-        // if (data['room'] == null) {
-        //   selectedRoom = Room(id: null,
-        //       roomName: user.name!,
-        //       changeAt: null,
-        //       createAt: null,
-        //       removed: false,
-        //       members: [RoomMember()..user = user, RoomMember()..user= auth!.myUser!],
-        //       roomType: RoomType.pvUser,
-        //       lastChat: null,
-        //       roomImage: user.profileUrl,
-        //       newRoomToGenerate: true,
-        //       chatList: []);
-        // } else {
-        // }
 
         if (GlobalSettingProvider.isPhonePortraitSize) {
           Navigator.push(
@@ -205,7 +241,9 @@ class ChatProvider extends ChangeNotifier {
     socket.emitWithAck('sendChat', data, ack: (data){
       print(data);
       if(data['success']){
+        chatController.clear();
         notifyListeners();
+        itemScrollController.scrollTo(index: room.chatList!.length - 1, duration: const Duration(milliseconds: 1000));
       }else{
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
       }
