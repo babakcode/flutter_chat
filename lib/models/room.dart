@@ -1,65 +1,43 @@
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
 import 'chat.dart';
 
-enum RoomType { pvUser, publicGroup, pvGroup, channel }
+enum RoomType { pvUser, publicGroup, pvGroup, channel, updateRequired }
 
-@HiveType(typeId: 0)
-class Room extends HiveObject {
-  @HiveField(0)
+class Room  {
   String? id;
-
-  // Hive fields go here
-  @HiveField(1)
   String? roomName;
-
-  @HiveField(2)
   DateTime? changeAt;
-
-  @HiveField(3)
   DateTime? createAt;
-
-  @HiveField(4)
   bool? removed;
-
-  @HiveField(5)
   List<RoomMember>? members;
-
-  @HiveField(6)
   RoomType? roomType;
-
-  @HiveField(7)
   Chat? lastChat;
-
-  @HiveField(8)
   String? roomImage;
-
-  @HiveField(9)
-  List<Chat>? chatList;
-
-  @HiveField(10)
-  RoomPositionIndex? roomPositionIndex;
+  List<Chat> chatList = [];
+  int? lastIndex;
 
   bool newRoomToGenerate = false;
+  bool firstOpen = true;
 
   Room(
-      {required this.id,
-      required this.roomName,
-      required this.changeAt,
-      required this.createAt,
-      required this.removed,
-      required this.members,
-      required this.roomType,
-      required this.lastChat,
-      required this.roomImage,
-      required this.chatList,
-      required this.roomPositionIndex,
-      this.newRoomToGenerate = false
-      });
+      // {required this.id,
+      // required this.roomName,
+      // required this.changeAt,
+      // required this.createAt,
+      // required this.removed,
+      // required this.members,
+      // required this.roomType,
+      // required this.lastChat,
+      // required this.roomImage,
+      // required this.chatList,
+      // required this.lastIndex,
+      // this.newRoomToGenerate = false
+      // }
+      );
 
   static populateRoomFields(Room room, String myUserId) {
     switch (room.roomType) {
@@ -96,7 +74,7 @@ class Room extends HiveObject {
       case 'pvGroup':
         return RoomType.pvGroup;
     }
-    return RoomType.pvUser;
+    return RoomType.updateRequired;
   }
 
   factory Room.fromJson(Map json) {
@@ -115,24 +93,23 @@ class Room extends HiveObject {
           .toLocal();
     }
 
-    return Room(
-      id: json['_id'],
-      roomName: json['roomName'],
-      roomPositionIndex: RoomPositionIndex(json['property']['lastIndex'], json['property']['lastIndex']),
-      changeAt: changeAtLocal,
-      createAt: createAtLocal,
-      removed: json['removed'],
-      members: (json['members'] as List)
+    return Room()
+      ..id = json['_id']
+      ..roomName = json['roomName']
+      ..lastIndex = json['property']['lastIndex']
+      ..changeAt = changeAtLocal
+      ..createAt = createAtLocal
+      ..removed = json['removed']
+      ..members = (json['members'] as List)
           .map((member) => RoomMember.fromJson(member))
-          .toList(),
-      roomType: roomTypeFromText(json['roomType']),
-      lastChat:
-          json['lastChat'] == null ? null : Chat.fromJson(json['lastChat']),
-      roomImage: json['roomImage'],
-      chatList: ((json['chatList'] ?? []) as List)
+          .toList()
+      ..roomType = roomTypeFromText(json['roomType'])
+      ..lastChat =
+          json['lastChat'] == null ? null : Chat.fromJson(json['lastChat'])
+      ..roomImage = json['roomImage']
+      ..chatList = ((json['chatList'] ?? []) as List)
           .map((chat) => Chat.fromJson(chat))
-          .toList(),
-    );
+          .toList();
   }
 
   static List<Room> roomsFromJson(List jsonList) {
@@ -150,18 +127,13 @@ class Room extends HiveObject {
   }
 }
 
-@HiveType(typeId: 0)
-class RoomMember extends HiveObject {
-  @HiveField(0)
+class RoomMember {
   User? user;
 
-  @HiveField(1)
   String? role;
 
-  @HiveField(2)
   bool? restrictedByAdmin;
 
-  @HiveField(3)
   bool? leftGroup;
 
   RoomMember();
@@ -173,9 +145,4 @@ class RoomMember extends HiveObject {
       ..restrictedByAdmin = json['restrictedByAdmin']
       ..leftGroup = json['leftGroup'];
   }
-}
-
-class RoomPositionIndex{
-  int min,max;
-  RoomPositionIndex(this.min, this.max);
 }

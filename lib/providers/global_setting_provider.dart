@@ -25,7 +25,7 @@ class GlobalSettingProvider extends ChangeNotifier {
   static bool _isPhonePortraitSize = true;
   void checkDeviceDetermination(double width) {
     Future.microtask(() {
-      if (width > 500) {
+      if (width > 600) {
         if (_isPhonePortraitSize) {
           print('change to landscape');
           _isPhonePortraitSize = false;

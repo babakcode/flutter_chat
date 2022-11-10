@@ -94,7 +94,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                     AppButtonTransparent(
                                       child: const Text('create group'),
                                       onPressed: () {
-                                        chatProvider.addPvUserRoom(
+                                        chatProvider.addConversationPvUser(
                                             token: homeProvider
                                                 .conversationTokenTextController
                                                 .text);
@@ -198,8 +198,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                               : chatProvider.selectedRoom == room,
                           minLeadingWidth: 30,
                           onTap: () {
+                            print(_width);
                             chatProvider.changeSelectedRoom(room);
-                            if (_width <= 600) {
+                            if (_width < 600) {
                               Navigator.push(
                                   context,
                                   CupertinoPageRoute(

@@ -1,42 +1,29 @@
 
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
 import 'user.dart';
 
-@HiveType(typeId: 0)
-class Chat extends HiveObject {
-  @HiveField(0)
+class Chat {
   String? id;
 
-  @HiveField(1)
   User? user;
 
-  @HiveField(2)
   String? roomId;
 
-  @HiveField(3)
   String? text;
 
-  @HiveField(4)
   String? fileUrl;
 
-  @HiveField(5)
   DateTime? utcDate;
 
-  @HiveField(6)
   ChatType? type;
 
-  @HiveField(7)
   bool? edited;
 
-  @HiveField(8)
   bool? deleted;
 
-  @HiveField(9)
   String? replyId;
 
-  @HiveField(10)
   int? chatNumberId;
 
   Chat();

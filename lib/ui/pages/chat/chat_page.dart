@@ -12,6 +12,8 @@ import '../../../models/room.dart';
 import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
 
+PageStorageBucket bucket = PageStorageBucket();
+
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
@@ -20,31 +22,51 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-
-  ChatProvider? chatProvider;
+  // ChatProvider? chatProvider;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _canPop = true;
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('didChangeDependencies');
   }
 
   @override
   void dispose() {
     // chatProvider!.itemPositionsListener.itemPositions.removeListener(chatProvider!.changeScrollIndexListener);
     super.dispose();
-
+    print('dispose');
   }
+
+  bool _canPop = true;
 
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
-    ChatProvider chatProvider = context.watch<ChatProvider>();
+    ChatProvider chatProvider = Provider.of(context);
+    final auth = context.read<Auth>();
+
     Room? room = chatProvider.selectedRoom;
     ChatAppBarModel chatAppBarModel = ChatAppBarModel();
 
+    print('--------------------------');
+    print(room?.chatList);
 
-    final auth = context.read<Auth>();
+    if (_width >= 595 && Navigator.canPop(context) && _canPop) {
+      Future.microtask(() {
+        if (Navigator.canPop(context) && _canPop) {
+          Navigator.pop(context);
+          chatProvider.deselectRoom();
+          _canPop = false;
+        }
+      });
+      return const SizedBox();
+    }
+
     switch (room?.roomType) {
       case RoomType.pvUser:
         User friend = room!.members!
@@ -56,79 +78,91 @@ class _ChatPageState extends State<ChatPage> {
           ..roomType = RoomType.pvUser;
         break;
       case RoomType.publicGroup:
-      // TODO: Handle this case.
+        // TODO: Handle this case.
         break;
       case RoomType.pvGroup:
-      // TODO: Handle this case.
+        // TODO: Handle this case.
         break;
       case RoomType.channel:
-      // TODO: Handle this case.
+        // TODO: Handle this case.
         break;
       default:
         {}
     }
-    List<Chat> _chatList = room?.chatList ?? [];
+    // List<Chat> _chatList = room?.chatList ?? [];
 
-    return (room == null)
-        ? const Scaffold(
-            body: Center(child: AppText('please select chat room')),
-          )
-        : Scaffold(
+    if ((room == null)) {
+      return const Scaffold(
+        body: Center(child: AppText('please select chat room')),
+      );
+    } else {
+      return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-              leading: IconButton(
-                  onPressed: () {
-                    if(Navigator.canPop(context)){
-                      Navigator.pop(context);
-                    }else{
-                      chatProvider.deselectRoom();
-                    }
-                  },
-                  icon: const Icon(Icons.arrow_back_ios_rounded)),
-              title: Text(chatAppBarModel.roomName ?? 'guest'),
-              actions: [
-                IconButton(
-                    onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
-              ],
-            ),
-            body: SingleChildScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: ScrollController(),
-              reverse: true,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-
-                  Container(
-                    alignment: Alignment.bottomCenter,
-                    height: MediaQuery.of(context).size.height - 120,
-                      child: ScrollablePositionedList.builder(
-                        key: PageStorageKey('${room.id}'),
-                        addAutomaticKeepAlives: true,
-                        scrollDirection: Axis.vertical,
-                        // initialScrollIndex: room.roomPositionIndex!.max,
-                        itemPositionsListener: chatProvider.itemPositionsListener,
-                        itemScrollController: chatProvider.itemScrollController,
-                        shrinkWrap: false,
-                          reverse: false, itemCount: _chatList.length, itemBuilder: chatItem)),
-                  ChatBottomNavComponent(
-                    room: room,
-                  )
-                ],
+          leading: IconButton(
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  chatProvider.deselectRoom();
+                }
+              },
+              icon: const Icon(Icons.arrow_back_ios_rounded)),
+          title: Text(chatAppBarModel.roomName ?? 'guest'),
+          actions: [
+            IconButton(
+                onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
+          ],
+        ),
+        body: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: ScrollController(),
+          reverse: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              PageStorage(
+                bucket: bucket,
+                child: SizedBox(
+                  // alignment: Alignment.bottomCenter,
+                  height: MediaQuery.of(context).size.height - 120,
+                  child: ScrollablePositionedList.builder(
+                    // key: PageStorageKey('${room.id}'),
+                    addAutomaticKeepAlives: true,
+                    scrollDirection: Axis.vertical,
+                    // initialScrollIndex: room.roomPositionIndex!.max,
+                    itemPositionsListener: chatProvider.itemPositionsListener,
+                    itemScrollController: chatProvider.itemScrollController,
+                    itemCount: room.chatList.length,
+                    itemBuilder: chatItem,
+                  ),
+                ),
               ),
-            ),
-          );
+              ChatBottomNavComponent(
+                room: room,
+              )
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget chatItem(BuildContext context, int index) {
+    // if(index == -1){
+    //   return const SizedBox();
+    // }
     double _width = MediaQuery.of(context).size.width;
 
-    final chatProvider = context.watch<ChatProvider>();
+    var chatProvider = context.read<ChatProvider>();
 
-    final Room room = chatProvider.selectedRoom!;
-    Chat chat = room.chatList![index];
+    Room room = chatProvider.selectedRoom!;
 
+    print('------------------');
+    print(index);
+    Chat? chat = room.chatList[index];
 
     bool fromMyAccount = chat.user!.id == chatProvider.auth!.myUser!.id;
     bool previousChatFromUser = false;
@@ -136,11 +170,12 @@ class _ChatPageState extends State<ChatPage> {
     bool middleChatFromUser = false;
 
     try {
-
-      previousChatFromUser =
-          (room.chatList![index - 1].user!.id == chatProvider.auth!.myUser!.id) == fromMyAccount;
-      nextChatFromUser =
-          (room.chatList![index + 1].user!.id == chatProvider.auth!.myUser!.id) == fromMyAccount;
+      previousChatFromUser = (room.chatList[index - 1].user!.id ==
+              chatProvider.auth!.myUser!.id) ==
+          fromMyAccount;
+      nextChatFromUser = (room.chatList[index + 1].user!.id ==
+              chatProvider.auth!.myUser!.id) ==
+          fromMyAccount;
       middleChatFromUser = (previousChatFromUser && nextChatFromUser);
       // ignore: empty_catches
     } catch (e) {}
@@ -160,12 +195,16 @@ class _ChatPageState extends State<ChatPage> {
               ? 2
               : nextChatFromUser
                   ? 2
-                  : previousChatFromUser ? 2 : 16,
+                  : previousChatFromUser
+                      ? 2
+                      : 16,
           top: middleChatFromUser
               ? 2
               : previousChatFromUser
                   ? 2
-                  : nextChatFromUser ? 2 : 16),
+                  : nextChatFromUser
+                      ? 2
+                      : 16),
       alignment: fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
       child: Row(
         mainAxisSize: MainAxisSize.min,

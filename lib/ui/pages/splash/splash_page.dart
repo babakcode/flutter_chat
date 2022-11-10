@@ -1,5 +1,4 @@
 import 'package:chat_babakcode/providers/auth_provider.dart';
-import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/ui/pages/login/login_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,6 +18,7 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+
   @override
   void initState() {
     super.initState();
@@ -27,28 +27,41 @@ class _SplashPageState extends State<SplashPage> {
       if(sharedProvider.settingBox.get('dark') == null){
         sharedProvider.darkTheme( MediaQuery.of(context).platformBrightness == Brightness.dark);
       }
-    } );
-    Future.microtask(() async {
-      final v = 
-    Future.delayed(
-      Duration(seconds: (context.read<Auth>().loggedIn) ? 2 : 6),
-      () => Navigator.pushReplacement(
+    });
+
+
+    if(context.read<Auth>().loggedIn){
+
+      Future.delayed(
+          const Duration(seconds: 2),
+              () =>
+              Navigator.pushAndRemoveUntil(
+                context,
+                CupertinoPageRoute(
+                  builder: (context) => const HomePage(),
+                ),
+                    (route) => false,
+              )
+      );
+      // Navigator.
+    }
+    else{
+      Future.delayed(const Duration(seconds: 6),() => Navigator.pushAndRemoveUntil(
         context,
         CupertinoPageRoute(
-          builder: (context) => context.read<Auth>().loggedIn
-              ? const HomePage()
-              : const LoginPage(),
+          builder: (context) => const LoginPage(),
         ),
-      ),
-    );
-    });
+            (route) => false,
+      ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    /// hide bottom navigation bar
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
 
-    final sharedProvider = context.watch<GlobalSettingProvider>();
+    final globalSetting = context.watch<GlobalSettingProvider>();
 
     return Scaffold(
       body: Center(
@@ -73,7 +86,7 @@ class _SplashPageState extends State<SplashPage> {
               AppText(
                 "Business Chat",
                 size: 32,
-                color: sharedProvider.isDarkTheme
+                color: globalSetting.isDarkTheme
                     ? AppConstants.textColor.shade50
                     : AppConstants.textColor,
                 fontWeight: FontWeight.w900,

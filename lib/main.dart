@@ -17,7 +17,9 @@ void main() async {
   //   await Firebase.initializeApp();
   // }
   Hive.init('./');
-  await Hive.openBox('room');
+  // final box = await Hive.openLazyBox<Map>('rooms');
+  await Hive.openBox<Map>('room');
+  await Hive.openBox<Map>('chat');
   await Hive.openBox('me');
   await Hive.openBox('setting');
   runApp(const _Provider());
@@ -34,6 +36,7 @@ class _Provider extends StatelessWidget {
           create: (c) => GlobalSettingProvider(),
         ),
         ChangeNotifierProvider(create: (context) => Auth()),
+        // ChangeNotifierProvider(create: (c) => LoginProvider()),
         ChangeNotifierProxyProvider<Auth, LoginProvider>(
           update: (context, auth, previousAuth) =>
               LoginProvider()..initAuth(auth),
@@ -44,6 +47,7 @@ class _Provider extends StatelessWidget {
           update: (context, auth, previousAuth) =>
               ChatProvider()..initAuth(auth),
         ),
+        // ChangeNotifierProvider(create: (context) => ChatProvider()),
         ChangeNotifierProvider(
           create: (c) => SearchAtSignUserProvider(),
         ),
