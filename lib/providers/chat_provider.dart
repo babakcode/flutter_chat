@@ -82,20 +82,6 @@ class ChatProvider extends ChangeNotifier {
   //   // selectedRoom!.roomPositionIndex = RoomPositionIndex(min, max);
   // }
 
-  void _handleSocketErrorsEvent(error) async {
-    try {
-      debugPrint('socket Error $error');
-      if (error['message'] == 'auth_error') {
-        socket.disconnect();
-        await auth?.logOut();
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-  }
-
   void disconnectSocket() {
     socket.disconnect();
   }
@@ -322,4 +308,20 @@ class ChatProvider extends ChangeNotifier {
       }
     }
   }
+
+
+  void _handleSocketErrorsEvent(error) async {
+    try {
+      debugPrint('socket Error $error');
+      if (error['message'] == 'auth_error') {
+        socket.disconnect();
+        await auth?.logOut();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  }
+
 }

@@ -11,7 +11,7 @@ class CryptoManager {
       mode: encrypt.AESMode.ctr,
       padding: null));
 
-  decryptData(Map mapHash) {
+  String? decryptData(Map mapHash) {
     try {
       final decrypted = _encryptor.decryptBytes(
           encrypt.Encrypted(Uint8List.fromList(hex.decode(mapHash['content']))),
