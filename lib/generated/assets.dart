@@ -2,7 +2,6 @@
 class Assets {
   Assets._();
 
-  static const String imagesCollaboration = 'assets/images/collaboration.svg';
   static const String imagesFormImage1 = 'assets/images/form_image_1.png';
   static const String imagesFormImage2 = 'assets/images/form_image_2.jpg';
   static const String imagesFormImage3 = 'assets/images/form_image_3.jpg';
@@ -11,15 +10,6 @@ class Assets {
   static const String imagesSignature = 'assets/images/signature.jpg';
   static const String imagesUser = 'assets/images/user.png';
   static const String jsonLogin = 'assets/json/login.json';
-  static const String stickersSticker1 = 'assets/stickers/sticker1.png';
-  static const String stickersSticker2 = 'assets/stickers/sticker2.png';
-  static const String stickersSticker3 = 'assets/stickers/sticker3.png';
-  static const String stickersSticker4 = 'assets/stickers/sticker4.png';
-  static const String stickersSticker5 = 'assets/stickers/sticker5.png';
-  static const String stickersSticker6 = 'assets/stickers/sticker6.png';
-  static const String stickersSticker7 = 'assets/stickers/sticker7.png';
-  static const String stickersSticker8 = 'assets/stickers/sticker8.png';
-  static const String stickersSticker9 = 'assets/stickers/sticker9.png';
   static const String svgTopLeft = 'assets/svg/top_left.svg';
   static const String svgTopRight = 'assets/svg/top_right.svg';
 

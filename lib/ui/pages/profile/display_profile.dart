@@ -38,7 +38,7 @@ class DisplayProfilePage extends StatelessWidget {
                             },
                             imageUrl:
                                 '${AppConfig.baseUrl}/${user.imgUrl}')
-                        : Image.asset('assets/images/user.png'),
+                        : const Icon(Icons.person),
                   ),
                 ),
               ),
