@@ -11,13 +11,12 @@ class CryptoManager {
       mode: encrypt.AESMode.ctr,
       padding: null));
 
-  decryptData(String hash) {
+  decryptData(Map mapHash) {
     try {
-      Map mapHash = jsonDecode(hash);
       final decrypted = _encryptor.decryptBytes(
           encrypt.Encrypted(Uint8List.fromList(hex.decode(mapHash['content']))),
           iv: encrypt.IV(Uint8List.fromList(hex.decode(mapHash['iv']))));
-      return jsonDecode(utf8.decode(decrypted));
+      return utf8.decode(decrypted);
     } catch (e) {
       print(e);
       return null;

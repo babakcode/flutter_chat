@@ -28,6 +28,10 @@ class _HomePageState extends State<HomePage> {
     // chatProvider!.roomBox.clear();
     chatProvider!.rooms = Room.roomsFromJson(chatProvider!.roomBox.values.toList());
 
+    print('token =========>>>>>>>>>>>>');
+    print(chatProvider
+        !.auth!.accessToken);
+
     chatProvider?.socket?..auth = {
       'token': chatProvider?.auth?.accessToken
     }

@@ -15,13 +15,12 @@ class Auth extends ChangeNotifier {
 
   bool get loggedIn => me.get('loggedIn') ?? false;
 
-  String? get accessToken =>
-      _cryptoManager.decryptData(me.get('accessToken') ?? '');
+  String? get accessToken => _cryptoManager.decryptData(me.get('accessToken'));
 
   User? get myUser => User.fromJson(me.get('myUser'));
 
   Future<void> saveUserDetails(
-      {required Map myUser, required accessToken}) async {
+      {required Map myUser, required Map accessToken}) async {
     // await me.put('recoveryPhrase', jsonEncode(recoveryPhrase));
     await me.put('accessToken', accessToken);
     await me.put('myUser', myUser);
