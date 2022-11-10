@@ -33,7 +33,6 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
 
     final chatProvider = context.watch<ChatProvider>();
     final homeProvider = context.read<HomeProvider>();
-    final auth = context.read<Auth>();
 
     final _width = MediaQuery.of(context).size.width;
 
@@ -74,10 +73,6 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                     : null,
                 actions: [
                   IconButton(
-                    onPressed: () => {},
-                    icon: const Icon(Icons.search_rounded),
-                  ),
-                  IconButton(
                     onPressed: () => showDialog(
                         context: context,
                         builder: (context) => Dialog(
@@ -115,9 +110,11 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                                         ));
 
                                                 print(result);
-                                                homeProvider
-                                                    .conversationTokenTextController
-                                                    .text = result;
+                                                if(result != null){
+                                                  homeProvider
+                                                      .conversationTokenTextController
+                                                      .text = result;
+                                                }
                                               },
                                               icon: const Icon(Icons
                                                   .document_scanner_rounded))
@@ -161,7 +158,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       // todo : change item widgets value
                       Room room = chatProvider.rooms[index];
                       Room.populateRoomFields(
-                          room, chatProvider.auth?.myUser?.id ?? '');
+                          room, chatProvider.auth!.myUser!);
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2.0),

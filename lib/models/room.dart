@@ -39,11 +39,19 @@ class Room  {
       // }
       );
 
-  static populateRoomFields(Room room, String myUserId) {
+  static populateRoomFields(Room room, User myAccount) {
     switch (room.roomType) {
       case RoomType.pvUser:
+
+        if(room.members![0].user!.id == myAccount.id && room.members![0].user!.id == myAccount.id){
+          room.roomName = 'My Messages';
+          room.roomImage = myAccount.profileUrl;
+          room.roomType = RoomType.pvUser;
+          break;
+        }
+
         User friend = room.members!
-            .firstWhere((element) => element.user!.id != myUserId)
+            .firstWhere((element) => element.user!.id != myAccount.id)
             .user!;
         room.roomName = friend.name;
         room.roomImage = friend.profileUrl;
