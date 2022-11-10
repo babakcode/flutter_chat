@@ -22,14 +22,14 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       final sharedProvider = context.read<GlobalSettingProvider>();
-      if(sharedProvider.settingBox.get('dark') == null){
-        sharedProvider.darkTheme( MediaQuery.of(context).platformBrightness == Brightness.dark);
+      if (sharedProvider.settingBox.get('dark') == null) {
+        sharedProvider.darkTheme(
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
       }
     });
 
@@ -37,46 +37,45 @@ class _SplashPageState extends State<SplashPage> {
       LoginProvider.platform = Platform.isAndroid
           ? 'android'
           : Platform.isIOS
-          ? 'ios'
-          : Platform.isWindows
-          ? 'windows'
-          : 'web';
+              ? 'ios'
+              : Platform.isWindows
+                  ? 'windows'
+                  : 'web';
     } catch (e) {
       if (kDebugMode) {
         print(e);
       }
       LoginProvider.platform = 'web';
     }
-    if(context.read<Auth>().loggedIn){
-
+    if (context.read<Auth>().loggedIn) {
       Future.delayed(
           const Duration(seconds: 2),
-              () =>
-              Navigator.pushAndRemoveUntil(
+          () => Navigator.pushAndRemoveUntil(
                 context,
                 CupertinoPageRoute(
                   builder: (context) => const HomePage(),
                 ),
-                    (route) => false,
-              )
-      );
+                (route) => false,
+              ));
       // Navigator.
-    }
-    else{
-      Future.delayed(const Duration(seconds: 6),() => Navigator.pushAndRemoveUntil(
-        context,
-        CupertinoPageRoute(
-          builder: (context) => const LoginPage(),
-        ),
-            (route) => false,
-      ));
+    } else {
+      Future.delayed(
+          const Duration(seconds: 6),
+          () => Navigator.pushAndRemoveUntil(
+                context,
+                CupertinoPageRoute(
+                  builder: (context) => const LoginPage(),
+                ),
+                (route) => false,
+              ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     /// hide bottom navigation bar
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top]);
 
     final globalSetting = context.watch<GlobalSettingProvider>();
 
@@ -87,19 +86,18 @@ class _SplashPageState extends State<SplashPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .20,
-                ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * .20,
+              ),
               SvgPicture.asset(
                 'assets/svg/logo.svg',
                 height: 280,
                 color: const Color(0xFF10b2f6),
                 width: 280,
               ),
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .05,
-                ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * .05,
+              ),
               AppText(
                 "Business Chat",
                 size: 32,
@@ -125,10 +123,9 @@ class _SplashPageState extends State<SplashPage> {
                 ),
                 width: 60,
               ),
-              
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * .20,
-                ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * .20,
+              ),
             ],
           ),
         ),

@@ -53,9 +53,6 @@ class _ChatPageState extends State<ChatPage> {
     Room? room = chatProvider.selectedRoom;
     ChatAppBarModel chatAppBarModel = ChatAppBarModel();
 
-    print('--------------------------');
-    print(room?.chatList);
-
     if (_width >= 595 && Navigator.canPop(context) && _canPop) {
       Future.microtask(() {
         if (Navigator.canPop(context) && _canPop) {
@@ -71,7 +68,7 @@ class _ChatPageState extends State<ChatPage> {
       switch (room.roomType) {
         case RoomType.pvUser:
 
-          if(room.members![0].user!.id == auth.myUser!.id && room.members![0].user!.id == auth.myUser!.id){
+          if(room.members![0].user!.id == auth.myUser!.id && room.members![1].user!.id == auth.myUser!.id){
             chatAppBarModel
               ..roomName = 'my Messages'
               ..roomImage = auth.myUser!.profileUrl
@@ -163,17 +160,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget chatItem(BuildContext context, int index) {
-    // if(index == -1){
-    //   return const SizedBox();
-    // }
+
     double _width = MediaQuery.of(context).size.width;
 
     var chatProvider = context.read<ChatProvider>();
 
     Room room = chatProvider.selectedRoom!;
 
-    print('------------------');
-    print(index);
     Chat? chat = room.chatList[index];
 
     bool fromMyAccount = chat.user!.id == chatProvider.auth!.myUser!.id;

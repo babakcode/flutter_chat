@@ -43,7 +43,7 @@ class Room  {
     switch (room.roomType) {
       case RoomType.pvUser:
 
-        if(room.members![0].user!.id == myAccount.id && room.members![0].user!.id == myAccount.id){
+        if(room.members![0].user!.id == myAccount.id && room.members![1].user!.id == myAccount.id){
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
           room.roomType = RoomType.pvUser;
