@@ -6,6 +6,7 @@ import 'package:chat_babakcode/services/auth_service.dart';
 import 'package:chat_babakcode/ui/pages/home/home_page.dart';
 import 'package:chat_babakcode/utils/utils.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -13,21 +14,9 @@ class LoginProvider extends ChangeNotifier {
   Auth? auth;
   final AuthServices _authServices = AuthServices();
 
-  var platform = 'web';
+  static String platform = 'web';
 
-  LoginProvider() {
-    try {
-      platform = Platform.isAndroid
-          ? 'android'
-          : Platform.isIOS
-              ? 'ios'
-              : Platform.isWindows
-                  ? 'windows'
-                  : 'web';
-    } catch (e) {
-      // print(e);
-    }
-  }
+  LoginProvider();
 
   void initAuth(auth) {
     this.auth = auth;

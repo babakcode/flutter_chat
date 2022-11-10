@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/home_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/splash/splash_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'constants/app_constants.dart';
 import 'providers/chat_provider.dart';
@@ -14,9 +17,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //
   // if (!kIs) {
-  //   await Firebase.initializeApp();
+  //
   // }
   Hive.init('./');
+  if(!kIsWeb){
+    if(Platform.isAndroid || Platform.isIOS){
+      await Hive.initFlutter();
+      await Firebase.initializeApp();
+    }
+  }
+
   // final box = await Hive.openLazyBox<Map>('rooms');
   await Hive.openBox<Map>('room');
   await Hive.openBox<Map>('chat');

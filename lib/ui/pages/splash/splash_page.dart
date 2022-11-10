@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:chat_babakcode/providers/auth_provider.dart';
+import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/ui/pages/login/login_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,7 +33,20 @@ class _SplashPageState extends State<SplashPage> {
       }
     });
 
-
+    try {
+      LoginProvider.platform = Platform.isAndroid
+          ? 'android'
+          : Platform.isIOS
+          ? 'ios'
+          : Platform.isWindows
+          ? 'windows'
+          : 'web';
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      LoginProvider.platform = 'web';
+    }
     if(context.read<Auth>().loggedIn){
 
       Future.delayed(

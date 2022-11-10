@@ -6,7 +6,7 @@ class GlobalSettingProvider extends ChangeNotifier {
   GlobalSettingProvider();
 
   bool get isDarkTheme => settingBox.get('dark') ?? true;
-  String get platform => settingBox.get('platform') ?? 'android';
+  // String get platform => settingBox.get('platform') ?? 'android';
 
   Future<void> darkTheme(bool dark) async {
     await settingBox.put('dark', dark);

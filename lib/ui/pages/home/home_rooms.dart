@@ -2,14 +2,18 @@ import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/home_provider.dart';
+import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
+import 'package:chat_babakcode/ui/pages/qr_code/qr_scanner.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import '../../../constants/app_constants.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/global_setting_provider.dart';
 import '../../widgets/app_text_field.dart';
 
@@ -29,8 +33,11 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
 
     final chatProvider = context.watch<ChatProvider>();
     final homeProvider = context.read<HomeProvider>();
+    final auth = context.read<Auth>();
 
     final _width = MediaQuery.of(context).size.width;
+
+    print(LoginProvider.platform);
 
     return Scaffold(
         key: _roomScaffoldKey,
@@ -44,7 +51,6 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
             controller: ScrollController(),
             physics: const BouncingScrollPhysics(),
             slivers: [
-
               //
               // SliverAppBar(
               //   title: Text('Stories'),
@@ -61,14 +67,14 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 title: const Text('Chats'),
                 leading: _width < 960
                     ? IconButton(
-                  tooltip: 'open the drawer',
+                        tooltip: 'open the drawer',
                         onPressed: () =>
                             _roomScaffoldKey.currentState?.openDrawer(),
                         icon: const Icon(Icons.more_vert_rounded))
                     : null,
                 actions: [
                   IconButton(
-                    onPressed: () =>{},
+                    onPressed: () => {},
                     icon: const Icon(Icons.search_rounded),
                   ),
                   IconButton(
@@ -87,12 +93,38 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    AppTextField(
-                                      controller: homeProvider
-                                          .conversationTokenTextController,
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: AppTextField(
+                                            controller: homeProvider
+                                                .conversationTokenTextController,
+                                          ),
+                                        ),
+                                        if (LoginProvider.platform ==
+                                                'android' ||
+                                            LoginProvider.platform == 'ios')
+                                          IconButton(
+                                              onPressed: () async {
+                                                var result =
+                                                    await Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const QrScannerPage(),
+                                                        ));
+
+                                                print(result);
+                                                homeProvider
+                                                    .conversationTokenTextController
+                                                    .text = result;
+                                              },
+                                              icon: const Icon(Icons
+                                                  .document_scanner_rounded))
+                                      ],
                                     ),
                                     AppButtonTransparent(
-                                      child: const Text('create group'),
+                                      child: const Text('Find user'),
                                       onPressed: () {
                                         chatProvider.addConversationPvUser(
                                             token: homeProvider
@@ -217,7 +249,6 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   ),
                 ),
               ),
-
             ],
           ),
         ));

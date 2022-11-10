@@ -67,27 +67,39 @@ class _ChatPageState extends State<ChatPage> {
       return const SizedBox();
     }
 
-    switch (room?.roomType) {
-      case RoomType.pvUser:
-        User friend = room!.members!
-            .firstWhere((element) => element.user!.id != auth.myUser!.id)
-            .user!;
-        chatAppBarModel
-          ..roomName = friend.name
-          ..roomImage = friend.profileUrl
-          ..roomType = RoomType.pvUser;
-        break;
-      case RoomType.publicGroup:
+    if(room != null){
+      switch (room.roomType) {
+        case RoomType.pvUser:
+
+          if(room.members![0].user!.id == auth.myUser!.id && room.members![0].user!.id == auth.myUser!.id){
+            chatAppBarModel
+              ..roomName = 'my Messages'
+              ..roomImage = auth.myUser!.profileUrl
+              ..roomType = RoomType.pvUser;
+            break;
+          }
+
+          User friend = room.members!
+              .firstWhere((element) => element.user!.id != auth.myUser!.id)
+              .user!;
+          chatAppBarModel
+            ..roomName = friend.name
+            ..roomImage = friend.profileUrl
+            ..roomType = RoomType.pvUser;
+          break;
+        case RoomType.publicGroup:
         // TODO: Handle this case.
-        break;
-      case RoomType.pvGroup:
+          break;
+        case RoomType.pvGroup:
         // TODO: Handle this case.
-        break;
-      case RoomType.channel:
+          break;
+        case RoomType.channel:
         // TODO: Handle this case.
-        break;
-      default:
-        {}
+          break;
+        default:
+          {}
+      }
+
     }
     // List<Chat> _chatList = room?.chatList ?? [];
 
