@@ -106,7 +106,7 @@ class _ChatPageState extends State<ChatPage> {
       );
     } else {
       return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           leading: IconButton(
               onPressed: () {
@@ -134,12 +134,14 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               PageStorage(
                 bucket: bucket,
-                child: SizedBox(
-                  // alignment: Alignment.bottomCenter,
-                  height: MediaQuery.of(context).size.height - 120,
+                child: Container(
+                  alignment: Alignment.bottomCenter,
+                  height: MediaQuery.of(context).size.height - 150,
                   child: ScrollablePositionedList.builder(
-                    // key: PageStorageKey('${room.id}'),
+                    physics: const BouncingScrollPhysics(),
+                    key: PageStorageKey('${room.id}'),
                     addAutomaticKeepAlives: true,
+                    shrinkWrap: true,
                     scrollDirection: Axis.vertical,
                     // initialScrollIndex: room.roomPositionIndex!.max,
                     itemPositionsListener: chatProvider.itemPositionsListener,
