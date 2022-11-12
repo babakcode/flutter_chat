@@ -1,5 +1,4 @@
-import 'dart:convert' as convert;
-
+import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import '/models/model_user.dart';
@@ -29,7 +28,7 @@ abstract class ChatModel {
   ChatModel({required Map json}) {
     id = json['_id'];
     if(json['userId'] is String){
-      json['userId'] = convert.json.decode(json['userId']);
+      json['userId'] = jsonDecode(json['userId']);
     }
     user = ModelUser.fromData(json['userId']);
 
