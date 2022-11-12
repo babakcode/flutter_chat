@@ -109,41 +109,38 @@ class _ChatPageState extends State<ChatPage> {
                 onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
           ],
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            controller: ScrollController(),
-            reverse: true,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                PageStorage(
-                  bucket: bucket,
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    height: MediaQuery.of(context).size.height - (120),
-                    child: ScrollablePositionedList.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.only(top:  MediaQuery.of(context).size.height * .5),
-                      key: PageStorageKey('${room.id}'),
-                      addAutomaticKeepAlives: true,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      // initialScrollIndex: room.roomPositionIndex!.max,
-                      itemPositionsListener: chatProvider.itemPositionsListener,
-                      itemScrollController: chatProvider.itemScrollController,
-                      itemCount: room.chatList.length,
-                      itemBuilder: chatItem,
-                    ),
+        body: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: ScrollController(),
+          reverse: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              PageStorage(
+                bucket: bucket,
+                child: Container(
+                  alignment: Alignment.bottomCenter,
+                  height: MediaQuery.of(context).size.height - 120,
+                  child: ScrollablePositionedList.builder(
+                    physics: const BouncingScrollPhysics(),
+                    key: PageStorageKey('${room.id}'),
+                    shrinkWrap: true,
+                    initialAlignment: .78,
+                    scrollDirection: Axis.vertical,
+                    // initialScrollIndex: room.roomPositionIndex!.max,
+                    itemPositionsListener: chatProvider.itemPositionsListener,
+                    itemScrollController: chatProvider.itemScrollController,
+                    itemCount: room.chatList.length,
+                    itemBuilder: chatItem,
                   ),
                 ),
-                ChatBottomNavComponent(
-                  room: room,
-                )
-              ],
-            ),
+              ),
+              ChatBottomNavComponent(
+                room: room,
+              )
+            ],
           ),
         ),
       );

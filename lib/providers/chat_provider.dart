@@ -180,9 +180,6 @@ class ChatProvider extends ChangeNotifier {
       if (data['success']) {
         chatController.clear();
         notifyListeners();
-        // itemScrollController.scrollTo(
-        //     index: room.chatList.length - 1,
-        //     duration: const Duration(milliseconds: 1000));
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
       }
@@ -297,13 +294,11 @@ class ChatProvider extends ChangeNotifier {
 
       /// if we are at end of the list then scroll to received new chat
       if(selectedRoom == targetRoom &&
-          (maxIndexOfChatListOnViewPort - chat.chatNumberId!).abs() <= 2){
-        if (kDebugMode) {
-          print('scroll to ${targetRoom.chatList.length}');
-        }
+          (maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <= 5){
         itemScrollController.scrollTo(
-            index: 1,
-            duration: const Duration(milliseconds: 200)
+            index: targetRoom.chatList.length - 1,
+            duration: const Duration(milliseconds: 1000),
+          alignment: .825
         );
       }
     } catch (e) {
