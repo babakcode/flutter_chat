@@ -29,25 +29,12 @@ class _ChatPageState extends State<ChatPage> {
     _canPop = true;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    print('didChangeDependencies');
-  }
-
-  @override
-  void dispose() {
-    // chatProvider!.itemPositionsListener.itemPositions.removeListener(chatProvider!.changeScrollIndexListener);
-    super.dispose();
-    print('dispose');
-  }
-
   bool _canPop = true;
 
   @override
   Widget build(BuildContext context) {
     double _width = MediaQuery.of(context).size.width;
-    ChatProvider chatProvider = Provider.of(context);
+    final chatProvider = context.watch<ChatProvider>();
     final auth = context.read<Auth>();
 
     Room? room = chatProvider.selectedRoom;
@@ -64,11 +51,11 @@ class _ChatPageState extends State<ChatPage> {
       return const SizedBox();
     }
 
-    if(room != null){
+    if (room != null) {
       switch (room.roomType) {
         case RoomType.pvUser:
-
-          if(room.members![0].user!.id == auth.myUser!.id && room.members![1].user!.id == auth.myUser!.id){
+          if (room.members![0].user!.id == auth.myUser!.id &&
+              room.members![1].user!.id == auth.myUser!.id) {
             chatAppBarModel
               ..roomName = 'my Messages'
               ..roomImage = auth.myUser!.profileUrl
@@ -85,18 +72,17 @@ class _ChatPageState extends State<ChatPage> {
             ..roomType = RoomType.pvUser;
           break;
         case RoomType.publicGroup:
-        // TODO: Handle this case.
+          // TODO: Handle this case.
           break;
         case RoomType.pvGroup:
-        // TODO: Handle this case.
+          // TODO: Handle this case.
           break;
         case RoomType.channel:
-        // TODO: Handle this case.
+          // TODO: Handle this case.
           break;
         default:
           {}
       }
-
     }
     // List<Chat> _chatList = room?.chatList ?? [];
 
@@ -123,38 +109,41 @@ class _ChatPageState extends State<ChatPage> {
                 onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
           ],
         ),
-        body: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: ScrollController(),
-          reverse: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              PageStorage(
-                bucket: bucket,
-                child: Container(
-                  alignment: Alignment.bottomCenter,
-                  height: MediaQuery.of(context).size.height - 150,
-                  child: ScrollablePositionedList.builder(
-                    physics: const BouncingScrollPhysics(),
-                    key: PageStorageKey('${room.id}'),
-                    addAutomaticKeepAlives: true,
-                    shrinkWrap: true,
-                    scrollDirection: Axis.vertical,
-                    // initialScrollIndex: room.roomPositionIndex!.max,
-                    itemPositionsListener: chatProvider.itemPositionsListener,
-                    itemScrollController: chatProvider.itemScrollController,
-                    itemCount: room.chatList.length,
-                    itemBuilder: chatItem,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            controller: ScrollController(),
+            reverse: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                PageStorage(
+                  bucket: bucket,
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
+                    height: MediaQuery.of(context).size.height - (120),
+                    child: ScrollablePositionedList.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: EdgeInsets.only(top:  MediaQuery.of(context).size.height * .5),
+                      key: PageStorageKey('${room.id}'),
+                      addAutomaticKeepAlives: true,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.vertical,
+                      // initialScrollIndex: room.roomPositionIndex!.max,
+                      itemPositionsListener: chatProvider.itemPositionsListener,
+                      itemScrollController: chatProvider.itemScrollController,
+                      itemCount: room.chatList.length,
+                      itemBuilder: chatItem,
+                    ),
                   ),
                 ),
-              ),
-              ChatBottomNavComponent(
-                room: room,
-              )
-            ],
+                ChatBottomNavComponent(
+                  room: room,
+                )
+              ],
+            ),
           ),
         ),
       );
@@ -162,7 +151,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget chatItem(BuildContext context, int index) {
-
     double _width = MediaQuery.of(context).size.width;
 
     var chatProvider = context.read<ChatProvider>();
