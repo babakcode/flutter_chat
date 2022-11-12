@@ -92,17 +92,19 @@ class ChatProvider extends ChangeNotifier {
   ItemScrollController itemScrollController = ItemScrollController();
   ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
-  int get maxIndexOfChatListOnViewPort => itemPositionsListener.itemPositions.value
-      .where((ItemPosition position) => position.itemLeadingEdge < 1)
-      .reduce((ItemPosition max, ItemPosition position) =>
-  position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
-      .index;
+  int get maxIndexOfChatListOnViewPort =>
+      itemPositionsListener.itemPositions.value
+          .where((ItemPosition position) => position.itemLeadingEdge < 1)
+          .reduce((ItemPosition max, ItemPosition position) =>
+              position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
+          .index;
 
-  int get minIndexOfChatListOnViewPort => itemPositionsListener.itemPositions.value
-      .where((ItemPosition position) => position.itemTrailingEdge > 0)
-      .reduce((ItemPosition min, ItemPosition position) =>
-  position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
-      .index;
+  int get minIndexOfChatListOnViewPort =>
+      itemPositionsListener.itemPositions.value
+          .where((ItemPosition position) => position.itemTrailingEdge > 0)
+          .reduce((ItemPosition min, ItemPosition position) =>
+              position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
+          .index;
 
   Room? selectedRoom;
 
@@ -262,44 +264,57 @@ class ChatProvider extends ChangeNotifier {
     try {
       Chat chat = Chat.fromJson(data['chat']);
 
-      int indexOfRoom = rooms.indexWhere((element) => element.id == chat.roomId);
-      if(indexOfRoom == -1){
+      int indexOfRoom =
+          rooms.indexWhere((element) => element.id == chat.roomId);
+      if (indexOfRoom == -1) {
         /// request to get room details
         /// or insert from chat `room` property
         Room room = Room.fromJson(data['room']);
         rooms.add(room);
+
         /// after get room, update ``indexOfRoom``
         indexOfRoom = rooms.indexOf(room);
       }
       Room targetRoom = rooms[indexOfRoom];
-      if(targetRoom.lastChat == null){
+      if (targetRoom.lastChat == null || targetRoom.chatList.isEmpty) {
         targetRoom.lastChat = chat;
         targetRoom.chatList.add(chat);
-      }else{
+      } else {
+        if(chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd){
+          /*
+           todo: get the last 50 chats of the room if
+            the sender user is from our account */
 
-        /// if received new (chat number id) - 1 is room.lastChat number id
+          // await get last 50 chats of group and
+          // return now
+        }
+        /// if received new (chat number id) - 1 is room lastChat of
+        /// `loaded` chat list number id
         /// then we reached to end of the chat list
         /// that means we won't load more of list
-        if((chat.chatNumberId ?? 0) - 1 == targetRoom.lastChat!.chatNumberId){
+        if (chat.chatNumberId! - 1 ==
+                targetRoom
+                    .chatList[targetRoom.chatList.length - 1].chatNumberId ||
+            targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
         }
+
         /// else just update the last chat of list
         targetRoom.lastChat = chat;
         targetRoom.changeAt = chat.utcDate;
-
       }
       notifyListeners();
 
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 
       /// if we are at end of the list then scroll to received new chat
-      if(selectedRoom == targetRoom &&
-          (maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <= 5){
+      if (selectedRoom == targetRoom &&
+          (maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <=
+              5) {
         itemScrollController.scrollTo(
             index: targetRoom.chatList.length - 1,
             duration: const Duration(milliseconds: 1000),
-          alignment: .825
-        );
+            alignment: .825);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -307,7 +322,6 @@ class ChatProvider extends ChangeNotifier {
       }
     }
   }
-
 
   void _handleSocketErrorsEvent(error) async {
     try {
@@ -322,5 +336,4 @@ class ChatProvider extends ChangeNotifier {
       }
     }
   }
-
 }

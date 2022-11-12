@@ -22,6 +22,7 @@ class Room  {
 
   bool newRoomToGenerate = false;
   bool firstOpen = true;
+  bool reachedToEnd = false;
 
   Room(
       // {required this.id,
