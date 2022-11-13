@@ -1,13 +1,15 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import '../models/user.dart';
 import '../services/request_manager.dart';
 import '/main.dart';
 import '/models/model_user.dart';
 
-class SearchAtSignUserProvider extends ChangeNotifier {
+class SearchUserProvider extends ChangeNotifier {
   String? atSign;
   bool loading = false;
+
+  TextEditingController userSearchTextEditController = TextEditingController();
 
   List<User> get usersList => _usersList;
   List<User> _usersList = [];

@@ -126,6 +126,7 @@ class _ChatPageState extends State<ChatPage> {
                   child: ScrollablePositionedList.builder(
                     physics: const BouncingScrollPhysics(),
                     key: PageStorageKey('${room.id}'),
+                    padding: EdgeInsets.only(top: room.chatList.length > 15 ? 100 : 0),
                     shrinkWrap: true,
                     initialAlignment: .78,
                     scrollDirection: Axis.vertical,

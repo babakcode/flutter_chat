@@ -11,7 +11,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'constants/app_constants.dart';
 import 'providers/chat_provider.dart';
-import 'providers/search_atsign_user_provider.dart';
+import 'providers/search_user_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,7 +59,7 @@ class _Provider extends StatelessWidget {
         ),
         // ChangeNotifierProvider(create: (context) => ChatProvider()),
         ChangeNotifierProvider(
-          create: (c) => SearchAtSignUserProvider(),
+          create: (c) => SearchUserProvider(),
         ),
         ChangeNotifierProvider(
           create: (c) => HomeProvider(),

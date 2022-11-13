@@ -280,14 +280,6 @@ class ChatProvider extends ChangeNotifier {
         targetRoom.lastChat = chat;
         targetRoom.chatList.add(chat);
       } else {
-        if(chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd){
-          /*
-           todo: get the last 50 chats of the room if
-            the sender user is from our account */
-
-          // await get last 50 chats of group and
-          // return now
-        }
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list
@@ -297,6 +289,17 @@ class ChatProvider extends ChangeNotifier {
                     .chatList[targetRoom.chatList.length - 1].chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
+        }else{
+
+          if(chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd){
+            /*
+           todo: get the last 50 chats of the room if
+            the sender user is from our account */
+
+            // await get last 50 chats of group and
+            // return now
+          }
+
         }
 
         /// else just update the last chat of list

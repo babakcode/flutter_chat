@@ -9,7 +9,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../providers/search_atsign_user_provider.dart';
+import '../../../providers/search_user_provider.dart';
 
 class ChatBottomNavComponent extends StatelessWidget {
   final Room room;
@@ -19,7 +19,7 @@ class ChatBottomNavComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
     final globalSetting = context.watch<GlobalSettingProvider>();
-    final searchAtSignUserProvider = context.read<SearchAtSignUserProvider>();
+    final searchAtSignUserProvider = context.read<SearchUserProvider>();
 
     return Column(children: [
       false // check blocked
@@ -33,7 +33,7 @@ class ChatBottomNavComponent extends StatelessWidget {
               ),
             )
           : Column(children: [
-              Consumer<SearchAtSignUserProvider>(
+              Consumer<SearchUserProvider>(
                   builder: (_, searchSignProvider, __) {
                 return searchSignProvider.atSign == null
                     ? const SizedBox()

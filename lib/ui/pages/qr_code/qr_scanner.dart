@@ -24,10 +24,12 @@ class _QrScannerPageState extends State<QrScannerPage> {
   @override
   void reassemble() {
     super.reassemble();
-    if (Platform.isAndroid) {
-      controller!.pauseCamera();
-    }
-    controller!.resumeCamera();
+    Future.microtask(() async {
+      if (Platform.isAndroid) {
+        await controller!.pauseCamera();
+      }
+      await controller!.resumeCamera();
+    });
   }
 
   @override
@@ -137,11 +139,12 @@ class _QrScannerPageState extends State<QrScannerPage> {
       key: qrKey,
       onQRViewCreated: _onQRViewCreated,
       overlay: QrScannerOverlayShape(
-          borderColor: AppConstants.blueAccent,
-          borderRadius: 20,
-          borderLength: 20,
-          borderWidth: 8,
-          cutOutSize: scanArea),
+        borderColor: AppConstants.blueAccent,
+        borderRadius: 20,
+        borderLength: 20,
+        borderWidth: 8,
+        cutOutSize: scanArea,
+      ),
       onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
     );
   }
@@ -150,6 +153,19 @@ class _QrScannerPageState extends State<QrScannerPage> {
     setState(() {
       this.controller = controller;
     });
+    try{
+
+      Future.microtask(() async {
+        if (Platform.isAndroid) {
+          await controller.pauseCamera();
+        }
+        await controller.resumeCamera();
+      });
+    }catch(e){
+      if (kDebugMode) {
+        print(e);
+      }
+    }
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;

@@ -12,7 +12,7 @@
 // import '/models/model_patient.dart';
 // import '/models/model_user.dart';
 // import '/providers/login_provider.dart';
-// import '/providers/search_atsign_user_provider.dart';
+// import '/providers/search_user_provider.dart';
 // import '/ui/pages/profile/display_profile.dart';
 // import '/ui/pages/zoom_image/zoom_image_page.dart';
 // import 'package:intl/intl.dart' as intl;
