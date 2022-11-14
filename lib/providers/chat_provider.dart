@@ -228,6 +228,7 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
+
       if (kDebugMode) {
         print('userRoomChats exception: $e');
       }
@@ -289,9 +290,8 @@ class ChatProvider extends ChangeNotifier {
                     .chatList[targetRoom.chatList.length - 1].chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
-        }else{
-
-          if(chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd){
+        } else {
+          if (chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd) {
             /*
            todo: get the last 50 chats of the room if
             the sender user is from our account */
@@ -299,7 +299,6 @@ class ChatProvider extends ChangeNotifier {
             // await get last 50 chats of group and
             // return now
           }
-
         }
 
         /// else just update the last chat of list
@@ -311,13 +310,16 @@ class ChatProvider extends ChangeNotifier {
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 
       /// if we are at end of the list then scroll to received new chat
-      if (selectedRoom == targetRoom &&
-          (maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <=
-              5) {
+      if ((selectedRoom == targetRoom &&
+              (maxIndexOfChatListOnViewPort - targetRoom.chatList.length)
+                      .abs() <=
+                  5) ||
+          (selectedRoom == targetRoom && chat.user!.id == auth!.myUser!.id)) {
+
         itemScrollController.scrollTo(
             index: targetRoom.chatList.length - 1,
             duration: const Duration(milliseconds: 1000),
-            alignment: .825);
+            alignment: .4);
       }
     } catch (e) {
       if (kDebugMode) {

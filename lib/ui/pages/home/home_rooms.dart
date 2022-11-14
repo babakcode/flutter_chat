@@ -242,7 +242,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                         onPressed: () async {
                           var result = await Navigator.push(
                             context,
-                            MaterialPageRoute(
+                            CupertinoPageRoute(
                               builder: (context) => const QrScannerPage(),
                             ),
                           );
@@ -327,7 +327,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   onPressed: () async {
                     var result = await Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      CupertinoPageRoute(
                         builder: (context) => const QrScannerPage(),
                       ),
                     );
@@ -347,7 +347,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 itemGridViewModalBottomSheet(
                   globalSettingProvider,
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => QrPage(user: context.read<Auth>().myUser!)));
+                    Navigator.push(context, CupertinoPageRoute(builder: (context) => QrPage(user: context.read<Auth>().myUser!)));
                   },
                   icon: Icons.qr_code_2_rounded,
                   text: 'My QR',

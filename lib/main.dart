@@ -20,8 +20,8 @@ void main() async {
   //
   // }
   Hive.init('./');
-  if(!kIsWeb){
-    if(Platform.isAndroid || Platform.isIOS){
+  if (!kIsWeb) {
+    if (Platform.isAndroid || Platform.isIOS) {
       await Hive.initFlutter();
       await Firebase.initializeApp();
     }
@@ -48,16 +48,14 @@ class _Provider extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => Auth()),
         // ChangeNotifierProvider(create: (c) => LoginProvider()),
         ChangeNotifierProxyProvider<Auth, LoginProvider>(
-          update: (context, auth, previousAuth) =>
-              LoginProvider()..initAuth(auth),
+          update: (context, auth, loginPrevious) =>
+              loginPrevious!..initAuth(auth),
           create: (c) => LoginProvider(),
         ),
         ChangeNotifierProxyProvider<Auth, ChatProvider>(
           create: (c) => ChatProvider(),
-          update: (context, auth, previousAuth) =>
-              ChatProvider()..initAuth(auth),
+          update: (context, auth, previous) => previous!..initAuth(auth),
         ),
-        // ChangeNotifierProvider(create: (context) => ChatProvider()),
         ChangeNotifierProvider(
           create: (c) => SearchUserProvider(),
         ),
@@ -113,7 +111,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
         theme: ThemeData(
-          
           textSelectionTheme: TextSelectionThemeData(
             cursorColor: AppConstants.textColor[900],
             selectionColor: AppConstants.blueAccent,
@@ -122,7 +119,8 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color.fromARGB(255, 218, 241, 255),
           cardColor: const Color.fromARGB(255, 181, 225, 255),
           appBarTheme: AppBarTheme(
-            iconTheme: IconThemeData(color: AppConstants.textColor[900], opacity: 0.8),
+            iconTheme:
+                IconThemeData(color: AppConstants.textColor[900], opacity: 0.8),
             actionsIconTheme:
                 IconThemeData(color: AppConstants.textColor[900], opacity: 0.8),
             backgroundColor: AppConstants.scaffoldLightBackground,

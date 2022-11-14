@@ -2,6 +2,7 @@ import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'chat.dart';
 
@@ -21,7 +22,6 @@ class Room  {
   int? lastIndex;
 
   bool newRoomToGenerate = false;
-  bool firstOpen = true;
   bool reachedToEnd = false;
 
   Room(

@@ -1,4 +1,3 @@
-import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
@@ -22,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   ChatProvider? chatProvider;
   @override
   void initState() {
+
     super.initState();
     chatProvider = context.read<ChatProvider>();
 
@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
     chatProvider?.socket?..auth = {
       'token': chatProvider?.auth?.accessToken
     }
-    ..connect();
+      ..connect();
   }
 
   @override

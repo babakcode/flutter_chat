@@ -1,18 +1,20 @@
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_bottom_nav.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_text_item.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+// import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../../models/chat.dart';
 import '../../../models/chat_appbar_model.dart';
 import '../../../models/room.dart';
 import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
-
-PageStorageBucket bucket = PageStorageBucket();
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -22,22 +24,19 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  // ChatProvider? chatProvider;
-  @override
-  void initState() {
-    super.initState();
-    _canPop = true;
-  }
-
   bool _canPop = true;
 
   @override
   Widget build(BuildContext context) {
-    double _width = MediaQuery.of(context).size.width;
+    final _width = MediaQuery.of(context).size.width;
     final chatProvider = context.watch<ChatProvider>();
+
+    final _bottomNavigationBarHeight =
+        (LoginProvider.platform == 'android' || LoginProvider.platform == 'ios')
+            ? MediaQuery.of(context).viewPadding.vertical
+            : 0;
     final auth = context.read<Auth>();
 
-    Room? room = chatProvider.selectedRoom;
     ChatAppBarModel chatAppBarModel = ChatAppBarModel();
 
     if (_width >= 595 && Navigator.canPop(context) && _canPop) {
@@ -51,11 +50,18 @@ class _ChatPageState extends State<ChatPage> {
       return const SizedBox();
     }
 
-    if (room != null) {
-      switch (room.roomType) {
+    if (chatProvider.selectedRoom != null) {
+      if (kDebugMode) {
+        print('-----------roomId is---------');
+        print(chatProvider.selectedRoom!.id);
+        print('-----------------------------');
+      }
+      switch (chatProvider.selectedRoom!.roomType) {
         case RoomType.pvUser:
-          if (room.members![0].user!.id == auth.myUser!.id &&
-              room.members![1].user!.id == auth.myUser!.id) {
+          if (chatProvider.selectedRoom!.members![0].user!.id ==
+                  auth.myUser!.id &&
+              chatProvider.selectedRoom!.members![1].user!.id ==
+                  auth.myUser!.id) {
             chatAppBarModel
               ..roomName = 'my Messages'
               ..roomImage = auth.myUser!.profileUrl
@@ -63,7 +69,7 @@ class _ChatPageState extends State<ChatPage> {
             break;
           }
 
-          User friend = room.members!
+          User friend = chatProvider.selectedRoom!.members!
               .firstWhere((element) => element.user!.id != auth.myUser!.id)
               .user!;
           chatAppBarModel
@@ -84,67 +90,66 @@ class _ChatPageState extends State<ChatPage> {
           {}
       }
     }
-    // List<Chat> _chatList = room?.chatList ?? [];
 
-    if ((room == null)) {
+    if ((chatProvider.selectedRoom == null)) {
       return const Scaffold(
         body: Center(child: AppText('please select chat room')),
       );
     } else {
       return Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          leading: IconButton(
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                } else {
-                  chatProvider.deselectRoom();
-                }
-              },
-              icon: const Icon(Icons.arrow_back_ios_rounded)),
-          title: Text(chatAppBarModel.roomName ?? 'guest'),
-          actions: [
-            IconButton(
-                onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
-          ],
-        ),
-        body: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: ScrollController(),
-          reverse: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              PageStorage(
-                bucket: bucket,
-                child: Container(
+          resizeToAvoidBottomInset: true,
+          appBar: AppBar(
+            leading: IconButton(
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    chatProvider.deselectRoom();
+                  }
+                },
+                icon: const Icon(Icons.arrow_back_ios_rounded)),
+            title: Text(chatAppBarModel.roomName ?? 'guest'),
+            actions: [
+              IconButton(
+                  onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
+            ],
+          ),
+          body: SingleChildScrollView(
+            reverse: true,
+            controller: ScrollController(),
+            physics: const NeverScrollableScrollPhysics(),
+            // physics: const ClampingScrollPhysics(),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
                   alignment: Alignment.bottomCenter,
-                  height: MediaQuery.of(context).size.height - 120,
+                  height: MediaQuery.of(context).size.height -
+                      64 -
+                      AppBar().preferredSize.height -
+                      _bottomNavigationBarHeight,
                   child: ScrollablePositionedList.builder(
-                    physics: const BouncingScrollPhysics(),
-                    key: PageStorageKey('${room.id}'),
-                    padding: EdgeInsets.only(top: room.chatList.length > 15 ? 100 : 0),
+                    // physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 100),
                     shrinkWrap: true,
-                    initialAlignment: .78,
                     scrollDirection: Axis.vertical,
-                    // initialScrollIndex: room.roomPositionIndex!.max,
-                    itemPositionsListener: chatProvider.itemPositionsListener,
                     itemScrollController: chatProvider.itemScrollController,
-                    itemCount: room.chatList.length,
+                    addAutomaticKeepAlives: true,
+                    // initialScrollIndex: ,
+                    itemPositionsListener: chatProvider.itemPositionsListener,
+                    // initialScrollIndex: room.roomPositionIndex!.max,
+                    // controller: chatProvider.chatListViewController,
+                    itemCount: chatProvider.selectedRoom!.chatList.length,
                     itemBuilder: chatItem,
                   ),
                 ),
-              ),
-              ChatBottomNavComponent(
-                room: room,
-              )
-            ],
-          ),
-        ),
-      );
+                ChatBottomNavComponent(
+                  room: chatProvider.selectedRoom!,
+                )
+              ],
+            ),
+          ));
     }
   }
 

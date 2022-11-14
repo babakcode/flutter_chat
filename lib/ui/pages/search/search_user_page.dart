@@ -1,5 +1,6 @@
 import 'package:chat_babakcode/constants/app_constants.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/providers/search_user_provider.dart';
 import 'package:chat_babakcode/ui/widgets/app_button.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
@@ -13,9 +14,13 @@ class SearchUserPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final setting = context.read<GlobalSettingProvider>();
-
+    final searchUserProvider = context.watch<SearchUserProvider>();
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_rounded),
+        ),
         title: const Text("New Message"),
       ),
       body: SingleChildScrollView(
@@ -47,35 +52,46 @@ class SearchUserPage extends StatelessWidget {
                 padding: const EdgeInsets.all(2.0),
                 child: Row(
                   children: List.generate(
-                    10,
+                    searchUserProvider.searchWayList.length,
                     (index) => Card(
+                      elevation: 0,
+                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                      color:
+                          searchUserProvider.selectedSearchUserWayIndex == index
+                              ? null
+                              : Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(32),
                       ),
-                      child: const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        child: Text('token'),
+                      child: InkWell(
+                        onTap: () => searchUserProvider
+                            .setIndexSelectedSearchUserWay = index,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          child: Text(searchUserProvider.searchWayList[index]),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 10),
-              child: AppText('You can find the user in the following ways.',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+              child: AppText(
+                  'paste the user `${searchUserProvider.searchWayList[searchUserProvider.selectedSearchUserWayIndex]}` in following section',
                   size: 14),
             ),
-
-
-            const AppTextField(hint: 'token',),
-
-
-            const AppButton(child: Text('search'),
-              margin: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            AppTextField(
+              hint: searchUserProvider
+                  .searchWayList[searchUserProvider.selectedSearchUserWayIndex],
+              controller: searchUserProvider.userSearchTextEditController,
+            ),
+            AppButton(
+              onPressed: () => searchUserProvider.searchUserWith(context),
+              child: const Text('search'),
+              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             )
           ],
         ),
