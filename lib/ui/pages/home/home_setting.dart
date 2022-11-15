@@ -2,6 +2,7 @@ import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/qr_code/qr_page.dart';
+import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:chat_babakcode/utils/utils.dart';
@@ -98,11 +99,10 @@ class HomeSettingComponent extends StatelessWidget {
                   height: 10,
                 ),
                 ListTile(
-                  onTap: () {
-                  },
+                  onTap: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => const SecurityPage(),)),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24)),
-                  title: const Text('security'),
+                  title: const AppText('security'),
                   leading: const Icon(Icons.security_rounded),
                 ),
                 const SizedBox(

@@ -16,6 +16,7 @@ class AppText extends StatelessWidget {
   final FontWeight? fontWeight;
   final Color? color;
   final String? fontFamily;
+  final TextAlign? textAlign;
 
   const AppText(this.text,
       {
@@ -23,6 +24,7 @@ class AppText extends StatelessWidget {
       this.style,
       this.color,
       this.fontWeight,
+      this.textAlign,
       this.fontFamily,
       super.key});
 
@@ -31,6 +33,7 @@ class AppText extends StatelessWidget {
     final sharedProvider = context.watch<GlobalSettingProvider>();
     return Text(
       text,
+      textAlign: textAlign,
       style: style ??
           TextStyle(
             fontSize: size,

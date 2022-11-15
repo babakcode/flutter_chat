@@ -73,7 +73,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   : null,
               actions: [
                 IconButton(
-                  onPressed: () => showSearchUsersByToken(context),
+                  onPressed: () => {
+                    /*showSearchUsersByToken(context)*/
+                  },
                   icon: const Icon(Icons.search_rounded),
                 ),
               ],
@@ -194,15 +196,18 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: Consumer<HomeProvider>(
         builder: (_, provider, child) {
-          return FloatingActionButton.extended(
-            onPressed: () => floatingOnPressedEvent(context),
-            label: const Text('New Message'),
-            tooltip: "Find friends to talk",
-            icon: const Icon(Icons.edit_rounded),
-            isExtended: provider.extendedFloatingActionButton,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                AppConfig.radiusCircular,
+          return AnimatedSize(
+            duration: const Duration(milliseconds: 100),
+            child: FloatingActionButton.extended(
+              onPressed: () => floatingOnPressedEvent(context),
+              label: const Text('New Message'),
+              tooltip: "Find friends to talk",
+              icon: const Icon(Icons.edit_rounded),
+              isExtended: provider.extendedFloatingActionButton,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  AppConfig.radiusCircular,
+                ),
               ),
             ),
           );
@@ -211,75 +216,84 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
     );
   }
 
-  showSearchUsersByToken(BuildContext context) {
-    final globalSettingProvider = context.read<GlobalSettingProvider>();
-
-    final chatProvider = context.read<ChatProvider>();
-    final homeProvider = context.read<HomeProvider>();
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppConfig.radiusCircular)),
-        backgroundColor: globalSettingProvider.isDarkTheme
-            ? AppConstants.textColor[600]
-            : AppConstants.textColor[50],
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      controller: homeProvider.conversationTokenTextController,
-                    ),
-                  ),
-                  if (LoginProvider.platform == 'android' ||
-                      LoginProvider.platform == 'ios')
-                    IconButton(
-                        onPressed: () async {
-                          var result = await Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                              builder: (context) => const QrScannerPage(),
-                            ),
-                          );
-
-                          if (kDebugMode) {
-                            print(result);
-                          }
-                          if (result != null) {
-                            homeProvider.conversationTokenTextController.text =
-                                result;
-                          }
-                        },
-                        icon: const Icon(Icons.document_scanner_rounded))
-                ],
-              ),
-              AppButtonTransparent(
-                child: const Text('Find user'),
-                onPressed: () {
-                  chatProvider.addConversationPvUser(
-                      token: homeProvider.conversationTokenTextController.text);
-                },
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // showSearchUsersByToken(BuildContext context) {
+  //   final globalSettingProvider = context.read<GlobalSettingProvider>();
+  //
+  //   final chatProvider = context.read<ChatProvider>();
+  //   final homeProvider = context.read<HomeProvider>();
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => Dialog(
+  //       shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(AppConfig.radiusCircular)),
+  //       backgroundColor: globalSettingProvider.isDarkTheme
+  //           ? AppConstants.textColor[600]
+  //           : AppConstants.textColor[50],
+  //       child: ConstrainedBox(
+  //         constraints: const BoxConstraints(maxWidth: 500),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: AppTextField(
+  //                     controller: homeProvider.conversationTokenTextController,
+  //                   ),
+  //                 ),
+  //                 if (LoginProvider.platform == 'android' ||
+  //                     LoginProvider.platform == 'ios')
+  //                   IconButton(
+  //                       onPressed: () async {
+  //                         var result = await Navigator.push(
+  //                           context,
+  //                           CupertinoPageRoute(
+  //                             builder: (context) => const QrScannerPage(),
+  //                           ),
+  //                         );
+  //
+  //                         if (kDebugMode) {
+  //                           print(result);
+  //                         }
+  //                         if (result != null) {
+  //                           homeProvider.conversationTokenTextController.text =
+  //                               result;
+  //                         }
+  //                       },
+  //                       icon: const Icon(Icons.document_scanner_rounded))
+  //               ],
+  //             ),
+  //             AppButtonTransparent(
+  //               child: const Text('Find user'),
+  //               onPressed: () {
+  //                 chatProvider.searchRoomWith(
+  //                     token: homeProvider.conversationTokenTextController.text,
+  //                   context: context
+  //                 );
+  //               },
+  //             )
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   floatingOnPressedEvent(BuildContext context) {
     final globalSettingProvider = context.read<GlobalSettingProvider>();
+    final _width = MediaQuery.of(context).size.width;
+
     showModalBottomSheet(
       isScrollControlled: true,
       clipBehavior: Clip.antiAliasWithSaveLayer,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      constraints: const BoxConstraints(maxWidth: 360),
+      constraints: BoxConstraints(
+          maxWidth: _width <= 500
+              ? 360
+              : _width > 760
+                  ? 742
+                  : _width),
       backgroundColor: globalSettingProvider.isDarkTheme
           ? AppConstants.textColor[800]
           : AppConstants.textColor[100],
@@ -287,7 +301,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
       builder: (_) => DraggableScrollableSheet(
         maxChildSize: 0.7,
         expand: false,
-        builder: (context, scrollController) => ListView(
+        builder: (_, scrollController) => ListView(
           controller: scrollController,
           children: [
             const Divider(
@@ -317,29 +331,42 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               ),
             ),
             GridView.count(
-              crossAxisCount: 3,
+              crossAxisCount: _width ~/ 130,
               shrinkWrap: true,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               physics: const NeverScrollableScrollPhysics(),
               children: [
+                if (LoginProvider.platform == 'android' ||
+                    LoginProvider.platform == 'ios')
+                  itemGridViewModalBottomSheet(
+                    globalSettingProvider,
+                    onPressed: () async {
+                      var result = await Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const QrScannerPage(),
+                        ),
+                      );
+                      if (result != null) {
+                        context.read<ChatProvider>().searchRoomWith(
+                              roomType: 'pvUser',
+                              searchType: 'token',
+                              searchText: result,
+                              context: context,
+                            );
+                      }
+                    },
+                    icon: Icons.qr_code_scanner_rounded,
+                    text: 'Scan QR',
+                  ),
                 itemGridViewModalBottomSheet(
                   globalSettingProvider,
                   onPressed: () async {
-                    var result = await Navigator.push(
+                    await Navigator.push(
                       context,
                       CupertinoPageRoute(
-                        builder: (context) => const QrScannerPage(),
-                      ),
+                          builder: (context) => const SearchUserPage()),
                     );
-                    if (result != null) {}
-                  },
-                  icon: Icons.qr_code_scanner_rounded,
-                  text: 'Scan QR',
-                ),
-                itemGridViewModalBottomSheet(
-                  globalSettingProvider,
-                  onPressed: () async {
-                    await Navigator.push(context, CupertinoPageRoute(builder: (context) => const SearchUserPage()),);
                   },
                   icon: Icons.person_search,
                   text: 'search',
@@ -347,7 +374,11 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 itemGridViewModalBottomSheet(
                   globalSettingProvider,
                   onPressed: () {
-                    Navigator.push(context, CupertinoPageRoute(builder: (context) => QrPage(user: context.read<Auth>().myUser!)));
+                    Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                            builder: (context) =>
+                                QrPage(user: context.read<Auth>().myUser!)));
                   },
                   icon: Icons.qr_code_2_rounded,
                   text: 'My QR',

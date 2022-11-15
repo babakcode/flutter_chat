@@ -108,14 +108,73 @@ class ChatProvider extends ChangeNotifier {
 
   Room? selectedRoom;
 
-  void addConversationPvUser({required String token}) {
-    socket.emitWithAck('addConversation', {'type': 'pvUser', 'token': token},
-        ack: (data) {
+
+  void searchRoomWith(
+      {required String roomType,
+      required String searchType,
+      required String searchText,
+      required BuildContext context,
+      Function? callBack
+      }) {
+
+
+    /// search from exist rooms
+    /// then if not find room,
+    /// search from server
+
+    bool foundLocalExistGroup = false;
+    rooms
+        .where((element) => element.roomType == RoomType.pvUser)
+        .toList()
+        .forEach((room) {
+
+          print('exist rooms found : ${room.toString()}');
+
+      if (room.members!
+          .where((element) =>
+              ((searchType == 'token')
+                  ? element.user!.publicToken
+                  : element.user?.username) ==
+              searchText)
+          .isNotEmpty) {
+        /// room found
+        selectedRoom = room;
+        Navigator.pop(context);
+        if (GlobalSettingProvider.isPhonePortraitSize) {
+          Navigator.push(
+              navigatorKey.currentContext!,
+              CupertinoPageRoute(
+                builder: (context) => const ChatPage(),
+              ));
+        }else{
+          notifyListeners();
+        }
+        foundLocalExistGroup = true;
+        callBack?.call({
+          'success': true,
+          'findFromExistRoom': true,
+        });
+      }
+    });
+    if(foundLocalExistGroup){
+      return;
+    }
+
+    socket.emitWithAck('searchRoom', {
+      'searchType': searchType,
+      'roomType': roomType,
+      'searchText': searchText,
+    }, ack: (data) {
       if (kDebugMode) {
         print(data);
       }
 
       if (data['success']) {
+        callBack?.call({
+          'success': true,
+          'findFromExistRoom': false,
+        });
+        Navigator.pop(context);
         selectedRoom = Room.fromJson(data['room']);
 
         if (GlobalSettingProvider.isPhonePortraitSize) {
@@ -128,6 +187,12 @@ class ChatProvider extends ChangeNotifier {
         } else {
           notifyListeners();
         }
+      }else{
+        callBack?.call({
+          'success': false,
+          'findFromExistRoom': false,
+          'msg': data['msg']
+        });
       }
     });
   }
@@ -190,16 +255,16 @@ class ChatProvider extends ChangeNotifier {
 
   void recordStart() {}
 
-  recordStop(BuildContext context, Room room) {}
+  void recordStop(BuildContext context, Room room) {}
 
-  onEmojiSelected(Emoji emoji) {
+  void onEmojiSelected(Emoji emoji) {
     chatController
       ..text += emoji.emoji
       ..selection = TextSelection.fromPosition(
           TextPosition(offset: chatController.text.length));
   }
 
-  onBackspacePressed() {
+  void onBackspacePressed() {
     chatController
       ..text = chatController.text.characters.skipLast(1).toString()
       ..selection = TextSelection.fromPosition(
@@ -216,7 +281,7 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  _userRoomChatsEvent(data) {
+  void _userRoomChatsEvent(data) {
     if (kDebugMode) {
       print('userRoomChats => $data');
     }
@@ -228,14 +293,13 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-
       if (kDebugMode) {
         print('userRoomChats exception: $e');
       }
     }
   }
 
-  _userRoomsEvent(data) {
+  void _userRoomsEvent(data) {
     if (kDebugMode) {
       print('userRooms => $data');
     }
@@ -258,7 +322,7 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  _receiveChatEvent(data) async {
+  void _receiveChatEvent(data) async {
     if (kDebugMode) {
       print('receiveChat => $data');
     }
@@ -277,10 +341,14 @@ class ChatProvider extends ChangeNotifier {
         indexOfRoom = rooms.indexOf(room);
       }
       Room targetRoom = rooms[indexOfRoom];
+      if(targetRoom.id == selectedRoom?.id){
+        selectedRoom = targetRoom;
+      }
       if (targetRoom.lastChat == null || targetRoom.chatList.isEmpty) {
         targetRoom.lastChat = chat;
         targetRoom.chatList.add(chat);
-      } else {
+      }
+      else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list
@@ -305,7 +373,6 @@ class ChatProvider extends ChangeNotifier {
         targetRoom.lastChat = chat;
         targetRoom.changeAt = chat.utcDate;
       }
-      notifyListeners();
 
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 
@@ -315,12 +382,12 @@ class ChatProvider extends ChangeNotifier {
                       .abs() <=
                   5) ||
           (selectedRoom == targetRoom && chat.user!.id == auth!.myUser!.id)) {
-
         itemScrollController.scrollTo(
             index: targetRoom.chatList.length - 1,
             duration: const Duration(milliseconds: 1000),
             alignment: .4);
       }
+      notifyListeners();
     } catch (e) {
       if (kDebugMode) {
         print(e);

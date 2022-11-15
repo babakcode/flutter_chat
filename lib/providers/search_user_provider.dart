@@ -1,5 +1,6 @@
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
+import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +12,11 @@ import '/main.dart';
 import '/models/model_user.dart';
 
 class SearchUserProvider extends ChangeNotifier {
+  ChatProvider? chatProvider;
+
+  void initChatProvider(ChatProvider chatProvider) =>
+      this.chatProvider = chatProvider;
+
   String? atSign;
   bool loading = false;
 
@@ -22,7 +28,7 @@ class SearchUserProvider extends ChangeNotifier {
   int _selectedSearchUserWayIndex = 0;
 
   int get selectedSearchUserWayIndex => _selectedSearchUserWayIndex;
-  List<String> searchWayList = ['token', 'user id'];
+  List<String> searchWayList = ['token', 'username'];
 
   set setIndexSelectedSearchUserWay(int index) {
     _selectedSearchUserWayIndex = index;
@@ -71,54 +77,23 @@ class SearchUserProvider extends ChangeNotifier {
   //
 
   searchUserWith(BuildContext context) {
-    String? searchData = userSearchTextEditController.text;
+    String? searchText = userSearchTextEditController.text;
     if (searchWayList.isEmpty) {
       return;
     }
     loading = true;
     notifyListeners();
 
-    final chatProvider = context.read<ChatProvider>();
-    if (searchWayList[selectedSearchUserWayIndex] == searchWayList[0]) {
-      //token
-
-      chatProvider.rooms.where((element) => element.roomType == RoomType.pvUser).toList().forEach((room) {
-        if(room.members!.where((element) => element.user!.publicToken == searchData).isNotEmpty){
-          print('room find without request');
-          chatProvider.selectedRoom = room;
-          return;
-        }
-      });
-
-    }
-
-    // chatProvider.socket.emitWithAck(
-    //   'searchRoom',
-    //   {
-    //     'roomType': 'pvUser',
-    //     'searchText': searchData,
-    //     'searchType': searchWayList[selectedSearchUserWayIndex]
-    //   },
-    //   ack: (data) {
-    //     if (kDebugMode) {
-    //       print(data);
-    //     }
-    //
-    //     if (data['success']) {
-    //       chatProvider.selectedRoom = Room.fromJson(data['room']);
-    //
-    //       if (GlobalSettingProvider.isPhonePortraitSize) {
-    //         Navigator.push(
-    //           navigatorKey.currentContext!,
-    //           CupertinoPageRoute(
-    //             builder: (context) => const ChatPage(),
-    //           ),
-    //         );
-    //       } else {
-    //         notifyListeners();
-    //       }
-    //     }
-    //   },
-    // );
+    chatProvider?.searchRoomWith(
+        roomType: 'pvUser',
+        searchType: searchWayList[selectedSearchUserWayIndex],
+        searchText: searchText,
+        context: context,
+        callBack: (Map data) {
+          if(data['success']){
+            loading = false;
+            notifyListeners();
+          }
+        });
   }
 }

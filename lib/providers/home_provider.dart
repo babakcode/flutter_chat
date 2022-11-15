@@ -3,7 +3,6 @@ import 'package:flutter/rendering.dart';
 
 class HomeProvider extends ChangeNotifier{
 
-
   TextEditingController conversationTokenTextController = TextEditingController();
 
   bool _extendedFloatingActionButton = true;
@@ -13,9 +12,9 @@ class HomeProvider extends ChangeNotifier{
     final ScrollDirection direction = notification.direction;
     bool? extended;
     if (direction == ScrollDirection.reverse) {
-      extended = true;
-    } else if (direction == ScrollDirection.forward) {
       extended = false;
+    } else if (direction == ScrollDirection.forward) {
+      extended = true;
     }
     if(extended != null){
       if(extended != extendedFloatingActionButton){
