@@ -43,7 +43,7 @@ class ChatTextItem extends StatelessWidget {
     final chatProvider = context.read<ChatProvider>();
 
     final Room room = chatProvider.selectedRoom!;
-    Chat chat = room.chatList![index];
+    Chat chat = room.chatList.get(index);
 
 
     return Container(
@@ -71,7 +71,7 @@ class ChatTextItem extends StatelessWidget {
                     AppConstants.textColor[700]
                     : AppConstants.textColor[700]),
           ),
-          Text('${intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now())}'
+          Text(intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now())
             ,style: TextStyle(
               fontSize: 12,
                 color: globalSettingProvider.isDarkTheme ?

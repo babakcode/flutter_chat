@@ -3,10 +3,13 @@ import 'package:hive/hive.dart';
 
 class GlobalSettingProvider extends ChangeNotifier {
   Box settingBox = Hive.box('setting');
+
   GlobalSettingProvider();
 
   bool get isDarkTheme => settingBox.get('dark') ?? true;
-  // String get platform => settingBox.get('platform') ?? 'android';
+
+  bool get showSecurityRecoveryPhrase =>
+      settingBox.get('showSecurityRecoveryPhrase') ?? true;
 
   Future<void> darkTheme(bool dark) async {
     await settingBox.put('dark', dark);
@@ -23,6 +26,7 @@ class GlobalSettingProvider extends ChangeNotifier {
 
   static bool get isPhonePortraitSize => _isPhonePortraitSize;
   static bool _isPhonePortraitSize = true;
+
   void checkDeviceDetermination(double width) {
     Future.microtask(() {
       if (width > 600) {
@@ -31,7 +35,7 @@ class GlobalSettingProvider extends ChangeNotifier {
           _isPhonePortraitSize = false;
           notifyListeners();
         }
-      }else{
+      } else {
         /// width < 500
         if (!_isPhonePortraitSize) {
           print('change to portrait');
@@ -41,4 +45,7 @@ class GlobalSettingProvider extends ChangeNotifier {
       }
     });
   }
+
+  Future<void> hideSecurityRecoveryPhraseAlert() async =>
+      {await settingBox.put('showSecurityRecoveryPhrase', false), notifyListeners()};
 }

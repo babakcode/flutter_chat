@@ -1,6 +1,8 @@
 import 'package:chat_babakcode/models/user.dart';
 
-class RoomMember  {
+import 'global_collection.dart';
+
+class RoomMember extends GlobalCollections {
   User? user;
 
   String? role;
@@ -17,5 +19,11 @@ class RoomMember  {
       ..role = json['role']
       ..restrictedByAdmin = json['restrictedByAdmin']
       ..leftGroup = json['leftGroup'];
+  }
+
+  @override
+  Map<String, dynamic> toSaveFormat() {
+    // TODO: implement toSaveFormat
+    throw UnimplementedError();
   }
 }

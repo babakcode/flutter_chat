@@ -59,7 +59,7 @@ class _SecurityPageState extends State<SecurityPage> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 10),
                     child: Card(
-                      color: Colors.red[100],
+                      color: Colors.red[200],
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: AppText(
@@ -121,7 +121,7 @@ class _SecurityPageState extends State<SecurityPage> {
                           ),
                         )
                       : AppButtonRounded(
-                          onPressed: securityProvider.copyPhrases,
+                          onPressed: () => securityProvider.copyPhrases(context),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: const [

@@ -8,16 +8,16 @@ import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
 import 'package:chat_babakcode/ui/pages/qr_code/qr_scanner.dart';
 import 'package:chat_babakcode/ui/pages/search/search_user_page.dart';
-import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
+import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:phlox_animations/phlox_animations.dart';
 import 'package:provider/provider.dart';
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
-import '../../widgets/app_text_field.dart';
 import '../qr_code/qr_page.dart';
 
 class HomeRoomsComponent extends StatefulWidget {
@@ -50,26 +50,17 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           controller: ScrollController(),
           physics: const BouncingScrollPhysics(),
           slivers: [
-            //
-            // SliverAppBar(
-            //   title: Text('Stories'),
-            //   collapsedHeight: 100,
-            //   expandedHeight: 100,
-            //   bottom: PreferredSize(child: Container(
-            //     color: Colors.red,
-            //     child: Center(child: Text("hi"),),
-            //   ), preferredSize: Size.fromHeight(100)),
-            // ),
+
 
             SliverAppBar(
               pinned: true,
               title: const Text('Chats'),
               leading: _width < 960
                   ? IconButton(
-                      tooltip: 'open the drawer',
-                      onPressed: () =>
-                          _roomScaffoldKey.currentState?.openDrawer(),
-                      icon: const Icon(Icons.more_vert_rounded))
+                  tooltip: 'open navigation menu',
+                  onPressed: () =>
+                      _roomScaffoldKey.currentState?.openDrawer(),
+                  icon: const Icon(Icons.more_vert_rounded))
                   : null,
               actions: [
                 IconButton(
@@ -79,7 +70,59 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   icon: const Icon(Icons.search_rounded),
                 ),
               ],
+
+              bottom: !globalSettingProvider.showSecurityRecoveryPhrase ? null : PreferredSize(
+                child: AppBar(
+                  backgroundColor: globalSettingProvider.isDarkTheme
+                      ? AppConstants.textColor[800]
+                      : const Color(0xFFCFE9F8),
+                  leading: const SizedBox(),
+                  automaticallyImplyLeading: true,
+                  leadingWidth: 0,
+                  toolbarHeight: 60,
+                  title: const Text('Get recovery phrase'),
+                  actions: [
+                    IconButton(
+                      onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => const SecurityPage())),
+                      icon: Stack(
+                        children: const [
+                          Icon(Icons.security_rounded),
+                          PhloxAnimations(
+                            loop: true,
+                            duration: Duration(seconds: 1),
+                            fromOpacity: .1,
+                            toOpacity: 1,
+                            child: Icon(
+                              Icons.circle,
+                              size: 10,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                  // bottom: PreferredSize(
+                  //   child: Container(
+                  //     height: 60,
+                  //     color: globalSettingProvider.isDarkTheme
+                  //         ? AppConstants.textColor[800]
+                  //         : AppConstants.textColor[100],
+                  //     child: const Padding(
+                  //       padding: EdgeInsets.all(8.0),
+                  //       child: Text("Save your account recovery phrase and do not share it with other accounts !!"),
+                  //     ),
+                  //   ),
+                  //   preferredSize: const Size.fromHeight(60),
+                  // ),
+
+                ),
+                preferredSize: const Size.fromHeight(60),
+              ),
+
             ),
+
+
             // const SliverAppBar(
             //   backgroundColor: Colors.amber,
             //   title: Text('Kindacode.com'),
@@ -97,7 +140,8 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    Room room = chatProvider.rooms[index];
+                    Room room = chatProvider.
+                    rooms.get(index);
                     Room.populateRoomFields(room, chatProvider.auth!.myUser!);
 
                     return Padding(
@@ -186,7 +230,8 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       ),
                     );
                   },
-                  childCount: chatProvider.rooms.length,
+                  childCount: chatProvider.
+                  rooms.length,
                 ),
               ),
             ),

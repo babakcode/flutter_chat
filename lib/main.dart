@@ -30,7 +30,10 @@ void main() async {
 
   // final box = await Hive.openLazyBox<Map>('rooms');
   await Hive.openBox<Map>('room');
+  await Hive.openBox<Map>('user');
   await Hive.openBox<Map>('chat');
+
+
   await Hive.openBox('me');
   await Hive.openBox('setting');
   runApp(const _Provider());

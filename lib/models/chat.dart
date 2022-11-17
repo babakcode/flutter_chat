@@ -1,31 +1,21 @@
 
 import 'package:intl/intl.dart';
 
+import 'global_collection.dart';
 import 'user.dart';
 
-class Chat {
+class Chat extends GlobalCollections {
   String? id;
-
   User? user;
-
   String? roomId;
-
   String? text;
-
   String? fileUrl;
-
   DateTime? utcDate;
-
   ChatType? type;
-
   bool? edited;
-
   bool? deleted;
-
   String? replyId;
-
   int? chatNumberId;
-
   Chat();
 
   static ChatType chatTypeFromText(String type) {
@@ -53,16 +43,15 @@ class Chat {
     }
   }
 
-
   static List<Chat> getChatsFromJsonList(List jsonList){
     return jsonList.map((e) => Chat.fromJson(e)).toList();
   }
+
   factory Chat.fromJson(Map json) {
     DateTime utcDateUtc = DateTime.parse(json['utcDate']);
     var utcDateLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
         .parse(utcDateUtc.toString(), true)
         .toLocal();
-    print(utcDateUtc);
 
     return Chat()
       ..id = json['_id']
@@ -75,6 +64,13 @@ class Chat {
       ..type = chatTypeFromText(json['type'])
       ..edited = json['edited']
       ..replyId = json['replyId'];
+  }
+
+  @override
+  Map<String, dynamic> toSaveFormat() {
+    return {
+      '_id': id,
+    };
   }
 }
 enum ChatType {

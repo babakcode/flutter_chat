@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,7 +26,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     chatProvider = context.read<ChatProvider>();
 
-    // chatProvider!.roomBox.clear();
     // chatProvider!.rooms = Room.roomsFromJson(chatProvider!.roomBox.values.toList());
 
     chatProvider?.socket?..auth = {

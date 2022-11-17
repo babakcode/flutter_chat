@@ -1,5 +1,6 @@
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
+import 'package:chat_babakcode/models/global_collection.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
@@ -8,7 +9,6 @@ import 'package:chat_babakcode/utils/utils.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -60,34 +60,29 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
       }
     });
+
+    itemPositionsListener.itemPositions.addListener(changeScrollIndexListener);
   }
 
-  // void changeScrollIndexListener() {
-  //   if (selectedRoom == null) {
-  //     return;
-  //   }
-  //
-  //   int min = itemPositionsListener.itemPositions.value
-  //       .where((ItemPosition position) => position.itemTrailingEdge > 0)
-  //       .reduce((ItemPosition min, ItemPosition position) =>
-  //           position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
-  //       .index;
-  //   int max = itemPositionsListener.itemPositions.value
-  //       .where((ItemPosition position) => position.itemLeadingEdge < 1)
-  //       .reduce((ItemPosition max, ItemPosition position) =>
-  //           position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
-  //       .index;
-  //   debugPrint('max = $max');
-  //   debugPrint('min = $min');
-  //   // selectedRoom!.roomPositionIndex = RoomPositionIndex(min, max);
-  // }
+  void changeScrollIndexListener() {
+    if (selectedRoom == null) {
+      return;
+    }
+
+    selectedRoom!.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
+    if ((selectedRoom!.lastIndex ?? -1) < maxIndexOfChatListOnViewPort) {
+      selectedRoom!.lastIndex = maxIndexOfChatListOnViewPort;
+    }
+
+    // selectedRoom!.roomPositionIndex = RoomPositionIndex(min, max);
+  }
 
   void disconnectSocket() {
     socket.disconnect();
   }
 
-  List<Room> rooms = [];
-  Box<Map> roomBox = Hive.box<Map>('room');
+  SavableList<Room> rooms = SavableList(collection: 'room');
+  // final _hiveManager = HiveManager();
 
   ItemScrollController itemScrollController = ItemScrollController();
   ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
@@ -108,16 +103,12 @@ class ChatProvider extends ChangeNotifier {
 
   Room? selectedRoom;
 
-
   void searchRoomWith(
       {required String roomType,
       required String searchType,
       required String searchText,
       required BuildContext context,
-      Function? callBack
-      }) {
-
-
+      Function? callBack}) {
     /// search from exist rooms
     /// then if not find room,
     /// search from server
@@ -127,9 +118,6 @@ class ChatProvider extends ChangeNotifier {
         .where((element) => element.roomType == RoomType.pvUser)
         .toList()
         .forEach((room) {
-
-          print('exist rooms found : ${room.toString()}');
-
       if (room.members!
           .where((element) =>
               ((searchType == 'token')
@@ -146,7 +134,7 @@ class ChatProvider extends ChangeNotifier {
               CupertinoPageRoute(
                 builder: (context) => const ChatPage(),
               ));
-        }else{
+        } else {
           notifyListeners();
         }
         foundLocalExistGroup = true;
@@ -156,7 +144,7 @@ class ChatProvider extends ChangeNotifier {
         });
       }
     });
-    if(foundLocalExistGroup){
+    if (foundLocalExistGroup) {
       return;
     }
 
@@ -187,12 +175,9 @@ class ChatProvider extends ChangeNotifier {
         } else {
           notifyListeners();
         }
-      }else{
-        callBack?.call({
-          'success': false,
-          'findFromExistRoom': false,
-          'msg': data['msg']
-        });
+      } else {
+        callBack?.call(
+            {'success': false, 'findFromExistRoom': false, 'msg': data['msg']});
       }
     });
   }
@@ -271,8 +256,18 @@ class ChatProvider extends ChangeNotifier {
           TextPosition(offset: chatController.text.length));
   }
 
-  void changeSelectedRoom(Room room) {
-    selectedRoom = room;
+  void changeSelectedRoom(Room room) async {
+    if (GlobalSettingProvider.isPhonePortraitSize) {
+      selectedRoom = room;
+      notifyListeners();
+      return;
+    }
+    if (selectedRoom != null) {
+      deselectRoom();
+    }
+
+    await Future.delayed(
+        const Duration(milliseconds: 100), () => selectedRoom = room);
     notifyListeners();
   }
 
@@ -285,13 +280,16 @@ class ChatProvider extends ChangeNotifier {
     if (kDebugMode) {
       print('userRoomChats => $data');
     }
+
+    if (data['success']) {
+      final roomId = data['roomId'];
+      rooms
+          .firstWhere((element) => element.id == roomId)
+          .chatList
+          .addAll(Chat.getChatsFromJsonList(data['chats']));
+      notifyListeners();
+    }
     try {
-      if (data['success']) {
-        final roomId = data['roomId'];
-        rooms.firstWhere((element) => element.id == roomId).chatList =
-            Chat.getChatsFromJsonList(data['chats']);
-        notifyListeners();
-      }
     } catch (e) {
       if (kDebugMode) {
         print('userRoomChats exception: $e');
@@ -306,11 +304,13 @@ class ChatProvider extends ChangeNotifier {
     try {
       if (data['success']) {
         for (Map room in (data['rooms'] as List)) {
-          if (rooms.where((element) => element.id == room['_id']).isEmpty) {
-            roomBox.put(room['_id'], room);
+          if (
+          rooms.where((element) => element.id == room['_id']).isEmpty) {
+
             rooms.add(Room.fromJson(room));
           }
         }
+
         rooms.sort(
             (a, b) => b.lastChat!.utcDate!.compareTo(a.lastChat!.utcDate!));
         notifyListeners();
@@ -330,32 +330,35 @@ class ChatProvider extends ChangeNotifier {
       Chat chat = Chat.fromJson(data['chat']);
 
       int indexOfRoom =
-          rooms.indexWhere((element) => element.id == chat.roomId);
+
+      rooms.indexWhere((element) => element.id == chat.roomId);
       if (indexOfRoom == -1) {
         /// request to get room details
         /// or insert from chat `room` property
         Room room = Room.fromJson(data['room']);
+
         rooms.add(room);
 
         /// after get room, update ``indexOfRoom``
-        indexOfRoom = rooms.indexOf(room);
+        indexOfRoom =
+            rooms.indexOf(room);
       }
-      Room targetRoom = rooms[indexOfRoom];
-      if(targetRoom.id == selectedRoom?.id){
+      Room targetRoom =
+      rooms.get(indexOfRoom);
+      if (targetRoom.id == selectedRoom?.id) {
         selectedRoom = targetRoom;
       }
       if (targetRoom.lastChat == null || targetRoom.chatList.isEmpty) {
         targetRoom.lastChat = chat;
         targetRoom.chatList.add(chat);
-      }
-      else {
+      } else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list
         /// that means we won't load more of list
         if (chat.chatNumberId! - 1 ==
-                targetRoom
-                    .chatList[targetRoom.chatList.length - 1].chatNumberId ||
+                targetRoom.chatList.get(targetRoom.chatList.length - 1)
+                    .chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
         } else {
@@ -373,6 +376,7 @@ class ChatProvider extends ChangeNotifier {
         targetRoom.lastChat = chat;
         targetRoom.changeAt = chat.utcDate;
       }
+
 
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 
