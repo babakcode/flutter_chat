@@ -1,8 +1,9 @@
+import 'package:chat_babakcode/models/chat.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 
-abstract class GlobalCollections {
-  Map<String, dynamic> toSaveFormat();
+abstract class AppCollections {
+  Future<Map<String, dynamic>> toSaveFormat();
 }
 
 // class SaveFormatType {
@@ -62,7 +63,29 @@ abstract class GlobalCollections {
 // }
 
 
-class SavableList<E extends GlobalCollections> {
+// class SavableObject<E extends AppCollections>{
+//
+//   late Box<Map> _hiveBox;
+//
+//   String _idKeyName = '_id';
+//   SavableObject({required String collection, String? idKeyName}) {
+//     _hiveBox = Hive.box<Map>(collection);
+//     if(idKeyName != null){
+//       _idKeyName = idKeyName;
+//     }
+//   }
+//   dynamic objectId;
+//   E? object;
+//
+//   String unPopulate(){
+//     return object?.toSaveFormat()[_idKeyName];
+//   }
+//   E populate(){
+//     _hiveBox.get(objectId);
+//   }
+// }
+
+class SavableList<E extends AppCollections> {
 
   late Box<Map> _hiveBox;
 
@@ -70,7 +93,6 @@ class SavableList<E extends GlobalCollections> {
     _hiveBox = Hive.box<Map>(collection);
   }
 
-  // List<E> list() => _list;
   List<E> _list = [];
 
   bool get isEmpty => _list.isEmpty;
@@ -79,23 +101,24 @@ class SavableList<E extends GlobalCollections> {
   int get length => _list.length;
 
   void addAll(List<E> addAll) async {
-    if(_validateList(addAll)){
-      _list = addAll;
-    }
+    /// for chats
+    _list = addAll;
     // saveList();
+    // if(await _validateList(addAll)){
+    // }
   }
 
-  void saveList() {
+  void saveList() async {
     for (var item in _list) {
       final _saveMap = item.toSaveFormat();
-      final _docId = _saveMap.values.where((element) => element.type == 'id');
+      final _docId = (await _saveMap).values.where((element) => element.type == 'id');
       if (_docId.length != 1) {
         throw HiveError(
             'the document must have an id that is int or string type');
       }
 
       _hiveBox.put(_docId.elementAt(0).value,
-          _saveMap.map((key, value) => MapEntry(key,value.value)));
+          (await _saveMap).map((key, value) => MapEntry(key,value.value)));
     }
   }
 
@@ -103,19 +126,17 @@ class SavableList<E extends GlobalCollections> {
     // print(_hiveBox.values);
   }
 
-  bool _validateList(List<E> addAll) {
-    // for(var item in addAll){
-    //   if(item.toSaveFormat().values.where((element) => element != 'wadjkawdawd').isNotEmpty){
-    //     throw ErrorHint('errrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrrrrr');
-    //   }
-    // }
-    return true;
-  }
+  // Future<bool> _validateList(List<E> addAll) async {
+  //   for(var item in addAll){
+  //     if((await item.toSaveFormat()).values.where((element) => element != 'wadjkawdawd').isNotEmpty){
+  //       throw ErrorHint('errrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrrrrr');
+  //     }
+  //   }
+  //   return true;
+  // }
 
-  void add(E e){
-    if(_validateList([e])){
-      _list.add(e);
-    }
+  void add(E e) async{
+    _list.add(e);
   }
 
   Iterable<E> where(bool Function(E element) test){
@@ -138,8 +159,12 @@ class SavableList<E extends GlobalCollections> {
     return _list.indexOf(e);
   }
 
-  E get(int indexOfRoom) {
-    return _list[indexOfRoom];
+  E get(int i) {
+    return _list[i];
+  }
+
+  Iterable<E> map(E Function(E e) test) {
+    return _list.map(test);
   }
 
 // remove(){}

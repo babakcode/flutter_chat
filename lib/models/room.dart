@@ -3,17 +3,17 @@ import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'chat.dart';
-import 'global_collection.dart';
+import 'app_collection.dart';
 import 'room_member.dart';
 
-class Room extends GlobalCollections {
+class Room extends AppCollections {
 
   String? id;
   String? roomName;
   DateTime? changeAt;
   DateTime? createAt;
   bool? removed;
-  List<RoomMember>? members;
+  List<RoomMember> members = [];
   RoomType? roomType;
   Chat? lastChat;
   String? roomImage;
@@ -43,7 +43,6 @@ class Room extends GlobalCollections {
           .toLocal();
     }
 
-
     return Room()
       ..id = json['_id']
       ..roomName = json['roomName']
@@ -52,20 +51,19 @@ class Room extends GlobalCollections {
       ..createAt = createAtLocal
       ..removed = json['removed']
       ..members = (json['members'] as List)
-          .map((member) => RoomMember.fromJson(member))
+          .map((member) {
+            var roomMember = RoomMember.fromJson(member);
+            return roomMember;
+      })
           .toList()
       ..roomType = _RoomUtils.roomTypeFromText(json['roomType'])
-      ..lastChat =
-          json['lastChat'] == null ? null : Chat.fromJson(json['lastChat'])
+      ..lastChat = json['lastChat'] == null ? null : Chat.fromJson(json['lastChat'])
       ..roomImage = json['roomImage']
-      // ..chatList.list = ((json['chatList'] ?? []) as List)
-      //     .map((chat) => Chat.fromJson(chat))
-      //     .toList()
     ;
   }
 
   @override
-  Map<String, dynamic> toSaveFormat() =>{
+  Future<Map<String, dynamic>> toSaveFormat() async => {
       '_id': id,
       'roomName': roomName,
       'changeAt': changeAt.toString(),

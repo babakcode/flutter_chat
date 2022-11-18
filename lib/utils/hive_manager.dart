@@ -1,5 +1,5 @@
 import 'package:chat_babakcode/models/chat.dart';
-import 'package:chat_babakcode/models/global_collection.dart';
+import 'package:chat_babakcode/models/app_collection.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import '../models/room.dart';

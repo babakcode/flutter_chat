@@ -1,10 +1,10 @@
-
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
-
-import 'global_collection.dart';
+import 'app_collection.dart';
 import 'user.dart';
 
-class Chat extends GlobalCollections {
+final _chatBox = Hive.box('chat');
+class Chat extends AppCollections {
   String? id;
   User? user;
   String? roomId;
@@ -66,10 +66,24 @@ class Chat extends GlobalCollections {
       ..replyId = json['replyId'];
   }
 
+  Future<void> save() async {
+    await _chatBox.put(id, toSaveFormat());
+  }
+
+  User? populateUser(){
+    final user = _chatBox.get(id);
+    if(user != null){
+      return User.fromJson(user);
+    }
+    return null;
+  }
+
   @override
-  Map<String, dynamic> toSaveFormat() {
+  Future<Map<String, dynamic>> toSaveFormat() async {
+
     return {
       '_id': id,
+
     };
   }
 }

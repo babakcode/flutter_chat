@@ -1,6 +1,6 @@
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
-import 'package:chat_babakcode/models/global_collection.dart';
+import 'package:chat_babakcode/models/app_collection.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
@@ -82,6 +82,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   SavableList<Room> rooms = SavableList(collection: 'room');
+
   // final _hiveManager = HiveManager();
 
   ItemScrollController itemScrollController = ItemScrollController();
@@ -281,15 +282,19 @@ class ChatProvider extends ChangeNotifier {
       print('userRoomChats => $data');
     }
 
-    if (data['success']) {
-      final roomId = data['roomId'];
-      rooms
-          .firstWhere((element) => element.id == roomId)
-          .chatList
-          .addAll(Chat.getChatsFromJsonList(data['chats']));
-      notifyListeners();
-    }
+    /// todo : check exist list before add data
     try {
+      if (data['success']) {
+        final roomId = data['roomId'];
+        final indexOfRoom = rooms.indexWhere((element) => element.id == roomId);
+        if (indexOfRoom != -1) {
+          rooms
+              .get(indexOfRoom)
+              .chatList
+              .addAll(Chat.getChatsFromJsonList(data['chats']));
+        }
+        notifyListeners();
+      }
     } catch (e) {
       if (kDebugMode) {
         print('userRoomChats exception: $e');
@@ -304,9 +309,7 @@ class ChatProvider extends ChangeNotifier {
     try {
       if (data['success']) {
         for (Map room in (data['rooms'] as List)) {
-          if (
-          rooms.where((element) => element.id == room['_id']).isEmpty) {
-
+          if (rooms.where((element) => element.id == room['_id']).isEmpty) {
             rooms.add(Room.fromJson(room));
           }
         }
@@ -330,8 +333,7 @@ class ChatProvider extends ChangeNotifier {
       Chat chat = Chat.fromJson(data['chat']);
 
       int indexOfRoom =
-
-      rooms.indexWhere((element) => element.id == chat.roomId);
+          rooms.indexWhere((element) => element.id == chat.roomId);
       if (indexOfRoom == -1) {
         /// request to get room details
         /// or insert from chat `room` property
@@ -340,11 +342,9 @@ class ChatProvider extends ChangeNotifier {
         rooms.add(room);
 
         /// after get room, update ``indexOfRoom``
-        indexOfRoom =
-            rooms.indexOf(room);
+        indexOfRoom = rooms.indexOf(room);
       }
-      Room targetRoom =
-      rooms.get(indexOfRoom);
+      Room targetRoom = rooms.get(indexOfRoom);
       if (targetRoom.id == selectedRoom?.id) {
         selectedRoom = targetRoom;
       }
@@ -357,7 +357,8 @@ class ChatProvider extends ChangeNotifier {
         /// then we reached to end of the chat list
         /// that means we won't load more of list
         if (chat.chatNumberId! - 1 ==
-                targetRoom.chatList.get(targetRoom.chatList.length - 1)
+                targetRoom.chatList
+                    .get(targetRoom.chatList.length - 1)
                     .chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
@@ -376,7 +377,6 @@ class ChatProvider extends ChangeNotifier {
         targetRoom.lastChat = chat;
         targetRoom.changeAt = chat.utcDate;
       }
-
 
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 

@@ -1,14 +1,11 @@
 import 'package:chat_babakcode/models/user.dart';
 
-import 'global_collection.dart';
+import 'app_collection.dart';
 
-class RoomMember extends GlobalCollections {
+class RoomMember extends AppCollections {
   User? user;
-
   String? role;
-
   bool? restrictedByAdmin;
-
   bool? leftGroup;
 
   RoomMember();
@@ -22,8 +19,14 @@ class RoomMember extends GlobalCollections {
   }
 
   @override
-  Map<String, dynamic> toSaveFormat() {
+  Future<Map<String, dynamic>> toSaveFormat() async {
     // TODO: implement toSaveFormat
     throw UnimplementedError();
+  }
+
+  static SavableList<RoomMember> roomMembers(json) {
+
+
+    return SavableList(collection: 'user');
   }
 }
