@@ -17,20 +17,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-  
   ChatProvider? chatProvider;
+
   @override
   void initState() {
-
     super.initState();
     chatProvider = context.read<ChatProvider>();
+    // chatProvider?.clearRoomsList();
+    chatProvider?.getAllRooms();
 
-    // chatProvider!.rooms = Room.roomsFromJson(chatProvider!.roomBox.values.toList());
-
-    chatProvider?.socket?..auth = {
-      'token': chatProvider?.auth?.accessToken
-    }
+    chatProvider?.socket
+      ?..auth = {'token': chatProvider?.auth?.accessToken}
       ..connect();
   }
 
@@ -42,7 +39,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
 
     final globalSetting = context.watch<GlobalSettingProvider>();
     final double _width = MediaQuery.of(context).size.width;
@@ -52,23 +50,19 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           Expanded(
-            child: Row(children: [
-              if(_width > 960)
-                const SizedBox(width: 260,child: HomeSettingComponent()),
-              
-              if(_width < 600)
-                const Expanded(child: HomeRoomsComponent())
-              else
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 340
-                  ),
-                  child: const HomeRoomsComponent()),
-          
-              
-              if(_width > 600)
-                const Expanded(child: ChatPage())
-            ]),
+            child: Row(
+              children: [
+                if (_width > 960)
+                  const SizedBox(width: 260, child: HomeSettingComponent()),
+                if (_width < 600)
+                  const Expanded(child: HomeRoomsComponent())
+                else
+                  ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 340),
+                      child: const HomeRoomsComponent()),
+                if (_width > 600) const Expanded(child: ChatPage())
+              ],
+            ),
           ),
         ],
       ),

@@ -1,6 +1,5 @@
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
-import 'package:chat_babakcode/models/app_collection.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
@@ -13,6 +12,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../models/chat.dart';
+import '../utils/hive_manager.dart';
 
 class ChatProvider extends ChangeNotifier {
   io.Socket socket = io.io(
@@ -69,8 +69,15 @@ class ChatProvider extends ChangeNotifier {
       return;
     }
 
-    selectedRoom!.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
+    if(selectedRoom!.minViewPortSeenIndex != minIndexOfChatListOnViewPort){
+      // save on database
+      _hiveManager.updateMinViewPortSeenIndexOfRoom(minIndexOfChatListOnViewPort, selectedRoom!);
+      // save to local list
+      selectedRoom!.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
+    }
     if ((selectedRoom!.lastIndex ?? -1) < maxIndexOfChatListOnViewPort) {
+      // save on database
+      _hiveManager.updateLastIndexOfRoom(maxIndexOfChatListOnViewPort, selectedRoom!);
       selectedRoom!.lastIndex = maxIndexOfChatListOnViewPort;
     }
 
@@ -81,9 +88,8 @@ class ChatProvider extends ChangeNotifier {
     socket.disconnect();
   }
 
-  SavableList<Room> rooms = SavableList(collection: 'room');
-
-  // final _hiveManager = HiveManager();
+  List<Room> rooms = [];
+  final _hiveManager = HiveManager();
 
   ItemScrollController itemScrollController = ItemScrollController();
   ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
@@ -119,7 +125,7 @@ class ChatProvider extends ChangeNotifier {
         .where((element) => element.roomType == RoomType.pvUser)
         .toList()
         .forEach((room) {
-      if (room.members!
+      if (room.members
           .where((element) =>
               ((searchType == 'token')
                   ? element.user!.publicToken
@@ -221,7 +227,7 @@ class ChatProvider extends ChangeNotifier {
     if (room.id == null &&
         room.roomType == RoomType.pvUser &&
         room.newRoomToGenerate) {
-      data['userId'] = room.members!
+      data['userId'] = room.members
           .firstWhere((element) => element.user!.id != auth!.myUser!.id!)
           .user!
           .id;
@@ -288,12 +294,13 @@ class ChatProvider extends ChangeNotifier {
         final roomId = data['roomId'];
         final indexOfRoom = rooms.indexWhere((element) => element.id == roomId);
         if (indexOfRoom != -1) {
-          rooms
-              .get(indexOfRoom)
+          rooms[indexOfRoom]
               .chatList
               .addAll(Chat.getChatsFromJsonList(data['chats']));
         }
         notifyListeners();
+        /// save chats
+        _hiveManager.saveChats(rooms[indexOfRoom].chatList);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -314,9 +321,9 @@ class ChatProvider extends ChangeNotifier {
           }
         }
 
-        rooms.sort(
-            (a, b) => b.lastChat!.utcDate!.compareTo(a.lastChat!.utcDate!));
+        rooms.sort((a, b) => b.changeAt!.compareTo(b.changeAt!));
         notifyListeners();
+        _hiveManager.saveRooms(rooms);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -333,7 +340,7 @@ class ChatProvider extends ChangeNotifier {
       Chat chat = Chat.fromJson(data['chat']);
 
       int indexOfRoom =
-          rooms.indexWhere((element) => element.id == chat.roomId);
+          rooms.indexWhere((element) => element.id == chat.room);
       if (indexOfRoom == -1) {
         /// request to get room details
         /// or insert from chat `room` property
@@ -344,24 +351,27 @@ class ChatProvider extends ChangeNotifier {
         /// after get room, update ``indexOfRoom``
         indexOfRoom = rooms.indexOf(room);
       }
-      Room targetRoom = rooms.get(indexOfRoom);
+      Room targetRoom = rooms[indexOfRoom];
       if (targetRoom.id == selectedRoom?.id) {
         selectedRoom = targetRoom;
       }
       if (targetRoom.lastChat == null || targetRoom.chatList.isEmpty) {
         targetRoom.lastChat = chat;
         targetRoom.chatList.add(chat);
+        /// save chat
+        _hiveManager.saveChats([chat]);
       } else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list
         /// that means we won't load more of list
         if (chat.chatNumberId! - 1 ==
-                targetRoom.chatList
-                    .get(targetRoom.chatList.length - 1)
-                    .chatNumberId ||
+                targetRoom
+                    .chatList[targetRoom.chatList.length - 1].chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
+          /// save chat
+          _hiveManager.saveChats([chat]);
         } else {
           if (chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd) {
             /*
@@ -411,5 +421,24 @@ class ChatProvider extends ChangeNotifier {
         print(e);
       }
     }
+  }
+
+  void getAllRooms() async {
+    rooms = await _hiveManager.getAllRooms();
+    rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
+    notifyListeners();
+    for (var room in rooms) {
+      getRoomChatsFromDatabase(room);
+    }
+  }
+
+  void clearRoomsList() async {
+    await _hiveManager.clearRooms();
+  }
+
+  void getRoomChatsFromDatabase(Room room) async {
+    await _hiveManager
+        .getAllChatsOf(room)
+        .then((value) => {room.chatList = value, notifyListeners()});
   }
 }

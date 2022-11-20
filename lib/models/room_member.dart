@@ -19,14 +19,10 @@ class RoomMember extends AppCollections {
   }
 
   @override
-  Future<Map<String, dynamic>> toSaveFormat() async {
-    // TODO: implement toSaveFormat
-    throw UnimplementedError();
-  }
-
-  static SavableList<RoomMember> roomMembers(json) {
-
-
-    return SavableList(collection: 'user');
-  }
+  Map<String, dynamic> toSaveFormat() => {
+    'user': user!.toSaveFormat(),
+    'role': role,
+    'restrictedByAdmin': restrictedByAdmin,
+    'leftGroup': leftGroup,
+  };
 }

@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 
 abstract class AppCollections {
-  Future<Map<String, dynamic>> toSaveFormat();
+  Map<String, dynamic> toSaveFormat();
 }
 
 // class SaveFormatType {
@@ -85,88 +85,111 @@ abstract class AppCollections {
 //   }
 // }
 
-class SavableList<E extends AppCollections> {
-
-  late Box<Map> _hiveBox;
-
-  SavableList({required String collection}) {
-    _hiveBox = Hive.box<Map>(collection);
-  }
-
-  List<E> _list = [];
-
-  bool get isEmpty => _list.isEmpty;
-  bool get isNotEmpty => _list.isNotEmpty;
-
-  int get length => _list.length;
-
-  void addAll(List<E> addAll) async {
-    /// for chats
-    _list = addAll;
-    // saveList();
-    // if(await _validateList(addAll)){
-    // }
-  }
-
-  void saveList() async {
-    for (var item in _list) {
-      final _saveMap = item.toSaveFormat();
-      final _docId = (await _saveMap).values.where((element) => element.type == 'id');
-      if (_docId.length != 1) {
-        throw HiveError(
-            'the document must have an id that is int or string type');
-      }
-
-      _hiveBox.put(_docId.elementAt(0).value,
-          (await _saveMap).map((key, value) => MapEntry(key,value.value)));
-    }
-  }
-
-  void getAllData() {
-    // print(_hiveBox.values);
-  }
-
-  // Future<bool> _validateList(List<E> addAll) async {
-  //   for(var item in addAll){
-  //     if((await item.toSaveFormat()).values.where((element) => element != 'wadjkawdawd').isNotEmpty){
-  //       throw ErrorHint('errrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrrrrr');
-  //     }
-  //   }
-  //   return true;
-  // }
-
-  void add(E e) async{
-    _list.add(e);
-  }
-
-  Iterable<E> where(bool Function(E element) test){
-    return _list.where(test);
-  }
-
-  E firstWhere(bool Function(E element) test) {
-    return _list.firstWhere(test);
-  }
-
-  void sort([int Function(E a, E b)? compare]) {
-    _list.sort(compare);
-  }
-
-  int indexWhere(bool Function(E element) test) {
-    return _list.indexWhere(test);
-  }
-
-  int indexOf(E e) {
-    return _list.indexOf(e);
-  }
-
-  E get(int i) {
-    return _list[i];
-  }
-
-  Iterable<E> map(E Function(E e) test) {
-    return _list.map(test);
-  }
-
-// remove(){}
-// find(){}
-}
+// class SavableList<E extends AppCollections> {
+//
+//   late Box<Map> _hiveBox;
+//
+//   SavableList({required String collection}) {
+//     _hiveBox = Hive.box<Map>(collection);
+//   }
+//
+//   List<E> _list = [];
+//
+//   bool get isEmpty => _list.isEmpty;
+//   bool get isNotEmpty => _list.isNotEmpty;
+//
+//   int get length => _list.length;
+//
+//   void addAll(List<E> addAll) async {
+//     /// for chats
+//     /// todo: add chats to local database
+//     _list = addAll;
+//     _save(addAll);
+//     // saveList();
+//     // if(await _validateList(addAll)){
+//     // }
+//   }
+//
+//   // void saveList() async {
+//   //   for (var item in _list) {
+//   //     final _saveMap = item.toSaveFormat();
+//   //     final _docId = _saveMap.values.where((element) => element.type == 'id');
+//   //     if (_docId.length != 1) {
+//   //       throw HiveError(
+//   //           'the document must have an id that is int or string type');
+//   //     }
+//   //
+//   //     _hiveBox.put(_docId.elementAt(0).value,
+//   //         _saveMap.map((key, value) => MapEntry(key,value.value)));
+//   //   }
+//   // }
+//
+//   void getAllData() {
+//     // print(_hiveBox.values);
+//   }
+//
+//   // Future<bool> _validateList(List<E> addAll) async {
+//   //   for(var item in addAll){
+//   //     if((await item.toSaveFormat()).values.where((element) => element != 'wadjkawdawd').isNotEmpty){
+//   //       throw ErrorHint('errrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrrrrr');
+//   //     }
+//   //   }
+//   //   return true;
+//   // }
+//
+//   void add(E e) async{
+//     _list.add(e);
+//     _save([e]);
+//   }
+//
+//   Iterable<E> where(bool Function(E element) test){
+//     return _list.where(test);
+//   }
+//
+//   E firstWhere(bool Function(E element) test) {
+//     return _list.firstWhere(test);
+//   }
+//
+//   void sort([int Function(E a, E b)? compare]) {
+//     _list.sort(compare);
+//   }
+//
+//   int indexWhere(bool Function(E element) test) {
+//     return _list.indexWhere(test);
+//   }
+//
+//   int indexOf(E e) {
+//     return _list.indexOf(e);
+//   }
+//
+//   E get(int i) {
+//     return _list[i];
+//   }
+//
+//   Iterable<E> map(E Function(E e) test) {
+//     return _list.map(test);
+//   }
+//
+//   void _save(List<E> list) async {
+//     for(var e in list){
+//       print('wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww');
+//       print(e.toSaveFormat());
+//       // e.toSaveFormat().values.where((element) => element.runtimeType == SavableList).forEach((element) {
+//       //
+//       // });
+//       Map saveMap = {};
+//       e.toSaveFormat().forEach((key, value) {
+//         if(value is SavableList){
+//           for(var sValue in value._list){
+//
+//           }
+//         }else if(value is AppCollections){
+//           value = value.toSaveFormat();
+//         }
+//       });
+//     }
+//   }
+//
+// // remove(){}
+// // find(){}
+// }

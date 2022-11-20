@@ -43,7 +43,7 @@ class ChatTextItem extends StatelessWidget {
     final chatProvider = context.read<ChatProvider>();
 
     final Room room = chatProvider.selectedRoom!;
-    Chat chat = room.chatList.get(index);
+    Chat chat = room.chatList[index];
 
 
     return Container(

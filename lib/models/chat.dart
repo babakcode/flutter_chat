@@ -1,21 +1,21 @@
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'app_collection.dart';
 import 'user.dart';
 
-final _chatBox = Hive.box('chat');
 class Chat extends AppCollections {
   String? id;
   User? user;
-  String? roomId;
+  String? room;
   String? text;
   String? fileUrl;
   DateTime? utcDate;
   ChatType? type;
   bool? edited;
   bool? deleted;
-  String? replyId;
+  Chat? replyId;
   int? chatNumberId;
+  int? version;
+
   Chat();
 
   static ChatType chatTypeFromText(String type) {
@@ -43,7 +43,32 @@ class Chat extends AppCollections {
     }
   }
 
-  static List<Chat> getChatsFromJsonList(List jsonList){
+  static String chatTypeToString(ChatType type) {
+    switch (type) {
+      case ChatType.text:
+        return 'text';
+      case ChatType.sticker:
+        return 'sticker';
+      case ChatType.video:
+        return 'video';
+      case ChatType.gif:
+        return 'gif';
+      case ChatType.voice:
+        return 'voice';
+      case ChatType.account:
+        return 'account';
+      case ChatType.action:
+        return 'action';
+      case ChatType.doc:
+        return 'doc';
+      case ChatType.photo:
+        return 'photo';
+      default:
+        return 'updateRequired';
+    }
+  }
+
+  static List<Chat> getChatsFromJsonList(List jsonList) {
     return jsonList.map((e) => Chat.fromJson(e)).toList();
   }
 
@@ -57,36 +82,37 @@ class Chat extends AppCollections {
       ..id = json['_id']
       ..chatNumberId = json['id']
       ..user = User.fromJson(json['user'])
-      ..roomId = json['room']
+      ..room = json['room']
       ..text = json['text']
-      ..fileUrl = json['removed']
+      ..deleted = json['deleted']
+      ..fileUrl = json['fileUrl']
       ..utcDate = utcDateLocal
       ..type = chatTypeFromText(json['type'])
       ..edited = json['edited']
-      ..replyId = json['replyId'];
-  }
-
-  Future<void> save() async {
-    await _chatBox.put(id, toSaveFormat());
-  }
-
-  User? populateUser(){
-    final user = _chatBox.get(id);
-    if(user != null){
-      return User.fromJson(user);
-    }
-    return null;
+      ..replyId =
+          json['replyId'] == null ? null : Chat.fromJson(json['replayId'])
+      ..version = json['__v'];
   }
 
   @override
-  Future<Map<String, dynamic>> toSaveFormat() async {
-
+  Map<String, dynamic> toSaveFormat() {
     return {
       '_id': id,
-
+      'id': chatNumberId,
+      'user': user,
+      'room': room,
+      'text': text,
+      'fileUrl': fileUrl,
+      'utcDate': utcDate.toString(),
+      'type': chatTypeToString(type!),
+      'edited': edited,
+      'deleted': deleted,
+      'replyId': replyId,
+      '__v': version,
     };
   }
 }
+
 enum ChatType {
   text,
   sticker,

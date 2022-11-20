@@ -7,36 +7,34 @@ import 'app_collection.dart';
 import 'room_member.dart';
 
 class Room extends AppCollections {
-
   String? id;
   String? roomName;
   DateTime? changeAt;
   DateTime? createAt;
-  bool? removed;
+  bool? deleted;
   List<RoomMember> members = [];
   RoomType? roomType;
   Chat? lastChat;
   String? roomImage;
-  SavableList<Chat> chatList = SavableList(collection: 'chat');
+  List<Chat> chatList = [];
   int? lastIndex;
   int minViewPortSeenIndex = 0;
 
   bool newRoomToGenerate = false;
   bool reachedToEnd = false;
 
-
   Room();
 
   factory Room.fromJson(Map json) {
     DateTime? createAtLocal;
     DateTime? changeAtLocal;
-    if(json['createAt'] != null){
+    if (json['createAt'] != null) {
       DateTime createAtUtc = DateTime.parse(json['createAt']);
       createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
           .parse(createAtUtc.toString(), true)
           .toLocal();
     }
-    if(json['changeAt'] != null){
+    if (json['changeAt'] != null) {
       DateTime changeAtUtc = DateTime.parse(json['changeAt']);
       changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
           .parse(changeAtUtc.toString(), true)
@@ -49,46 +47,47 @@ class Room extends AppCollections {
       ..lastIndex = json['property']['lastIndex']
       ..changeAt = changeAtLocal
       ..createAt = createAtLocal
-      ..removed = json['removed']
-      ..members = (json['members'] as List)
-          .map((member) {
-            var roomMember = RoomMember.fromJson(member);
-            return roomMember;
-      })
-          .toList()
+      ..deleted = json['deleted']
+      ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
+      ..members = (json['members'] as List).map((member) {
+        var roomMember = RoomMember.fromJson(member);
+        return roomMember;
+      }).toList()
       ..roomType = _RoomUtils.roomTypeFromText(json['roomType'])
-      ..lastChat = json['lastChat'] == null ? null : Chat.fromJson(json['lastChat'])
-      ..roomImage = json['roomImage']
-    ;
+      ..lastChat =
+          json['lastChat'] == null ? null : Chat.fromJson(json['lastChat'])
+      ..roomImage = json['roomImage'];
   }
 
   @override
-  Future<Map<String, dynamic>> toSaveFormat() async => {
-      '_id': id,
-      'roomName': roomName,
-      'changeAt': changeAt.toString(),
-      'createAt': createAt.toString(),
-      'removed': removed,
-      'members': members,
-      'roomType': _RoomUtils.roomTypeToString(roomType!),
-      'lastChat': lastChat?.toSaveFormat(),
-      'roomImage': roomImage,
-      'lastIndex': lastIndex,
-      'minViewPortSeenIndex': minViewPortSeenIndex,
-  };
+  Map<String, dynamic> toSaveFormat() => {
+        '_id': id,
+        'roomName': roomName,
+        'changeAt': changeAt.toString(),
+        'createAt': createAt.toString(),
+        'deleted': deleted,
+        'members': members,
+        'roomType': _RoomUtils.roomTypeToString(roomType!),
+        'lastChat': lastChat?.toSaveFormat(),
+        'roomImage': roomImage,
+        'property': {'lastIndex': lastIndex},
+        'minViewPortSeenIndex': minViewPortSeenIndex,
+      };
 
-  static populateRoomFields(Room room, User myAccount) => _RoomUtils.populateRoomFields(room, myAccount);
-  static generateProfileImageByName(Room room) => _RoomUtils.generateProfileImageByName(room);
+  static populateRoomFields(Room room, User myAccount) =>
+      _RoomUtils.populateRoomFields(room, myAccount);
+
+  static generateProfileImageByName(Room room) =>
+      _RoomUtils.generateProfileImageByName(room);
 }
-
 
 enum RoomType { pvUser, publicGroup, pvGroup, channel, updateRequired }
 
-class _RoomUtils{
-
+class _RoomUtils {
   static List<Room> roomsFromJson(List jsonList) {
     return (jsonList).map((e) => Room.fromJson(e)).toList();
   }
+
   static Widget generateProfileImageByName(Room room) {
     String name = room.roomName ?? 'guest';
     String family = '';
@@ -102,8 +101,8 @@ class _RoomUtils{
   static populateRoomFields(Room room, User myAccount) {
     switch (room.roomType) {
       case RoomType.pvUser:
-
-        if(room.members![0].user!.id == myAccount.id && room.members![1].user!.id == myAccount.id){
+        if (room.members![0].user!.id == myAccount.id &&
+            room.members![1].user!.id == myAccount.id) {
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
           room.roomType = RoomType.pvUser;
@@ -117,19 +116,19 @@ class _RoomUtils{
         room.roomImage = friend.profileUrl;
         break;
       case RoomType.publicGroup:
-      // TODO: Handle this case.
+        // TODO: Handle this case.
         break;
       case RoomType.pvGroup:
-      // TODO: Handle this case.
+        // TODO: Handle this case.
         break;
       case RoomType.channel:
-      // TODO: Handle this case.
+        // TODO: Handle this case.
         break;
-      default:{
-
-      }
+      default:
+        {}
     }
   }
+
   static RoomType roomTypeFromText(String type) {
     switch (type) {
       case 'pvUser':
@@ -143,8 +142,8 @@ class _RoomUtils{
     }
     return RoomType.updateRequired;
   }
-  static String roomTypeToString(RoomType roomType){
 
+  static String roomTypeToString(RoomType roomType) {
     switch (roomType) {
       case RoomType.pvUser:
         return 'pvUser';
@@ -159,5 +158,4 @@ class _RoomUtils{
         return 'updateRequired';
     }
   }
-
 }

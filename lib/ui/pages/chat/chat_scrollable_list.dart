@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -16,7 +17,6 @@ class ChatScrollableList extends StatefulWidget {
 }
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
-
   int? minInitIndex;
 
   @override
@@ -28,7 +28,6 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
 
   @override
   Widget build(BuildContext context) {
-
     final chatProvider = context.watch<ChatProvider>();
 
     return ScrollablePositionedList.builder(
@@ -44,7 +43,6 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     );
   }
 
-
   Widget chatItem(BuildContext context, int index) {
     double _width = MediaQuery.of(context).size.width;
 
@@ -52,7 +50,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
 
     Room room = chatProvider.selectedRoom!;
 
-    Chat? chat = room.chatList.get(index);
+    Chat? chat = room.chatList[index];
 
     bool fromMyAccount = chat.user!.id == chatProvider.auth!.myUser!.id;
     bool previousChatFromUser = false;
@@ -60,22 +58,18 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     bool middleChatFromUser = false;
 
     try {
-      previousChatFromUser = (room.chatList.get(index - 1).user!.id ==
-          chatProvider.auth!.myUser!.id) ==
+      previousChatFromUser = (room.chatList[index - 1].user!.id ==
+              chatProvider.auth!.myUser!.id) ==
           fromMyAccount;
-      nextChatFromUser = (room.chatList.get(index - 1).user!.id ==
-          chatProvider.auth!.myUser!.id) ==
+      nextChatFromUser = (room.chatList[index - 1].user!.id ==
+              chatProvider.auth!.myUser!.id) ==
           fromMyAccount;
       middleChatFromUser = (previousChatFromUser && nextChatFromUser);
-      // ignore: empty_catches
-    } catch (e) {}
-    // if (kDebugMode) {
-    //   print('--- ( $index ) -------------------------');
-    //   print('fromMyAccount = $fromMyAccount');
-    //   print('previusChatFromUser = $previusChatFromUser');
-    //   print('nextChatFromUser = $nextChatFromUser');
-    //   print('middleChatFromUser = $middleChatFromUser');
-    // }
+    } catch (e) {
+      if (kDebugMode) {
+        print('chatItem in $index index exception : $e');
+      }
+    }
 
     return Container(
       padding: EdgeInsets.only(
@@ -84,17 +78,17 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
           bottom: middleChatFromUser
               ? 2
               : nextChatFromUser
-              ? 2
-              : previousChatFromUser
-              ? 2
-              : 16,
+                  ? 2
+                  : previousChatFromUser
+                      ? 2
+                      : 16,
           top: middleChatFromUser
               ? 2
               : previousChatFromUser
-              ? 2
-              : nextChatFromUser
-              ? 2
-              : 16),
+                  ? 2
+                  : nextChatFromUser
+                      ? 2
+                      : 16),
       alignment: fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -109,16 +103,16 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                 child: nextChatFromUser
                     ? null
                     : Card(
-                  margin: EdgeInsets.zero,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  clipBehavior: Clip.antiAliasWithSaveLayer,
-                  child: Image.asset(
-                    'assets/images/p2.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                        margin: EdgeInsets.zero,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        clipBehavior: Clip.antiAliasWithSaveLayer,
+                        child: Image.asset(
+                          'assets/images/p2.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
               ),
             ),
           Container(

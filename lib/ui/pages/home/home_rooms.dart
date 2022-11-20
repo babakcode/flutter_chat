@@ -141,7 +141,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     Room room = chatProvider.
-                    rooms.get(index);
+                    rooms[index];
                     Room.populateRoomFields(room, chatProvider.auth!.myUser!);
 
                     return Padding(
