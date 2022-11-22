@@ -30,14 +30,11 @@ class _ChatPageState extends State<ChatPage> {
     ChatAppBarModel chatAppBarModel = ChatAppBarModel();
 
     if (chatProvider.selectedRoom != null) {
-      if (kDebugMode) {
-        print('----- roomId is ${chatProvider.selectedRoom!.id} ------');
-      }
       switch (chatProvider.selectedRoom!.roomType) {
         case RoomType.pvUser:
-          if (chatProvider.selectedRoom!.members![0].user!.id ==
+          if (chatProvider.selectedRoom!.members[0].user!.id ==
                   auth.myUser!.id &&
-              chatProvider.selectedRoom!.members![1].user!.id ==
+              chatProvider.selectedRoom!.members[1].user!.id ==
                   auth.myUser!.id) {
             chatAppBarModel
               ..roomName = 'my Messages'
@@ -46,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
             break;
           }
 
-          User friend = chatProvider.selectedRoom!.members!
+          User friend = chatProvider.selectedRoom!.members
               .firstWhere((element) => element.user!.id != auth.myUser!.id)
               .user!;
           chatAppBarModel
@@ -95,7 +92,14 @@ class _ChatPageState extends State<ChatPage> {
                 }
               },
               icon: const Icon(Icons.arrow_back_ios_rounded)),
-        title: Text(chatAppBarModel.roomName ?? 'guest'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(chatAppBarModel.roomName ?? 'guest'),
+            if(chatProvider.connectionStatus != null)
+              Text(chatProvider.connectionStatus!, style: const TextStyle(fontSize: 8),)
+          ],
+        ),
         actions: [
           IconButton(
               onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
@@ -125,55 +129,5 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ),
     );
-    //
-    // return AnimatedCrossFade(
-    //     firstChild: const Scaffold(
-    //       body: Center(child: AppText('please select chat room')),
-    //     ),
-    //     secondChild: Scaffold(
-    //         resizeToAvoidBottomInset: true,
-    //         appBar: AppBar(
-    //           leading: IconButton(
-    //               onPressed: () {
-    //                 if (Navigator.canPop(context)) {
-    //                   Navigator.pop(context);
-    //                 } else {
-    //                   chatProvider.deselectRoom();
-    //                 }
-    //               },
-    //               icon: const Icon(Icons.arrow_back_ios_rounded)),
-    //           title: Text(chatAppBarModel.roomName ?? 'guest'),
-    //           actions: [
-    //             IconButton(
-    //                 onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
-    //           ],
-    //         ),
-    //         body: SingleChildScrollView(
-    //           reverse: true,
-    //           controller: ScrollController(),
-    //           physics: const NeverScrollableScrollPhysics(),
-    //           // physics: const ClampingScrollPhysics(),
-    //           child: Column(
-    //             mainAxisAlignment: MainAxisAlignment.end,
-    //             crossAxisAlignment: CrossAxisAlignment.end,
-    //             children: [
-    //               Container(
-    //                 alignment: Alignment.bottomCenter,
-    //                 height: MediaQuery.of(context).size.height -
-    //                     64 -
-    //                     AppBar().preferredSize.height -
-    //                     _bottomNavigationBarHeight,
-    //                 child: const ChatScrollableList(),
-    //               ),
-    //               ChatBottomNavComponent(
-    //                 room: chatProvider.selectedRoom!,
-    //               )
-    //             ],
-    //           ),
-    //         )),
-    //     crossFadeState: chatProvider.selectedRoom == null
-    //         ? CrossFadeState.showFirst
-    //         : CrossFadeState.showSecond,
-    //     duration: Duration(milliseconds: 1000));
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import '../../../constants/app_constants.dart';
 import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
@@ -18,28 +19,55 @@ class ChatScrollableList extends StatefulWidget {
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
   int? minInitIndex;
-
   @override
   void initState() {
     super.initState();
-    final chatProvider = context.read<ChatProvider>();
-    minInitIndex = chatProvider.selectedRoom?.minViewPortSeenIndex;
+    _chatProvider = context.read<ChatProvider>();
+    minInitIndex = _chatProvider!.selectedRoom?.minViewPortSeenIndex;
+    _selectedRoom = _chatProvider!.selectedRoom!;
+  }
+
+  ChatProvider? _chatProvider;
+  late Room _selectedRoom;
+
+  @override
+  void dispose() {
+    _chatProvider!.saveLastViewPortSeenIndex(_selectedRoom);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
 
-    return ScrollablePositionedList.builder(
-      padding: const EdgeInsets.only(top: 100),
-      shrinkWrap: true,
-      scrollDirection: Axis.vertical,
-      itemScrollController: chatProvider.itemScrollController,
-      addAutomaticKeepAlives: true,
-      initialScrollIndex: minInitIndex ?? 0,
-      itemPositionsListener: chatProvider.itemPositionsListener,
-      itemCount: chatProvider.selectedRoom!.chatList.length,
-      itemBuilder: chatItem,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: ScrollablePositionedList.builder(
+              padding: const EdgeInsets.only(top: 100),
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              itemScrollController: chatProvider.itemScrollController,
+              addAutomaticKeepAlives: true,
+              initialScrollIndex: minInitIndex ?? 0,
+              itemPositionsListener: chatProvider.itemPositionsListener,
+              itemCount: chatProvider.selectedRoom!.chatList.length,
+              itemBuilder: chatItem,
+            ),
+          ),
+        ),
+        if (chatProvider.loadingLoadMore)
+          SizedBox(
+            child: LinearProgressIndicator(
+              backgroundColor: AppConstants.blueAccent,
+            ),
+            width: 80,
+          ),
+      ],
     );
   }
 

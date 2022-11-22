@@ -36,6 +36,6 @@ class Auth extends ChangeNotifier {
         (route) => false);
   }
 
-  Future<void> setLastGroupLoadedDate(set) async =>
+  Future<void> setLastGroupLoadedDate(String set) async =>
       await me.put('lastGroupLoadedDate', set);
 }

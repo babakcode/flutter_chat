@@ -50,17 +50,15 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           controller: ScrollController(),
           physics: const BouncingScrollPhysics(),
           slivers: [
-
-
             SliverAppBar(
               pinned: true,
-              title: const Text('Chats'),
+              title: Text(chatProvider.connectionStatus ?? 'Chats'),
               leading: _width < 960
                   ? IconButton(
-                  tooltip: 'open navigation menu',
-                  onPressed: () =>
-                      _roomScaffoldKey.currentState?.openDrawer(),
-                  icon: const Icon(Icons.more_vert_rounded))
+                      tooltip: 'open navigation menu',
+                      onPressed: () =>
+                          _roomScaffoldKey.currentState?.openDrawer(),
+                      icon: const Icon(Icons.more_vert_rounded))
                   : null,
               actions: [
                 IconButton(
@@ -70,58 +68,60 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   icon: const Icon(Icons.search_rounded),
                 ),
               ],
-
-              bottom: !globalSettingProvider.showSecurityRecoveryPhrase ? null : PreferredSize(
-                child: AppBar(
-                  backgroundColor: globalSettingProvider.isDarkTheme
-                      ? AppConstants.textColor[800]
-                      : const Color(0xFFCFE9F8),
-                  leading: const SizedBox(),
-                  automaticallyImplyLeading: true,
-                  leadingWidth: 0,
-                  toolbarHeight: 60,
-                  title: const Text('Get recovery phrase'),
-                  actions: [
-                    IconButton(
-                      onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => const SecurityPage())),
-                      icon: Stack(
-                        children: const [
-                          Icon(Icons.security_rounded),
-                          PhloxAnimations(
-                            loop: true,
-                            duration: Duration(seconds: 1),
-                            fromOpacity: .1,
-                            toOpacity: 1,
-                            child: Icon(
-                              Icons.circle,
-                              size: 10,
-                              color: Colors.blue,
+              bottom: !globalSettingProvider.showSecurityRecoveryPhrase
+                  ? null
+                  : PreferredSize(
+                      child: AppBar(
+                        backgroundColor: globalSettingProvider.isDarkTheme
+                            ? AppConstants.textColor[800]
+                            : const Color(0xFFCFE9F8),
+                        leading: const SizedBox(),
+                        automaticallyImplyLeading: true,
+                        leadingWidth: 0,
+                        toolbarHeight: 60,
+                        title: const Text('Get recovery phrase'),
+                        actions: [
+                          IconButton(
+                            onPressed: () => Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                    builder: (context) =>
+                                        const SecurityPage())),
+                            icon: Stack(
+                              children: const [
+                                Icon(Icons.security_rounded),
+                                PhloxAnimations(
+                                  loop: true,
+                                  duration: Duration(seconds: 1),
+                                  fromOpacity: .1,
+                                  toOpacity: 1,
+                                  child: Icon(
+                                    Icons.circle,
+                                    size: 10,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                          )
                         ],
+                        // bottom: PreferredSize(
+                        //   child: Container(
+                        //     height: 60,
+                        //     color: globalSettingProvider.isDarkTheme
+                        //         ? AppConstants.textColor[800]
+                        //         : AppConstants.textColor[100],
+                        //     child: const Padding(
+                        //       padding: EdgeInsets.all(8.0),
+                        //       child: Text("Save your account recovery phrase and do not share it with other accounts !!"),
+                        //     ),
+                        //   ),
+                        //   preferredSize: const Size.fromHeight(60),
+                        // ),
                       ),
-                    )
-                  ],
-                  // bottom: PreferredSize(
-                  //   child: Container(
-                  //     height: 60,
-                  //     color: globalSettingProvider.isDarkTheme
-                  //         ? AppConstants.textColor[800]
-                  //         : AppConstants.textColor[100],
-                  //     child: const Padding(
-                  //       padding: EdgeInsets.all(8.0),
-                  //       child: Text("Save your account recovery phrase and do not share it with other accounts !!"),
-                  //     ),
-                  //   ),
-                  //   preferredSize: const Size.fromHeight(60),
-                  // ),
-
-                ),
-                preferredSize: const Size.fromHeight(60),
-              ),
-
+                      preferredSize: const Size.fromHeight(60),
+                    ),
             ),
-
 
             // const SliverAppBar(
             //   backgroundColor: Colors.amber,
@@ -140,78 +140,15 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    Room room = chatProvider.
-                    rooms[index];
+                    Room room = chatProvider.rooms[index];
                     Room.populateRoomFields(room, chatProvider.auth!.myUser!);
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: ListTile(
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 10),
-                        leading: Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: SizedBox(
-                            height: 36,
-                            width: 36,
-                            child: room.roomImage == null
-                                ? Room.generateProfileImageByName(room)
-                                : Image.network(
-                                    room.roomImage!,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                        ),
-                        title: Row(
-                          children: [
-                            Text(
-                              room.roomName ?? 'guest',
-                              overflow: TextOverflow.ellipsis,
-                              softWrap: false,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                            ),
-                          ],
-                        ),
-                        subtitle: Row(
-                          children: [
-                            Text(
-                              (room.lastChat?.user?.name ?? '') + ' : ',
-                              overflow: TextOverflow.ellipsis,
-                              softWrap: false,
-                              style: const TextStyle(fontSize: 10),
-                              maxLines: 1,
-                            ),
-                            Expanded(
-                                child: Text(
-                              room.lastChat?.text ?? '',
-                              overflow: TextOverflow.ellipsis,
-                              softWrap: false,
-                              style: const TextStyle(fontSize: 12),
-                              maxLines: 1,
-                            )),
-                            Text(
-                              ' ${intl.DateFormat('HH:mm').format(room.changeAt ?? DateTime.now())} ',
-                              style: const TextStyle(fontSize: 10),
-                            )
-                          ],
-                        ),
-                        selectedTileColor: globalSettingProvider.isDarkTheme
-                            ? AppConstants.textColor[300]
-                            : AppConstants.scaffoldLightBackground,
-                        tileColor: GlobalSettingProvider.isPhonePortraitSize
-                            ? globalSettingProvider.isDarkTheme
-                                ? AppConstants.textColor[700]
-                                : AppConstants.scaffoldLightBackground
-                            : null,
-                        selected: GlobalSettingProvider.isPhonePortraitSize
-                            ? false
-                            : chatProvider.selectedRoom == room,
-                        minLeadingWidth: 30,
+                        title: _roomItemTitle(room),
+                        subtitle: _roomItemSubTitle(room),
+                        leading: _roomItemLeading(room),
                         onTap: () {
                           if (kDebugMode) {
                             print(_width);
@@ -224,14 +161,27 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                     builder: (context) => const ChatPage()));
                           }
                         },
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 10),
+                        selectedTileColor: globalSettingProvider.isDarkTheme
+                            ? AppConstants.textColor[300]
+                            : AppConstants.scaffoldLightBackground,
+                        tileColor: GlobalSettingProvider.isPhonePortraitSize
+                            ? globalSettingProvider.isDarkTheme
+                                ? AppConstants.textColor[700]
+                                : AppConstants.scaffoldLightBackground
+                            : null,
+                        selected: GlobalSettingProvider.isPhonePortraitSize
+                            ? false
+                            : chatProvider.selectedRoom == room,
+                        minLeadingWidth: 30,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     );
                   },
-                  childCount: chatProvider.
-                  rooms.length,
+                  childCount: chatProvider.rooms.length,
                 ),
               ),
             ),
@@ -510,4 +460,75 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
       ),
     );
   }
+
+  Widget _roomItemTitle(Room room) => Row(
+        children: [
+          Expanded(
+            child: Text(
+              room.roomName ?? 'guest',
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 1,
+            ),
+          ),
+
+          /// show not read chats count
+          if ((room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0) > 1)
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
+                child: Text(
+                  '${(room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ),
+        ],
+      );
+
+  Widget _roomItemSubTitle(Room room) => Row(
+        children: [
+          Text(
+            (room.lastChat?.user?.name ?? '') + ' : ',
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: const TextStyle(fontSize: 10),
+            maxLines: 1,
+          ),
+          Expanded(
+              child: Text(
+            room.lastChat?.text ?? '',
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: const TextStyle(fontSize: 12),
+            maxLines: 1,
+          )),
+          Text(
+            ' ${intl.DateFormat('HH:mm').format(room.changeAt ?? DateTime.now())} ',
+            style: const TextStyle(fontSize: 10),
+          )
+        ],
+      );
+
+  Widget _roomItemLeading(Room room) => Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        child: SizedBox(
+          height: 36,
+          width: 36,
+          child: room.roomImage == null
+              ? Room.generateProfileImageByName(room)
+              : Image.network(
+                  room.roomImage!,
+                  fit: BoxFit.cover,
+                ),
+        ),
+      );
 }

@@ -42,6 +42,7 @@ dependencies:
   qr_code_scanner: ^1.0.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  custom_pop_up_menu: ^1.2.4
 
 dev_dependencies:
   flutter_test:

@@ -22,6 +22,7 @@ class Room extends AppCollections {
 
   bool newRoomToGenerate = false;
   bool reachedToEnd = false;
+  bool reachedToStart = false;
 
   Room();
 
@@ -31,13 +32,13 @@ class Room extends AppCollections {
     if (json['createAt'] != null) {
       DateTime createAtUtc = DateTime.parse(json['createAt']);
       createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
-          .parse(createAtUtc.toString(), true)
+          .parse(createAtUtc.toString(), false)
           .toLocal();
     }
     if (json['changeAt'] != null) {
       DateTime changeAtUtc = DateTime.parse(json['changeAt']);
       changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
-          .parse(changeAtUtc.toString(), true)
+          .parse(changeAtUtc.toString(), false)
           .toLocal();
     }
 
@@ -84,9 +85,6 @@ class Room extends AppCollections {
 enum RoomType { pvUser, publicGroup, pvGroup, channel, updateRequired }
 
 class _RoomUtils {
-  static List<Room> roomsFromJson(List jsonList) {
-    return (jsonList).map((e) => Room.fromJson(e)).toList();
-  }
 
   static Widget generateProfileImageByName(Room room) {
     String name = room.roomName ?? 'guest';
@@ -101,15 +99,15 @@ class _RoomUtils {
   static populateRoomFields(Room room, User myAccount) {
     switch (room.roomType) {
       case RoomType.pvUser:
-        if (room.members![0].user!.id == myAccount.id &&
-            room.members![1].user!.id == myAccount.id) {
+        if (room.members[0].user!.id == myAccount.id &&
+            room.members[1].user!.id == myAccount.id) {
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
           room.roomType = RoomType.pvUser;
           break;
         }
 
-        User friend = room.members!
+        User friend = room.members
             .firstWhere((element) => element.user!.id != myAccount.id)
             .user!;
         room.roomName = friend.name;

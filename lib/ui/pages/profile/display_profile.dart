@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_babakcode/constants/config.dart';
+import 'package:chat_babakcode/models/user.dart';
 import 'package:flutter/material.dart';
 import '../../../services/request_manager.dart';
-import '/models/model_user.dart';
 
 class DisplayProfilePage extends StatelessWidget {
-  final ModelUser user;
+  final User user;
   final String tag;
 
   const DisplayProfilePage({Key? key, required this.user, required this.tag}) : super(key: key);
@@ -30,34 +30,26 @@ class DisplayProfilePage extends StatelessWidget {
                     margin: const EdgeInsets.all(5),
                     clipBehavior: Clip.antiAliasWithSaveLayer,
                     shape: const CircleBorder(),
-                    child: user.imgUrl != null
+                    child: user.profileUrl != null
                         ? CachedNetworkImage(
                             fit: BoxFit.cover,
                             errorWidget: (context, error, stackTrace) {
                               return const Center();
                             },
                             imageUrl:
-                                '${AppConfig.baseUrl}/${user.imgUrl}')
+                                '${AppConfig.baseUrl}/${user.profileUrl}')
                         : const Icon(Icons.person),
                   ),
                 ),
               ),
             ),
             ListTile(
-              title: Text('@' + user.username),
+              title: Text('@' + (user.username ?? '')),
               subtitle: const Text('id'),
             ),
             ListTile(
-              title: Text(user.fullName ?? 'empty'),
+              title: Text(user.name ?? 'empty'),
               subtitle: const Text('full name'),
-            ),
-            ListTile(
-              title: Text(user.expert ?? 'empty'),
-              subtitle: const Text('expert'),
-            ),
-            ListTile(
-              title: Text(user.medicalCouncilNo ?? 'empty'),
-              subtitle: const Text('medical Council No.'),
             ),
           ],
         ),

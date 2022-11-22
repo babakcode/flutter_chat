@@ -2,6 +2,7 @@ import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
 import 'package:chat_babakcode/ui/pages/home/home_rooms.dart';
+import 'package:chat_babakcode/utils/hive_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -23,12 +24,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     chatProvider = context.read<ChatProvider>();
-    // chatProvider?.clearRoomsList();
-    chatProvider?.getAllRooms();
-
-    chatProvider?.socket
-      ?..auth = {'token': chatProvider?.auth?.accessToken}
-      ..connect();
+    chatProvider?.connectSocket();
   }
 
   @override

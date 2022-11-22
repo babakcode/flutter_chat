@@ -1,15 +1,7 @@
-import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
-import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
-import '../models/room.dart';
+
 import '../models/user.dart';
-import '../services/request_manager.dart';
-import '/main.dart';
-import '/models/model_user.dart';
 
 class SearchUserProvider extends ChangeNotifier {
   ChatProvider? chatProvider;
