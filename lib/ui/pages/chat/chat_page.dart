@@ -2,7 +2,6 @@ import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_bottom_nav.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../models/chat_appbar_model.dart';
@@ -10,6 +9,8 @@ import '../../../models/room.dart';
 import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
 import 'chat_scrollable_list.dart';
+
+const scrollPhysic = NeverScrollableScrollPhysics();
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -108,7 +109,7 @@ class _ChatPageState extends State<ChatPage> {
       body: chatProvider.selectedRoom == null ? const Center(child: AppText('please select chat room')) : SingleChildScrollView(
         reverse: true,
         controller: ScrollController(),
-        physics: const NeverScrollableScrollPhysics(),
+        physics: scrollPhysic,
         // physics: const ClampingScrollPhysics(),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,

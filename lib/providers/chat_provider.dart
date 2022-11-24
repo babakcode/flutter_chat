@@ -43,12 +43,10 @@ class ChatProvider extends ChangeNotifier {
       _hiveManager.updateLastIndexOfRoom(
           maxIndexOfChatListOnViewPort, selectedRoom);
       selectedRoom.lastIndex = maxIndexOfChatListOnViewPort;
-      print('saveLastViewPortSeenIndex (second if save)');
     }
   }
 
   void connectSocket() {
-
     setConnectionStatus = 'Connecting ...';
     // chatProvider?.clearRoomsList();
     // HiveManager.saveCancel = true;
@@ -79,9 +77,10 @@ class ChatProvider extends ChangeNotifier {
     /// check keyboard appeared
     chatFocusNode.addListener(() {
       if (chatFocusNode.hasFocus) {
-        if (showSticker || emojiShowing) {
+        if (showSticker || showEmoji || showShareFile) {
           showSticker = false;
-          emojiShowing = false;
+          showShareFile = false;
+          showEmoji = false;
           notifyListeners();
         }
       }
@@ -100,10 +99,13 @@ class ChatProvider extends ChangeNotifier {
   }
 
   set setConnectionStatus(String? set) {
-    Future.delayed(const Duration(seconds: 1), () {
-      connectionStatus = set;
-      notifyListeners();
-    },);
+    Future.delayed(
+      const Duration(seconds: 1),
+      () {
+        connectionStatus = set;
+        notifyListeners();
+      },
+    );
   }
 
   String? connectionStatus;
@@ -112,6 +114,7 @@ class ChatProvider extends ChangeNotifier {
     if (selectedRoom == null) {
       return;
     }
+
     //
     // if (selectedRoom!.minViewPortSeenIndex != minIndexOfChatListOnViewPort) {
     //   // save on database
@@ -137,29 +140,38 @@ class ChatProvider extends ChangeNotifier {
                 .abs() <=
             3 &&
         !selectedRoom!.reachedToEnd &&
-        !loadingLoadMore &&
+        !loadingLoadMoreNext &&
         selectedRoom!.lastChat!.chatNumberId !=
             selectedRoom!.chatList.last.chatNumberId) {
       _loadMoreNext();
-    } else if (
-
+    } else if (minIndexOfChatListOnViewPort <= 3 &&
+        selectedRoom!.reachedToStart == false &&
         /// load more (previous) chats
         ///
         /// change reachedToStart to true when the chat list empty after request
         selectedRoom!.chatList.isNotEmpty &&
-            selectedRoom!.chatList.first.chatNumberId != 1 &&
-            minIndexOfChatListOnViewPort == 0 &&
-            !selectedRoom!.reachedToStart &&
-            !loadingLoadMore) {
-      // _loadMorePrevious();
+        minIndexOfChatListOnViewPort == 0 &&
+        !selectedRoom!.reachedToStart &&
+        !loadingLoadMorePrevious) {
+      _loadMorePrevious();
     }
   }
-
-  bool loadingLoadMore = false;
 
   void disconnectSocket() {
     socket.disconnect();
   }
+
+  TextEditingController chatController = TextEditingController();
+
+  bool showSendChat = false;
+
+  FocusNode chatFocusNode = FocusNode();
+
+  bool showShareFile = false;
+  bool showEmoji = false;
+  bool showSticker = false;
+  bool loadingLoadMoreNext = false;
+  bool loadingLoadMorePrevious = false;
 
   List<Room> rooms = [];
   final _hiveManager = HiveManager();
@@ -171,24 +183,78 @@ class ChatProvider extends ChangeNotifier {
       itemPositionsListener.itemPositions.value
           .where((ItemPosition position) => position.itemLeadingEdge < 1)
           .reduce((ItemPosition max, ItemPosition position) =>
-              position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
+      position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
           .index;
 
   int get minIndexOfChatListOnViewPort =>
       itemPositionsListener.itemPositions.value
           .where((ItemPosition position) => position.itemTrailingEdge > 0)
           .reduce((ItemPosition min, ItemPosition position) =>
-              position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
+      position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
           .index;
 
   Room? selectedRoom;
 
+
+
+
+
+
+
+
+  void emojiToggle() {
+    showEmoji = !showEmoji;
+    if (showEmoji) {
+      if (chatFocusNode.hasFocus) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      }
+
+      if (showSticker || showShareFile) {
+        showSticker = false;
+        showShareFile = false;
+      }
+    }
+    notifyListeners();
+  }
+
+  void shareFileToggle() {
+    showShareFile = !showShareFile;
+    if (showShareFile) {
+      if (chatFocusNode.hasFocus) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      }
+
+      if (showSticker || showEmoji) {
+        showSticker = false;
+        showEmoji = false;
+      }
+    }
+    notifyListeners();
+  }
+
+  void stickerToggle() {
+    showSticker = !showSticker;
+    if(showSticker){
+
+      if (chatFocusNode.hasFocus) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      }
+
+      if (showEmoji || showShareFile) {
+        showEmoji = false;
+        showShareFile = false;
+      }
+    }
+    notifyListeners();
+  }
+
+
   void searchRoomWith(
       {required String roomType,
-      required String searchType,
-      required String searchText,
-      required BuildContext context,
-      Function? callBack}) {
+        required String searchType,
+        required String searchText,
+        required BuildContext context,
+        Function? callBack}) {
     /// search from exist rooms
     /// then if not find room,
     /// search from server
@@ -200,10 +266,10 @@ class ChatProvider extends ChangeNotifier {
         .forEach((room) {
       if (room.members
           .where((element) =>
-              ((searchType == 'token')
-                  ? element.user!.publicToken
-                  : element.user?.username) ==
-              searchText)
+      ((searchType == 'token')
+          ? element.user!.publicToken
+          : element.user?.username) ==
+          searchText)
           .isNotEmpty) {
         /// room found
         selectedRoom = room;
@@ -262,30 +328,9 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  TextEditingController chatController = TextEditingController();
 
-  bool showSendChat = false;
 
-  FocusNode chatFocusNode = FocusNode();
 
-  bool emojiShowing = false;
-  bool showSticker = false;
-
-  void emojiToggle() {
-    emojiShowing = !emojiShowing;
-    if (emojiShowing) {
-      if (chatFocusNode.hasFocus) {
-        FocusManager.instance.primaryFocus?.unfocus();
-      }
-
-      if (showSticker) {
-        showSticker = false;
-      }
-    }
-    notifyListeners();
-  }
-
-  void stickerToggle() {}
 
   void sendText(Room room) {
     if (chatController.text.isEmpty) {
@@ -376,7 +421,8 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
 
         /// save chats
-        _hiveManager.saveChats(rooms[indexOfRoom].chatList);
+        _hiveManager.saveChats(
+            rooms[indexOfRoom].chatList, rooms[indexOfRoom].id!);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -392,7 +438,7 @@ class ChatProvider extends ChangeNotifier {
     try {
       if (data['success']) {
         final _rooms = data['rooms'] as List;
-          setConnectionStatus = _rooms.isNotEmpty ? 'Updating ...' : null;
+        setConnectionStatus = _rooms.isNotEmpty ? 'Updating ...' : null;
         for (Map room in _rooms) {
           if (rooms.where((element) => element.id == room['_id']).isEmpty) {
             rooms.add(Room.fromJson(room));
@@ -421,6 +467,8 @@ class ChatProvider extends ChangeNotifier {
       Chat chat = Chat.fromJson(data['chat']);
 
       int indexOfRoom = rooms.indexWhere((element) => element.id == chat.room);
+
+      /// add the room to the local list if not exist
       if (indexOfRoom == -1) {
         /// request to get room details
         /// or insert from chat `room` property
@@ -431,17 +479,18 @@ class ChatProvider extends ChangeNotifier {
         /// after get room, update ``indexOfRoom``
         indexOfRoom = rooms.indexOf(room);
       }
+
+      /// get targetRoom from local list
       Room targetRoom = rooms[indexOfRoom];
       if (targetRoom.id == selectedRoom?.id) {
         selectedRoom = targetRoom;
       }
-      if (targetRoom.lastChat == null || targetRoom.chatList.isEmpty) {
+
+      /// check last chat of the target room
+      if (targetRoom.lastChat == null) {
         targetRoom.lastChat = chat;
 
         targetRoom.chatList.add(chat);
-
-        /// save chat
-        _hiveManager.saveChats([chat]);
       } else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
@@ -452,25 +501,46 @@ class ChatProvider extends ChangeNotifier {
                     .chatList[targetRoom.chatList.length - 1].chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
+        } else if (chat.user!.id == auth!.myUser!.id &&
+            !targetRoom.reachedToEnd) {
+          /// get the last 50 chats of the room if
+          /// the sender user is from our account
+          /// and we not reached to the end of target list
+          targetRoom.chatList.clear();
+          notifyListeners();
 
-          /// save chat
-          _hiveManager.saveChats([chat]);
-        } else {
-          if (chat.user!.id == auth!.myUser!.id && !targetRoom.reachedToEnd) {
-            /*
-           todo: get the last 50 chats of the room if
-            the sender user is from our account */
+          socket.emitWithAck('loadMorePrevious',
+              jsonEncode({'before': chat.chatNumberId, 'room': targetRoom.id}),
+              ack: (data) {
+            data = jsonDecode(data);
+            if (data['success']) {
+              final chatList = data['chats'] as List;
+              targetRoom.chatList =
+                  chatList.map((e) => Chat.fromJson(e)).toList();
+              targetRoom.chatList.add(chat);
+              targetRoom.chatList
+                  .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
 
-            // await get last 50 chats of group and
-            // return now
-          }
+              /// after add chat to chat list of the target room then
+              /// save chat
+              _hiveManager.saveChats(targetRoom.chatList, targetRoom.id!,
+                  clearSavedList: true);
+            } else {
+              Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+            }
+          });
         }
-
-        /// else just update the last chat of list
-        targetRoom.lastChat = chat;
-        targetRoom.changeAt = chat.utcDate;
-        auth!.setLastGroupLoadedDate(targetRoom.changeAt.toString());
       }
+
+      /// after add chat to chat list of the target room then
+      /// save chat
+      _hiveManager.saveChats([chat], targetRoom.id!);
+
+      /// else just update the last chat of list
+      targetRoom.lastChat = chat;
+      targetRoom.changeAt = chat.utcDate;
+      _hiveManager.updateRoom(targetRoom);
+      auth!.setLastGroupLoadedDate(targetRoom.changeAt.toString());
 
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 
@@ -483,7 +553,7 @@ class ChatProvider extends ChangeNotifier {
         itemScrollController.scrollTo(
             index: targetRoom.chatList.length - 1,
             duration: const Duration(milliseconds: 1000),
-            alignment: .4);
+            alignment: .3);
       }
       notifyListeners();
     } catch (e) {
@@ -528,7 +598,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> _loadMoreNext() async {
-    loadingLoadMore = true;
+    loadingLoadMoreNext = true;
     notifyListeners();
 
     socket.emitWithAck(
@@ -537,7 +607,7 @@ class ChatProvider extends ChangeNotifier {
             {'room': selectedRoom?.id, 'after': selectedRoom?.lastIndex}),
         ack: (res) {
       res = jsonDecode(res);
-      loadingLoadMore = false;
+      loadingLoadMoreNext = false;
       if (res['success']) {
         List<Chat> _receivedChats = [];
         for (var item in res['chats']) {
@@ -547,10 +617,10 @@ class ChatProvider extends ChangeNotifier {
           selectedRoom!.reachedToEnd = true;
         }
         selectedRoom!.chatList.addAll(_receivedChats);
-        notifyListeners();
-        _hiveManager.saveChats(_receivedChats);
+        _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
       }
       // notifyListeners();
+      notifyListeners();
       if (kDebugMode) {
         print(res);
       }
@@ -560,7 +630,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void _loadMorePrevious() {
-    loadingLoadMore = true;
+    loadingLoadMorePrevious = true;
     notifyListeners();
 
     socket.emitWithAck(
@@ -568,10 +638,24 @@ class ChatProvider extends ChangeNotifier {
         jsonEncode({
           'room': selectedRoom?.id,
           'before': selectedRoom?.chatList.first.chatNumberId
-        }), ack: (res) async {
-      await Future.delayed(Duration(seconds: 7));
-      loadingLoadMore = false;
+        }), ack: (res) {
+      res = jsonDecode(res);
+          loadingLoadMorePrevious = false;
+      if (res['success']) {
+        List<Chat> _receivedChats = [];
+        for (var item in res['chats']) {
+          _receivedChats.add(Chat.fromJson(item));
+        }
+        if (_receivedChats.isEmpty) {
+          selectedRoom!.reachedToStart = true;
+        }
+        selectedRoom!.chatList.addAll(_receivedChats);
+        selectedRoom!.chatList.sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
+        _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
+      }
       notifyListeners();
     });
   }
+
+  Future<void> clearDatabase() async => await _hiveManager.clear();
 }
