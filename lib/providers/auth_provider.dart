@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:chat_babakcode/main.dart';
 import 'package:chat_babakcode/models/user.dart';
+import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/ui/pages/splash/splash_page.dart';
 import 'package:chat_babakcode/utils/crypto_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 
 class Auth extends ChangeNotifier {
   final me = Hive.box('me');
@@ -29,7 +31,9 @@ class Auth extends ChangeNotifier {
   }
 
   Future<void> logOut() async {
-    await me.put('loggedIn', false);
+    await me.clear();
+    await navigatorKey.currentContext?.read<ChatProvider>().clearDatabase();
+
     Navigator.pushAndRemoveUntil(
         navigatorKey.currentContext!,
         MaterialPageRoute(builder: (context) => const SplashPage()),

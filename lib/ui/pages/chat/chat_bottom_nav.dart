@@ -3,13 +3,17 @@ import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:detectable_text_field/widgets/detectable_text_field.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/search_user_provider.dart';
+import '../../widgets/app_text.dart';
 
 class ChatBottomNavComponent extends StatelessWidget {
   final Room room;
@@ -19,9 +23,16 @@ class ChatBottomNavComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
-    final globalSetting = context.watch<GlobalSettingProvider>();
+    final globalSetting = context.read<GlobalSettingProvider>();
     final searchAtSignUserProvider = context.read<SearchUserProvider>();
 
+    var _width = MediaQuery.of(context).size.width;
+    if (_width > 960) {
+      _width -= 260;
+    }
+    if (_width > 600) {
+      _width -= 340;
+    }
     return Column(
       children: [
         false // check blocked
@@ -138,13 +149,8 @@ class ChatBottomNavComponent extends StatelessWidget {
                                     child: chatProvider.showSendChat
                                         ? null
                                         : IconButton(
-                                            onPressed: () {
-                                              // showDialog(
-                                              //     context: context,
-                                              //     builder: (c) {
-                                              //       return dialogSelectFile(c);
-                                              //     });
-                                            },
+                                            onPressed:
+                                                chatProvider.shareFileToggle,
                                             icon: const Icon(
                                                 Icons.attach_file_outlined)),
                                   ),
@@ -180,7 +186,7 @@ class ChatBottomNavComponent extends StatelessWidget {
                     ),
                   ),
                   Offstage(
-                    offstage: !chatProvider.emojiShowing,
+                    offstage: !chatProvider.showEmoji,
                     child: SizedBox(
                       height: 300,
                       child: EmojiPicker(
@@ -212,8 +218,372 @@ class ChatBottomNavComponent extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Offstage(
+                  //   offstage: !chatProvider.showShareFile,
+                  //   child: Column(
+                  //     mainAxisSize: MainAxisSize.min,
+                  //     children: [
+                  //       if(LoginProvider.platform == 'android' || LoginProvider.platform == 'ios') Padding(
+                  //           padding:
+                  //           const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  //           child: ListTile(
+                  //             contentPadding:
+                  //             const EdgeInsets.symmetric(horizontal: 10),
+                  //             leading: Card(
+                  //               elevation: 0,
+                  //               shape: RoundedRectangleBorder(
+                  //                   borderRadius: BorderRadius.circular(14)),
+                  //               clipBehavior: Clip.antiAliasWithSaveLayer,
+                  //               child: const SizedBox(
+                  //                   height: 36,
+                  //                   width: 36,
+                  //                   child: Icon(Icons.camera)),
+                  //             ),
+                  //             title: const AppText("Camera"),
+                  //             shape: RoundedRectangleBorder(
+                  //               borderRadius: BorderRadius.circular(20),
+                  //             ),
+                  //             minLeadingWidth: 30,
+                  //             onTap: () {},
+                  //             trailing:
+                  //             const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  //             tileColor: globalSetting.isDarkTheme
+                  //                 ? AppConstants.textColor[900]
+                  //                 : AppConstants.scaffoldLightBackground,
+                  //           ),),
+                  //       Padding(
+                  //         padding:
+                  //         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  //         child: ListTile(
+                  //           contentPadding:
+                  //           const EdgeInsets.symmetric(horizontal: 10),
+                  //           leading: Card(
+                  //             elevation: 0,
+                  //             shape: RoundedRectangleBorder(
+                  //                 borderRadius: BorderRadius.circular(14)),
+                  //             clipBehavior: Clip.antiAliasWithSaveLayer,
+                  //             child: const SizedBox(
+                  //                 height: 36,
+                  //                 width: 36,
+                  //                 child: Icon(Icons.camera)),
+                  //           ),
+                  //           title: const AppText("Image"),
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(20),
+                  //           ),
+                  //           minLeadingWidth: 30,
+                  //           onTap: () async {
+                  //
+                  //             FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  //               type: FileType.image,
+                  //               allowedExtensions: ['jpg', 'pdf', 'doc'],
+                  //             );
+                  //
+                  //           },
+                  //           trailing:
+                  //           const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  //           tileColor: globalSetting.isDarkTheme
+                  //               ? AppConstants.textColor[900]
+                  //               : AppConstants.scaffoldLightBackground,
+                  //         ),),
+                  //       Padding(
+                  //         padding:
+                  //         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  //         child: ListTile(
+                  //           contentPadding:
+                  //           const EdgeInsets.symmetric(horizontal: 10),
+                  //           leading: Card(
+                  //             elevation: 0,
+                  //             shape: RoundedRectangleBorder(
+                  //                 borderRadius: BorderRadius.circular(14)),
+                  //             clipBehavior: Clip.antiAliasWithSaveLayer,
+                  //             child: const SizedBox(
+                  //                 height: 36,
+                  //                 width: 36,
+                  //                 child: Icon(Icons.camera)),
+                  //           ),
+                  //           title: const AppText("Video"),
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(20),
+                  //           ),
+                  //           minLeadingWidth: 30,
+                  //           onTap: () async {
+                  //
+                  //             FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  //               type: FileType.video,
+                  //             );
+                  //
+                  //           },
+                  //           trailing:
+                  //           const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  //           tileColor: globalSetting.isDarkTheme
+                  //               ? AppConstants.textColor[900]
+                  //               : AppConstants.scaffoldLightBackground,
+                  //         ),),
+                  //       Padding(
+                  //         padding:
+                  //         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  //         child: ListTile(
+                  //           contentPadding:
+                  //           const EdgeInsets.symmetric(horizontal: 10),
+                  //           leading: Card(
+                  //             elevation: 0,
+                  //             shape: RoundedRectangleBorder(
+                  //                 borderRadius: BorderRadius.circular(14)),
+                  //             clipBehavior: Clip.antiAliasWithSaveLayer,
+                  //             child: const SizedBox(
+                  //                 height: 36,
+                  //                 width: 36,
+                  //                 child: Icon(Icons.camera)),
+                  //           ),
+                  //           title: const AppText("Audio"),
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(20),
+                  //           ),
+                  //           minLeadingWidth: 30,
+                  //           onTap: () async {
+                  //
+                  //             FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  //               type: FileType.audio,
+                  //             );
+                  //
+                  //           },
+                  //           trailing:
+                  //           const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  //           tileColor: globalSetting.isDarkTheme
+                  //               ? AppConstants.textColor[900]
+                  //               : AppConstants.scaffoldLightBackground,
+                  //         ),),
+                  //
+                  //       Padding(
+                  //         padding:
+                  //         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  //         child: ListTile(
+                  //           contentPadding:
+                  //           const EdgeInsets.symmetric(horizontal: 10),
+                  //           leading: Card(
+                  //             elevation: 0,
+                  //             shape: RoundedRectangleBorder(
+                  //                 borderRadius: BorderRadius.circular(14)),
+                  //             clipBehavior: Clip.antiAliasWithSaveLayer,
+                  //             child: const SizedBox(
+                  //                 height: 36,
+                  //                 width: 36,
+                  //                 child: Icon(Icons.camera)),
+                  //           ),
+                  //           title: const AppText("Document"),
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(20),
+                  //           ),
+                  //           minLeadingWidth: 30,
+                  //           onTap: () async {
+                  //
+                  //             FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  //               type: FileType.any,
+                  //             );
+                  //
+                  //           },
+                  //           trailing:
+                  //           const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                  //           tileColor: globalSetting.isDarkTheme
+                  //               ? AppConstants.textColor[900]
+                  //               : AppConstants.scaffoldLightBackground,
+                  //         ),),
+                  //
+                  //     ],
+                  //   ),
+                  // ),
+                  Offstage(
+                    offstage: !chatProvider.showShareFile,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                      child: MasonryGridView(
+                        shrinkWrap: true,
+                        gridDelegate:
+                            SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: _width ~/ 260),
+                        children: [
+                          if (LoginProvider.platform == 'android' ||
+                              LoginProvider.platform == 'ios')
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 5),
+                              child: ListTile(
+                                contentPadding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                leading: Card(
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14)),
+                                  clipBehavior: Clip.antiAliasWithSaveLayer,
+                                  child: const SizedBox(
+                                      height: 36,
+                                      width: 36,
+                                      child: Icon(Icons.camera)),
+                                ),
+                                title: const AppText("Camera"),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                minLeadingWidth: 30,
+                                onTap: () {},
+                                trailing: const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 16),
+                                tileColor: globalSetting.isDarkTheme
+                                    ? AppConstants.textColor[900]
+                                    : AppConstants.scaffoldLightBackground,
+                              ),
+                            ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 5),
+                            child: ListTile(
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              leading: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                                clipBehavior: Clip.antiAliasWithSaveLayer,
+                                child: const SizedBox(
+                                    height: 36,
+                                    width: 36,
+                                    child: Icon(Icons.image_rounded)),
+                              ),
+                              title: const AppText("Image"),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              minLeadingWidth: 30,
+                              onTap: () async {
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                  allowedExtensions: ['jpg', 'pdf', 'doc'],
+                                );
+                              },
+                              trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16),
+                              tileColor: globalSetting.isDarkTheme
+                                  ? AppConstants.textColor[900]
+                                  : AppConstants.scaffoldLightBackground,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 5),
+                            child: ListTile(
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              leading: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                                clipBehavior: Clip.antiAliasWithSaveLayer,
+                                child: const SizedBox(
+                                    height: 36,
+                                    width: 36,
+                                    child:
+                                        Icon(Icons.video_camera_back_rounded)),
+                              ),
+                              title: const AppText("Video"),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              minLeadingWidth: 30,
+                              onTap: () async {
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.video,
+                                );
+                              },
+                              trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16),
+                              tileColor: globalSetting.isDarkTheme
+                                  ? AppConstants.textColor[900]
+                                  : AppConstants.scaffoldLightBackground,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 5),
+                            child: ListTile(
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              leading: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                                clipBehavior: Clip.antiAliasWithSaveLayer,
+                                child: const SizedBox(
+                                    height: 36,
+                                    width: 36,
+                                    child: Icon(Icons.audio_file_rounded)),
+                              ),
+                              title: const AppText("Audio"),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              minLeadingWidth: 30,
+                              onTap: () async {
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.audio,
+                                );
+                              },
+                              trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16),
+                              tileColor: globalSetting.isDarkTheme
+                                  ? AppConstants.textColor[900]
+                                  : AppConstants.scaffoldLightBackground,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 5),
+                            child: ListTile(
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              leading: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14)),
+                                clipBehavior: Clip.antiAliasWithSaveLayer,
+                                child: const SizedBox(
+                                    height: 36,
+                                    width: 36,
+                                    child: Icon(Icons.attachment_rounded)),
+                              ),
+                              title: const AppText("Document"),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              minLeadingWidth: 30,
+                              onTap: () async {
+                                FilePickerResult? result =
+                                    await FilePicker.platform.pickFiles(
+                                  type: FileType.any,
+                                );
+                              },
+                              trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16),
+                              tileColor: globalSetting.isDarkTheme
+                                  ? AppConstants.textColor[900]
+                                  : AppConstants.scaffoldLightBackground,
+                            ),
+                          ),
+                        ],
+                        physics: const NeverScrollableScrollPhysics(),
+                      ),
+                    ),
+                  ),
                 ],
-              )
+              ),
       ],
     );
   }

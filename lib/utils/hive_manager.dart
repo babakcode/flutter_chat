@@ -12,9 +12,14 @@ class HiveManager {
   final _usersBox = Hive.box<Map>('user');
   final _chatsBox = Hive.box<Map>('chat');
 
-  Future<void> saveChats(List<Chat> chats) async {
+  Future<void> saveChats(List<Chat> chats,String room, {bool clearSavedList = false}) async {
     if(saveCancel) {
       return;
+    }
+    if(clearSavedList){
+      for( var item in _chatsBox.values.where((element) => element['room'] == room)){
+        await _chatsBox.delete(item['_id']);
+      }
     }
     for (var chat in chats) {
       if (chat.deleted!) {
@@ -108,7 +113,6 @@ class HiveManager {
     for (var savedRoom in _roomBox.values) {
       //#region change userIdes to user object
       for (var savedMember in (savedRoom['members'] as List)) {
-        print(savedMember);
         if (savedMember['user'] is String) {
           final foundUser = _usersBox.get(savedMember['user']);
           savedMember['user'] = foundUser;
@@ -172,5 +176,52 @@ class HiveManager {
       room['property']['lastIndex'] = lastIndex;
       _roomBox.put(room['_id'], room);
     }
+  }
+
+  void updateRoom(Room room)async {
+    /// check removed
+    if (room.deleted!) {
+      await _roomBox.delete(room.id!);
+    }
+    Map saveRoomItem = room.toSaveFormat();
+
+    /// convert members to array<Map> members
+    //#region members to map list
+    List<Map> arrayMembers = [];
+    for (var member in room.members) {
+      Map saveMemberMap = member.toSaveFormat();
+
+      /// check the user checked once or not
+      await _updateUserIfExist(member.user!);
+      saveMemberMap['user'] = member.user!.id!;
+      arrayMembers.add(saveMemberMap);
+    }
+    saveRoomItem['members'] = arrayMembers;
+    //#endregion
+
+    /// change user to map
+    //#region user to Map
+    if (room.lastChat != null) {
+      await _updateUserIfExist(room.lastChat!.user!);
+      // print(saveRoomItem['lastChat']);
+      saveRoomItem['lastChat']['user'] = room.lastChat!.user!.id;
+    }
+    //#endregion
+
+    if (kDebugMode) {
+      print('-------[saveRoomItem]- start -----');
+      print(saveRoomItem);
+    }
+    await _roomBox.put(room.id, saveRoomItem);
+    if (kDebugMode) {
+      print('saved successfully');
+      print('-------[saveRoomItem]- end -----');
+    }
+  }
+
+  Future clear() async{
+    await _chatsBox.clear();
+    await _roomBox.clear();
+    await _usersBox.clear();
   }
 }

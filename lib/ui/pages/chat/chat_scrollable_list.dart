@@ -2,13 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
 import '../../../constants/app_constants.dart';
 import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
-import 'chat_text_item.dart';
+import 'app_text_item.dart';
 
 class ChatScrollableList extends StatefulWidget {
   const ChatScrollableList({Key? key}) : super(key: key);
@@ -19,11 +18,12 @@ class ChatScrollableList extends StatefulWidget {
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
   int? minInitIndex;
+
   @override
   void initState() {
     super.initState();
     _chatProvider = context.read<ChatProvider>();
-    minInitIndex = _chatProvider!.selectedRoom?.minViewPortSeenIndex;
+    minInitIndex = _chatProvider!.selectedRoom!.minViewPortSeenIndex;
     _selectedRoom = _chatProvider!.selectedRoom!;
   }
 
@@ -42,13 +42,21 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (chatProvider.loadingLoadMorePrevious)
+          SizedBox(
+            child: LinearProgressIndicator(
+              backgroundColor: AppConstants.blueAccent,
+            ),
+            width: 80,
+          ),
         Expanded(
           child: Align(
             alignment: Alignment.bottomCenter,
             child: ScrollablePositionedList.builder(
               padding: const EdgeInsets.only(top: 100),
+              physics: const ClampingScrollPhysics(),
               shrinkWrap: true,
               scrollDirection: Axis.vertical,
               itemScrollController: chatProvider.itemScrollController,
@@ -60,7 +68,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
             ),
           ),
         ),
-        if (chatProvider.loadingLoadMore)
+        if (chatProvider.loadingLoadMoreNext)
           SizedBox(
             child: LinearProgressIndicator(
               backgroundColor: AppConstants.blueAccent,
@@ -86,12 +94,16 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     bool middleChatFromUser = false;
 
     try {
-      previousChatFromUser = (room.chatList[index - 1].user!.id ==
-              chatProvider.auth!.myUser!.id) ==
-          fromMyAccount;
-      nextChatFromUser = (room.chatList[index - 1].user!.id ==
-              chatProvider.auth!.myUser!.id) ==
-          fromMyAccount;
+      if(index != 0){
+        previousChatFromUser = (room.chatList[index - 1].user!.id ==
+            chatProvider.auth!.myUser!.id) ==
+            fromMyAccount;
+      }
+      if(index != (room.chatList.length - 1)){
+        nextChatFromUser = (room.chatList[index + 1].user!.id ==
+            chatProvider.auth!.myUser!.id) ==
+            fromMyAccount;
+      }
       middleChatFromUser = (previousChatFromUser && nextChatFromUser);
     } catch (e) {
       if (kDebugMode) {
@@ -150,7 +162,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
             ),
 
             ///
-            child: ChatTextItem(index, fromMyAccount, previousChatFromUser,
+            child: AppChatItem(index, fromMyAccount, previousChatFromUser,
                 nextChatFromUser, middleChatFromUser),
           ),
         ],
