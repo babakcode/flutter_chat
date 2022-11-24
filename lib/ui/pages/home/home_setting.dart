@@ -1,6 +1,7 @@
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
 import 'package:chat_babakcode/ui/pages/qr_code/qr_page.dart';
 import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
@@ -49,8 +50,13 @@ class HomeSettingComponent extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+                MaterialButton(
+                  clipBehavior: Clip.antiAliasWithSaveLayer,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage(),)),
                   child: Image.asset(
                     'assets/images/p1.jpg',
                     height: 100,
