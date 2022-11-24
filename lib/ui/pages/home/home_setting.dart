@@ -56,7 +56,7 @@ class HomeSettingComponent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage(),)),
+                  onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => const ProfilePage(),)),
                   child: Image.asset(
                     'assets/images/p1.jpg',
                     height: 100,
