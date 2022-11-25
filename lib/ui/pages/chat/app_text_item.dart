@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
@@ -47,24 +50,45 @@ class AppChatItem extends StatelessWidget {
     Chat chat = room.chatList[index];
 
     return Container(
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         borderRadius: borders,
         color: globalSettingProvider.isDarkTheme
             ? fromMyAccount
-                ? AppConstants.textColor[700]
-                : AppConstants.textColor[300]
+            ? AppConstants.textColor[700]
+            : AppConstants.textColor[300]
             : fromMyAccount
-                ? AppConstants.textColor[50]
-                : AppConstants.textColor[200],
+            ? AppConstants.textColor[50]
+            : AppConstants.textColor[200],
       ),
-      // padding: const EdgeInsets.all(12),
-      child: chat.type == ChatType.text
-          ? _itemText(context, fromMyAccount, index)
-          : chat.type == ChatType.photo
-              ? _itemPhoto(context, fromMyAccount, index)
-              : chat.type == ChatType.voice
-                  ? _itemVoice(context, fromMyAccount, index)
-                  : _itemUpdateRequired(context, fromMyAccount, index),
+      child: Container(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        decoration: BoxDecoration(
+          borderRadius: borders,
+          // border: Border.all(width: 12, color: globalSettingProvider.isDarkTheme
+          //     ? fromMyAccount
+          //     ? AppConstants.textColor[700]!
+          //     : AppConstants.textColor[300]!
+          //     : fromMyAccount
+          //     ? AppConstants.textColor[50]!
+          //     : AppConstants.textColor[200]!,),
+          color: globalSettingProvider.isDarkTheme
+              ? fromMyAccount
+                  ? AppConstants.textColor[700]
+                  : AppConstants.textColor[300]
+              : fromMyAccount
+                  ? AppConstants.textColor[50]
+                  : AppConstants.textColor[200],
+        ),
+        // padding: const EdgeInsets.all(12),
+        child: chat.type == ChatType.text
+            ? _itemText(context, fromMyAccount, index)
+            : chat.type == ChatType.photo
+                ? _itemPhoto(context, fromMyAccount, index)
+                : chat.type == ChatType.voice
+                    ? _itemVoice(context, fromMyAccount, index)
+                    : _itemUpdateRequired(context, fromMyAccount, index),
+      ),
     );
   }
 }

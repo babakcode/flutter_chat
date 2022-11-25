@@ -352,10 +352,11 @@ class ChatProvider extends ChangeNotifier {
     }
     socket.emitWithAck('sendChat', data, ack: (data) {
       if (kDebugMode) {
-        print(data);
+        print('sendChat ack res: $data');
       }
       if (data['success']) {
         chatController.clear();
+        _receiveChatEvent(data['data']);
         notifyListeners();
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
@@ -382,6 +383,10 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void changeSelectedRoom(Room room) async {
+    if(selectedRoom == room){
+      return;
+    }
+
     if (GlobalSettingProvider.isPhonePortraitSize) {
       selectedRoom = room;
       notifyListeners();
@@ -658,4 +663,10 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> clearDatabase() async => await _hiveManager.clear();
+
+  Future sendFile(Uint8List bytes) async {
+    Chat chat = Chat()..fileUrl = bytes.toString()..type = ChatType.photo..user = auth?.myUser;
+    selectedRoom?.chatList.add(chat);
+    notifyListeners();
+  }
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chat_babakcode/constants/app_constants.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/models/user.dart';
@@ -460,8 +462,16 @@ class ChatBottomNavComponent extends StatelessWidget {
                                 FilePickerResult? result =
                                     await FilePicker.platform.pickFiles(
                                   type: FileType.image,
-                                  allowedExtensions: ['jpg', 'pdf', 'doc'],
+                                  // allowedExtensions: ['jpg', 'pdf', 'doc'],
                                 );
+
+                                if(result?.files.isNotEmpty ?? false){
+                                  print(result);
+                                  for(var file in result!.files){
+                                    var item = File(file.path!);
+                                    chatProvider.sendFile(item.readAsBytesSync());
+                                  }
+                                }
                               },
                               trailing: const Icon(
                                   Icons.arrow_forward_ios_rounded,

@@ -64,23 +64,23 @@ class _ChatPageState extends State<ChatPage> {
         default:
           {}
       }
+      if (_width >= 595 && Navigator.canPop(context) && _canPop) {
+        Future.microtask(() {
+          if (Navigator.canPop(context) && _canPop) {
+            Navigator.pop(context);
+            chatProvider.deselectRoom();
+            _canPop = false;
+          }
+        });
+        return const SizedBox();
+      }
+
     }
 
     final _bottomNavigationBarHeight =
         (LoginProvider.platform == 'android' || LoginProvider.platform == 'ios')
             ? MediaQuery.of(context).viewPadding.vertical
             : 0;
-
-    if (_width >= 595 && Navigator.canPop(context) && _canPop) {
-      Future.microtask(() {
-        if (Navigator.canPop(context) && _canPop) {
-          Navigator.pop(context);
-          chatProvider.deselectRoom();
-          _canPop = false;
-        }
-      });
-      return const SizedBox();
-    }
 
     return Scaffold(
       appBar: chatProvider.selectedRoom == null ? null : AppBar(

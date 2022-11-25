@@ -92,30 +92,53 @@ Widget _itemPhoto(BuildContext context, bool fromMyAccount, int index) {
 
   final Room room = chatProvider.selectedRoom!;
   Chat chat = room.chatList[index];
+
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment:
         fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
     children: [
-      Text(
-        chat.text ?? '',
-        style: TextStyle(
-            color: globalSettingProvider.isDarkTheme
-                ? fromMyAccount
-                    ? AppConstants.textColor[200]
-                    : AppConstants.textColor[700]
-                : AppConstants.textColor[700]),
+      Stack(
+        children: [
+          Image.memory(
+              Uint8List.fromList(jsonDecode(chat.fileUrl!).cast<int>())),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                color: globalSettingProvider.isDarkTheme
+                    ? fromMyAccount
+                    ? AppConstants.textColor[700]!.withOpacity(.4)
+                    : AppConstants.textColor[200]!.withOpacity(.4)
+                    : AppConstants.textColor[200]!.withOpacity(.4),
+              ),
+              padding: const EdgeInsets.all(2),
+              margin: const EdgeInsets.all(12),
+              child: Text(
+                intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now()),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: globalSettingProvider.isDarkTheme
+                        ? fromMyAccount
+                            ? AppConstants.textColor[200]
+                            : AppConstants.textColor[700]
+                        : AppConstants.textColor[700]),
+              ),
+            ),
+          ),
+        ],
       ),
-      Text(
-        intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now()),
-        style: TextStyle(
-            fontSize: 12,
-            color: globalSettingProvider.isDarkTheme
-                ? fromMyAccount
-                    ? AppConstants.textColor[200]
-                    : AppConstants.textColor[700]
-                : AppConstants.textColor[700]),
-      )
+      if (chat.text != null)
+        Text(
+          chat.text!,
+          style: TextStyle(
+              color: globalSettingProvider.isDarkTheme
+                  ? fromMyAccount
+                      ? AppConstants.textColor[200]
+                      : AppConstants.textColor[700]
+                  : AppConstants.textColor[700]),
+        )
     ],
   );
 }
