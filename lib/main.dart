@@ -3,7 +3,9 @@ import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/home_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/providers/profile_provider.dart';
 import 'package:chat_babakcode/providers/security_provider.dart';
+import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
 import 'package:chat_babakcode/ui/pages/splash/splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -81,6 +83,7 @@ class _Provider extends StatelessWidget {
         ChangeNotifierProvider(
           create: (c) => HomeProvider(),
         ),
+        ChangeNotifierProxyProvider<ChatProvider , ProfileProvider>(create: (context) => ProfileProvider(), update: (context, value, previous) => previous!..initChatProvider(value),)
       ],
       child: const MyApp(),
     );

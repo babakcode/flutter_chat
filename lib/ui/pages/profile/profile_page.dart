@@ -1,6 +1,9 @@
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/ui/pages/profile/edit_profile_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_button.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,16 +20,21 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          print("INNEER SCROLLED VI=======>$innerBoxIsScrolled");
           return [
             SliverAppBar(
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_rounded),
+              ),
               pinned: true,
               floating: false,
+              collapsedHeight: 70,
               expandedHeight: MediaQuery.of(context).size.height * .44,
               flexibleSpace: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
-
-                  return FlexibleSpaceBar(
-                    title: constraints.biggest.height == 56
+                   return FlexibleSpaceBar(
+                    title: constraints.biggest.height == 70
                         ? const AppText('Profile')
                         : const SizedBox(),
                     background: Image.asset("assets/images/p1.jpg",
@@ -38,15 +46,13 @@ class ProfilePage extends StatelessWidget {
           ];
         },
         body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                child: ListTile(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Column(
+              children: [
+                ListTile(
                   subtitle: const Text(
-                    'name',
+                    'Name',
                     style: TextStyle(color: Colors.grey),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 10),
@@ -65,28 +71,80 @@ class ProfilePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   minLeadingWidth: 30,
-                  onTap: () {},
+                  onTap: () => Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => EditProfilePage(
+                          title: 'Name',
+                          hintTextField:
+                              auth.myUser?.name ?? 'please enter your name',
+                          description:
+                              'You can enter a username in Business Chat. People can see you by this name',
+                        ),
+                      )),
                   trailing: Card(
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14)),
                     clipBehavior: Clip.antiAliasWithSaveLayer,
-                    child: const SizedBox(
+                    child: SizedBox(
                         height: 36,
                         width: 36,
-                        child: Icon(Icons.add_a_photo_rounded)),
+                        child: InkWell(
+                          child: const Icon(Icons.add_a_photo_rounded),
+                          onTap: () async{
+                            FilePickerResult? result =
+                                await FilePicker.platform.pickFiles(
+                              type: FileType.image,
+                            );
+                            if(result != null){
+                              print(result);
+                            }
+                          },
+                        )),
                   ),
                   tileColor: globalSettingProvider.isDarkTheme
                       ? AppConstants.textColor[900]
                       : AppConstants.scaffoldLightBackground,
                 ),
-              ),
-              Container(
-                height: 4000,
-                color: Colors.red,
-                width: double.infinity,
-              )
-            ],
+                const SizedBox(
+                  height: 10,
+                ),
+                ListTile(
+                  subtitle: const Text(
+                    'Username',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  leading: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    child: const SizedBox(
+                        height: 36, width: 36, child: Icon(Icons.abc)),
+                  ),
+                  title: AppText('None'),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  minLeadingWidth: 30,
+                  onTap: () => Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => EditProfilePage(
+                          title: 'Username',
+                          hintTextField: auth.myUser?.username ?? 'username',
+                          description:
+                              'You can choose a username on Business chat. If you do, people will be able to find you by this username and contact you without needing your phone number.\n\nYou can use a-z, 0-9 and underscores. Minimum length is 5 characters.',
+                        ),
+                      )),
+                  tileColor: globalSettingProvider.isDarkTheme
+                      ? AppConstants.textColor[900]
+                      : AppConstants.scaffoldLightBackground,
+                ),
+              ],
+            ),
           ),
         ),
       ),
