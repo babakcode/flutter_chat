@@ -19,7 +19,7 @@ class Auth extends ChangeNotifier {
 
   String? get accessToken => _cryptoManager.decryptData(me.get('accessToken'));
 
-  User? get myUser => User.fromJson(jsonDecode(_cryptoManager.decryptData(me.get('myUser')) ?? ''));
+  User? get myUser => me.get('myUser') == null ? null : User.fromJson(jsonDecode(_cryptoManager.decryptData(me.get('myUser')) ?? ''));
   String? get myUserString => _cryptoManager.decryptData(me.get('myUser'));
 
   Future<void> saveUserDetails(

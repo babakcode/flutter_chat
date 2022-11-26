@@ -167,7 +167,7 @@ class ChatBottomNavComponent extends StatelessWidget {
                           child: InkWell(
                             onTap: () {
                               if (chatProvider.showSendChat) {
-                                chatProvider.sendText(room);
+                                chatProvider.emitText(room);
                               }
                             },
                             onLongPress: chatProvider.recordStart,

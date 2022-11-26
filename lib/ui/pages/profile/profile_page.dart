@@ -24,7 +24,7 @@ class ProfilePage extends StatelessWidget {
               expandedHeight: MediaQuery.of(context).size.height * .44,
               flexibleSpace: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
-                  print(constraints.biggest.height);
+
                   return FlexibleSpaceBar(
                     title: constraints.biggest.height == 56
                         ? const AppText('Profile')

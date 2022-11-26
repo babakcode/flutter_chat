@@ -309,7 +309,7 @@ class ChatProvider extends ChangeNotifier {
           'findFromExistRoom': false,
         });
         Navigator.pop(context);
-        selectedRoom = Room.fromJson(data['room']);
+        selectedRoom = Room.fromJson(data['room'], false);
 
         if (GlobalSettingProvider.isPhonePortraitSize) {
           Navigator.push(
@@ -332,7 +332,7 @@ class ChatProvider extends ChangeNotifier {
 
 
 
-  void sendText(Room room) {
+  void emitText(Room room) {
     if (chatController.text.isEmpty) {
       return;
     }
@@ -356,13 +356,17 @@ class ChatProvider extends ChangeNotifier {
       }
       if (data['success']) {
         chatController.clear();
-        _receiveChatEvent(data['data']);
+        // _receiveChatEvent(data['data']);
         notifyListeners();
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
       }
     });
   }
+  Future emitFile(file)async{
+    socket.emit('sendFile', file);
+  }
+
 
   void recordStart() {}
 
@@ -446,7 +450,7 @@ class ChatProvider extends ChangeNotifier {
         setConnectionStatus = _rooms.isNotEmpty ? 'Updating ...' : null;
         for (Map room in _rooms) {
           if (rooms.where((element) => element.id == room['_id']).isEmpty) {
-            rooms.add(Room.fromJson(room));
+            rooms.add(Room.fromJson(room, false));
           }
         }
 
@@ -477,7 +481,7 @@ class ChatProvider extends ChangeNotifier {
       if (indexOfRoom == -1) {
         /// request to get room details
         /// or insert from chat `room` property
-        Room room = Room.fromJson(data['room']);
+        Room room = Room.fromJson(data['room'], false);
 
         rooms.add(room);
 
@@ -496,7 +500,8 @@ class ChatProvider extends ChangeNotifier {
         targetRoom.lastChat = chat;
 
         targetRoom.chatList.add(chat);
-      } else {
+      }
+      else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list

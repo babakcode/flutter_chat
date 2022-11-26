@@ -26,28 +26,34 @@ class Room extends AppCollections {
 
   Room();
 
-  factory Room.fromJson(Map json) {
+  factory Room.fromJson(Map json, bool fromDatabase) {
     DateTime? createAtLocal;
     DateTime? changeAtLocal;
-    if (json['createAt'] != null) {
-      DateTime createAtUtc = DateTime.parse(json['createAt']);
-      createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
-          .parse(createAtUtc.toString(), false)
-          .toLocal();
-    }
-    if (json['changeAt'] != null) {
-      DateTime changeAtUtc = DateTime.parse(json['changeAt']);
-      changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
-          .parse(changeAtUtc.toString(), false)
-          .toLocal();
+    print(json['createAt']);
+    print(json['changeAt']);
+    createAtLocal = DateTime.tryParse(json['createAt']);
+    changeAtLocal = DateTime.parse(json['changeAt']);
+    if(!fromDatabase){
+
+      if (json['createAt'] != null) {
+        createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parse(createAtLocal.toString(), true)
+            .toLocal();
+      }
+      if (json['changeAt'] != null) {
+        changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parse(changeAtLocal.toString(), true)
+            .toLocal();
+      }
+
     }
 
     return Room()
       ..id = json['_id']
       ..roomName = json['roomName']
       ..lastIndex = json['property']['lastIndex']
-      ..changeAt = changeAtLocal
-      ..createAt = createAtLocal
+      ..changeAt = createAtLocal
+      ..createAt = changeAtLocal
       ..deleted = json['deleted']
       ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
       ..members = (json['members'] as List).map((member) {

@@ -131,7 +131,7 @@ class HiveManager {
       //#endregion
 
       // then add room
-      rooms.add(Room.fromJson(savedRoom));
+      rooms.add(Room.fromJson(savedRoom, true));
     }
     return rooms;
   }
@@ -171,6 +171,7 @@ class HiveManager {
     if(saveCancel) {
       return;
     }
+    print('updateLastIndexOfRoom ( lastIndex: $lastIndex , selectedRoom: ${selectedRoom.id}');
     var room = _roomBox.get(selectedRoom.id);
     if (room != null && room['property']['lastIndex'] != lastIndex) {
       room['property']['lastIndex'] = lastIndex;
