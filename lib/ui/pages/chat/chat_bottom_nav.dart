@@ -12,6 +12,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/search_user_provider.dart';
@@ -27,6 +28,7 @@ class ChatBottomNavComponent extends StatelessWidget {
     final chatProvider = context.watch<ChatProvider>();
     final globalSetting = context.read<GlobalSettingProvider>();
     final searchAtSignUserProvider = context.read<SearchUserProvider>();
+    final ImagePicker _imagePicker = ImagePicker();
 
     var _width = MediaQuery.of(context).size.width;
     if (_width > 960) {
@@ -428,7 +430,15 @@ class ChatBottomNavComponent extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 minLeadingWidth: 30,
-                                onTap: () {},
+                                onTap: () async {
+                                  final image = await _imagePicker.pickImage(
+                                      source: ImageSource.camera,
+                                      maxHeight: 512,
+                                      imageQuality: 60);
+                                  if (image != null) {
+
+                                  }
+                                },
                                 trailing: const Icon(
                                     Icons.arrow_forward_ios_rounded,
                                     size: 16),
@@ -462,14 +472,14 @@ class ChatBottomNavComponent extends StatelessWidget {
                                 FilePickerResult? result =
                                     await FilePicker.platform.pickFiles(
                                   type: FileType.image,
-                                  // allowedExtensions: ['jpg', 'pdf', 'doc'],
                                 );
 
-                                if(result?.files.isNotEmpty ?? false){
+                                if (result?.files.isNotEmpty ?? false) {
                                   print(result);
-                                  for(var file in result!.files){
+                                  for (var file in result!.files) {
                                     var item = File(file.path!);
-                                    chatProvider.sendFile(item.readAsBytesSync());
+                                    chatProvider.emitFile(
+                                        item.readAsBytesSync(), 'photo');
                                   }
                                 }
                               },

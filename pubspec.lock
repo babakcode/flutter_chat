@@ -197,6 +197,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.0"
+  cross_file:
+    dependency: transitive
+    description:
+      name: cross_file
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.3+2"
   crypto:
     dependency: "direct main"
     description:
@@ -492,6 +499,41 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.2.2"
+  image_picker:
+    dependency: "direct main"
+    description:
+      name: image_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.8.6"
+  image_picker_android:
+    dependency: transitive
+    description:
+      name: image_picker_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.8.5+3"
+  image_picker_for_web:
+    dependency: transitive
+    description:
+      name: image_picker_for_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.10"
+  image_picker_ios:
+    dependency: transitive
+    description:
+      name: image_picker_ios
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.8.6+1"
+  image_picker_platform_interface:
+    dependency: transitive
+    description:
+      name: image_picker_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.6.2"
   intl:
     dependency: "direct main"
     description:
@@ -582,7 +624,7 @@ packages:
       name: material_color_utilities
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.0"
+    version: "0.1.5"
   meta:
     dependency: transitive
     description:
@@ -951,7 +993,7 @@ packages:
       name: source_span
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.9.1"
+    version: "1.9.0"
   sqflite:
     dependency: transitive
     description:
@@ -979,7 +1021,7 @@ packages:
       name: stream_channel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.0"
   stream_transform:
     dependency: transitive
     description:
@@ -1028,7 +1070,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.14"
+    version: "0.4.12"
   timezone:
     dependency: transitive
     description:
@@ -1063,7 +1105,7 @@ packages:
       name: vector_math
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.4"
+    version: "2.1.2"
   watcher:
     dependency: transitive
     description:
@@ -1107,5 +1149,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.18.0 <3.0.0"
+  dart: ">=2.18.0-151.0.dev <3.0.0"
   flutter: ">=3.0.0"

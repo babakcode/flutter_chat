@@ -18,6 +18,7 @@ dependencies:
   flutter_svg: ^1.0.3
   emoji_picker_flutter: ^1.1.2
   file_picker: ^5.2.2
+  image_picker: ^0.8.6
   record: ^4.4.3
   intl: ^0.17.0
   firebase_messaging: ^14.1.0

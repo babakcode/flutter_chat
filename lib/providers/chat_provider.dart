@@ -363,8 +363,14 @@ class ChatProvider extends ChangeNotifier {
       }
     });
   }
-  Future emitFile(file)async{
-    socket.emit('sendFile', file);
+
+  Future emitFile(Uint8List file, String type)async{
+    socket.emitWithAck('sendFile', {
+      'file': file,
+      'type': type
+    }, ack: (data){
+      print(data);
+    });
   }
 
 
