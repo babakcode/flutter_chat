@@ -42,4 +42,24 @@ class Auth extends ChangeNotifier {
 
   Future<void> setLastGroupLoadedDate(String set) async =>
       await me.put('lastGroupLoadedDate', set);
+
+  Future<void> changeName(String content) async{
+    User myUser = this.myUser!;
+    myUser.name = content;
+    final newMyUser = _cryptoManager.encryptData(jsonEncode(myUser.toSaveFormat()));
+    await me.put('myUser', newMyUser!.toMap()
+    );
+    print(myUser.toSaveFormat());
+    notifyListeners();
+  }
+
+  Future<void> changeUsername(String content) async{
+    User myUser = this.myUser!;
+    myUser.username = content;
+    final newMyUser = _cryptoManager.encryptData(jsonEncode(myUser.toSaveFormat()));
+    await me.put('myUser', newMyUser!.toMap()
+    );
+    print('---------- ${myUser.toSaveFormat()} ----------');
+    notifyListeners();
+  }
 }

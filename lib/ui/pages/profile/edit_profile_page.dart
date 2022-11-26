@@ -1,4 +1,6 @@
+import 'package:chat_babakcode/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../widgets/app_text.dart';
 import '../../widgets/app_text_field.dart';
@@ -17,6 +19,7 @@ class EditProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profileProvider = context.read<ProfileProvider>();
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -26,7 +29,7 @@ class EditProfilePage extends StatelessWidget {
         title: AppText(title),
         actions: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => profileProvider.updateUserInfo(type: title, content: profileProvider.contentController.text),
             icon: const Icon(Icons.check),
           ),
         ],
@@ -37,7 +40,7 @@ class EditProfilePage extends StatelessWidget {
             height: 20,
           ),
           AppTextField(
-            //controller: context.read<LoginProvider>().nameTextController,
+            controller: profileProvider.contentController,
             hint: hintTextField,
             margin: const EdgeInsets.symmetric(horizontal: 20),
           ),
