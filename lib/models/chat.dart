@@ -1,6 +1,8 @@
 import 'package:intl/intl.dart';
 import 'app_collection.dart';
 import 'user.dart';
+part 'chat_text_model.dart';
+part 'chat_photo_model.dart';
 
 abstract class Chat extends AppCollections {
   String? id;
@@ -113,10 +115,7 @@ abstract class Chat extends AppCollections {
       'id': chatNumberId,
       'user': user,
       'room': room,
-      // 'text': text,
-      // 'fileUrl': fileUrl,
       'utcDate': utcDate.toString(),
-      // 'type': chatTypeToString(type!),
       'edited': edited,
       'deleted': deleted,
       'replyId': replyId,
@@ -137,41 +136,7 @@ class ChatVoiceModel extends Chat {
   ChatVoiceModel(super.json);
 }
 
-class ChatPhotoModel extends Chat {
-  late String fileUrl;
-  String? text;
-  ChatPhotoModel(Map json): super(json) {
-    fileUrl = json['fileUrl'];
-    text = json['text'];
-  }
-  @override
-  Map<String, dynamic> toSaveFormat() {
-    Map<String, dynamic> _chatSaveFormat = super.toSaveFormat();
-    _chatSaveFormat['fileUrl'] = fileUrl;
-    _chatSaveFormat['text'] = text;
-    _chatSaveFormat['type'] = 'photo';
-    return _chatSaveFormat;
-  }
-}
 
 class ChatStickerModel extends Chat{
   ChatStickerModel(Map json): super(json);
-
-}
-
-class ChatTextModel extends Chat{
-
-  String? text;
-
-  ChatTextModel(Map json): super(json) {
-    text = json['text'];
-  }
-
-  @override
-  Map<String, dynamic> toSaveFormat() {
-    Map<String, dynamic> _chatSaveFormat = super.toSaveFormat();
-    _chatSaveFormat['text'] = text;
-    _chatSaveFormat['type'] = 'text';
-    return _chatSaveFormat;
-  }
 }

@@ -639,6 +639,7 @@ class ChatProvider extends ChangeNotifier {
     rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
     notifyListeners();
     for (var room in rooms) {
+      print('getAllRooms (room id) ${room.id}');
       await getRoomChatsFromDatabase(room);
     }
     notifyListeners();
