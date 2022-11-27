@@ -476,10 +476,9 @@ class ChatBottomNavComponent extends StatelessWidget {
 
                                 if (result?.files.isNotEmpty ?? false) {
                                   print(result);
-                                  for (var file in result!.files) {
-                                    var item = File(file.path!);
-                                    chatProvider.emitFile(
-                                        item.readAsBytesSync(), 'photo');
+                                  for (PlatformFile file in result!.files) {
+                                    // var item = File(file.path!);
+                                    chatProvider.emitFile(file, 'photo');
                                   }
                                 }
                               },

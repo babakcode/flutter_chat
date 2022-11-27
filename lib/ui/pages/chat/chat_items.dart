@@ -1,3 +1,4 @@
+
 part of './app_text_item.dart';
 
 Widget _itemText(BuildContext context, bool fromMyAccount, int index) {
@@ -16,35 +17,27 @@ Widget _itemText(BuildContext context, bool fromMyAccount, int index) {
       children: [
         Padding(
           padding: const EdgeInsets.all(10.0),
-          child: SelectableLinkify(
+          child: detectable.DetectableText(
             text: chat.text ?? '',
-            // trimLines: 10,
-            // moreStyle: const TextStyle(color: Colors.blueGrey),
-            // lessStyle: const TextStyle(color: Colors.blueGrey),
-            // colorClickableText: Colors.blue,
-            // trimMode: detectable.TrimMode.Line,
-            // trimCollapsedText: 'more',
-            // trimExpandedText: '...less',
-            onSelectionChanged: (selection, cause) {
-              print('selection, $selection');
-              print('cause, $cause');
+            trimLines: 10,
+            moreStyle: const TextStyle(color: Colors.blueGrey),
+            lessStyle: const TextStyle(color: Colors.blueGrey),
+            colorClickableText: Colors.blue,
+            trimMode: detectable.TrimMode.Line,
+            trimCollapsedText: 'more',
+            trimExpandedText: '...less',
+            onTap: (tappedText) {
+              debugPrint(tappedText);
+              if (tappedText.startsWith('#')) {
+                debugPrint('DetectableText >>>>>>> #');
+              } else if (tappedText.startsWith('@')) {
+                debugPrint('DetectableText >>>>>>> @');
+              } else if (tappedText.startsWith('http')) {
+                debugPrint('DetectableText >>>>>>> http');
+              }
             },
-            onOpen: (link) {
-              print(link.text);
-            },
-            onTap: () {
-              print('object');
-              // print('tapped00');
-              // debugPrint(tappedText);
-              // if (tappedText.startsWith('#')) {
-              //   debugPrint('DetectableText >>>>>>> #');
-              // } else if (tappedText.startsWith('@')) {
-              //   debugPrint('DetectableText >>>>>>> @');
-              // } else if (tappedText.startsWith('http')) {
-              //   debugPrint('DetectableText >>>>>>> http');
-              // }
-            },
-            style: TextStyle(
+            detectionRegExp: hashTagAtSignUrlRegExp,
+            basicStyle: TextStyle(
                 color: globalSettingProvider.isDarkTheme
                     ? fromMyAccount
                         ? AppConstants.textColor[200]
@@ -85,62 +78,98 @@ Widget _itemText(BuildContext context, bool fromMyAccount, int index) {
   );
 }
 
-Widget _itemPhoto(BuildContext context, bool fromMyAccount, int index) {
-  final globalSettingProvider = context.read<GlobalSettingProvider>();
 
-  final chatProvider = context.read<ChatProvider>();
+class _ItemPhoto extends StatelessWidget {
+  final bool fromMyAccount;
+  final int index;
+  const _ItemPhoto(this.fromMyAccount, this.index, {Key? key}) : super(key: key);
 
-  final Room room = chatProvider.selectedRoom!;
-  Chat chat = room.chatList[index];
+  @override
+  Widget build(BuildContext context) {
+    final globalSettingProvider = context.read<GlobalSettingProvider>();
 
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment:
-        fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-    children: [
-      Stack(
-        children: [
-          Image.memory(
-              Uint8List.fromList(jsonDecode(chat.fileUrl!).cast<int>())),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: globalSettingProvider.isDarkTheme
-                    ? fromMyAccount
-                    ? AppConstants.textColor[700]!.withOpacity(.4)
-                    : AppConstants.textColor[200]!.withOpacity(.4)
-                    : AppConstants.textColor[200]!.withOpacity(.4),
-              ),
-              padding: const EdgeInsets.all(2),
-              margin: const EdgeInsets.all(12),
-              child: Text(
-                intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now()),
-                style: TextStyle(
-                    fontSize: 12,
-                    color: globalSettingProvider.isDarkTheme
-                        ? fromMyAccount
-                            ? AppConstants.textColor[200]
-                            : AppConstants.textColor[700]
-                        : AppConstants.textColor[700]),
+    final chatProvider = context.read<ChatProvider>();
+
+    final Room room = chatProvider.selectedRoom!;
+    Chat chat = room.chatList[index];
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment:
+      fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Stack(
+          children: [
+            Image.network(chat.fileUrl!,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(
+                    child: InkWell(
+                      onTap: () => chatProvider.refreshPage(room),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text('download failed, try again'),
+                            SizedBox(width: 5,),
+                            Icon(Icons.wifi_tethering_error_rounded_rounded)
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                }),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: globalSettingProvider.isDarkTheme
+                      ? fromMyAccount
+                      ? AppConstants.textColor[700]!.withOpacity(.4)
+                      : AppConstants.textColor[200]!.withOpacity(.4)
+                      : AppConstants.textColor[200]!.withOpacity(.4),
+                ),
+                padding: const EdgeInsets.all(2),
+                margin: const EdgeInsets.all(12),
+                child: Text(
+                  intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now()),
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: globalSettingProvider.isDarkTheme
+                          ? fromMyAccount
+                          ? AppConstants.textColor[200]
+                          : AppConstants.textColor[700]
+                          : AppConstants.textColor[700]),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      if (chat.text != null)
-        Text(
-          chat.text!,
-          style: TextStyle(
-              color: globalSettingProvider.isDarkTheme
-                  ? fromMyAccount
-                      ? AppConstants.textColor[200]
-                      : AppConstants.textColor[700]
-                  : AppConstants.textColor[700]),
-        )
-    ],
-  );
+          ],
+        ),
+        if (chat.text != null)
+          Text(
+            chat.text!,
+            style: TextStyle(
+                color: globalSettingProvider.isDarkTheme
+                    ? fromMyAccount
+                    ? AppConstants.textColor[200]
+                    : AppConstants.textColor[700]
+                    : AppConstants.textColor[700]),
+          )
+      ],
+    );
+  }
 }
 
 Widget _itemVoice(BuildContext context, bool fromMyAccount, int index) {

@@ -1,16 +1,14 @@
-import 'dart:convert';
-import 'dart:typed_data';
 
+import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl;
 import '../../../constants/app_constants.dart';
 import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
-
 part './chat_items.dart';
 
 class AppChatItem extends StatelessWidget {
@@ -84,7 +82,7 @@ class AppChatItem extends StatelessWidget {
         child: chat.type == ChatType.text
             ? _itemText(context, fromMyAccount, index)
             : chat.type == ChatType.photo
-                ? _itemPhoto(context, fromMyAccount, index)
+                ? _ItemPhoto(fromMyAccount, index)
                 : chat.type == ChatType.voice
                     ? _itemVoice(context, fromMyAccount, index)
                     : _itemUpdateRequired(context, fromMyAccount, index),

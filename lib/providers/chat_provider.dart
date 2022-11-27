@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
@@ -8,6 +9,7 @@ import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/utils/utils.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -364,12 +366,22 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  Future emitFile(Uint8List file, String type)async{
+  Future emitFile(file, String type)async{
+    String fileName = '';
+    Uint8List? uint8list;
+    if(file is PlatformFile){
+      fileName = file.name;
+      uint8list = File(file.path!).readAsBytesSync();
+    }
+
     socket.emitWithAck('sendFile', {
-      'file': file,
-      'type': type
+      'file': uint8list,
+      'type': type,
+      'chat': 'hello',
+      'fileName': fileName,
+      'roomId': selectedRoom!.id
     }, ack: (data){
-      print(data);
+
     });
   }
 
@@ -569,7 +581,7 @@ class ChatProvider extends ChangeNotifier {
         itemScrollController.scrollTo(
             index: targetRoom.chatList.length - 1,
             duration: const Duration(milliseconds: 1000),
-            alignment: .3);
+            alignment: 0);
       }
       notifyListeners();
     } catch (e) {
@@ -678,6 +690,21 @@ class ChatProvider extends ChangeNotifier {
   Future sendFile(Uint8List bytes) async {
     Chat chat = Chat()..fileUrl = bytes.toString()..type = ChatType.photo..user = auth?.myUser;
     selectedRoom?.chatList.add(chat);
+    notifyListeners();
+  }
+
+  void refreshPage(Room room) async{
+    if (GlobalSettingProvider.isPhonePortraitSize) {
+      selectedRoom = room;
+      notifyListeners();
+      return;
+    }
+    if (selectedRoom != null) {
+      deselectRoom();
+    }
+
+    await Future.delayed(
+        const Duration(milliseconds: 100), () => selectedRoom = room);
     notifyListeners();
   }
 }
