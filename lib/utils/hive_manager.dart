@@ -151,7 +151,7 @@ class HiveManager {
       }
 
       item['user'] = _usersBox.get(item['user']);
-      roomChatList.add(Chat.fromJson(item));
+      roomChatList.add(Chat.detectChatModelType(item));
     }
     return roomChatList;
   }

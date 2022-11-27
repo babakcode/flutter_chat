@@ -32,7 +32,10 @@ class Auth extends ChangeNotifier {
 
   Future<void> logOut() async {
     await me.clear();
-    await navigatorKey.currentContext?.read<ChatProvider>().clearDatabase();
+    final _chatProvider = navigatorKey.currentContext?.read<ChatProvider>();
+    await _chatProvider?.clearDatabase();
+    _chatProvider?.rooms = [];
+    _chatProvider?.selectedRoom = null;
 
     Navigator.pushAndRemoveUntil(
         navigatorKey.currentContext!,

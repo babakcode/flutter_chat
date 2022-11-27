@@ -62,7 +62,7 @@ class Room extends AppCollections {
       }).toList()
       ..roomType = _RoomUtils.roomTypeFromText(json['roomType'])
       ..lastChat =
-          json['lastChat'] == null ? null : Chat.fromJson(json['lastChat'])
+          json['lastChat'] == null ? null : Chat.detectChatModelType(json['lastChat'])
       ..roomImage = json['roomImage'];
   }
 

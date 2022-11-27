@@ -172,7 +172,7 @@ class ChatBottomNavComponent extends StatelessWidget {
                                 chatProvider.emitText(room);
                               }
                             },
-                            onLongPress: chatProvider.recordStart,
+                            onLongPress: () => chatProvider.recordStart(),
                             onTapUp: (s) =>
                                 chatProvider.recordStop(context, room),
                             child: Padding(

@@ -1,4 +1,5 @@
 import 'package:chat_babakcode/constants/config.dart';
+import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
@@ -502,13 +503,21 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
             maxLines: 1,
           ),
           Expanded(
-              child: Text(
-            room.lastChat?.text ?? '',
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: const TextStyle(fontSize: 12),
-            maxLines: 1,
-          )),
+              child: Builder(
+                builder: (context) {
+                  if(room.lastChat is ChatTextModel){
+                    ChatTextModel? chat = room.lastChat as ChatTextModel;
+                    return Text(
+                      chat.text ?? '',
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                      style: const TextStyle(fontSize: 12),
+                      maxLines: 1,
+                    );
+                  }
+                  return const SizedBox();
+                }
+              )),
           Text(
             ' ${intl.DateFormat('HH:mm').format(room.changeAt ?? DateTime.now())} ',
             style: const TextStyle(fontSize: 10),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
 import 'package:chat_babakcode/models/room.dart';
@@ -12,6 +13,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -32,19 +34,22 @@ class ChatProvider extends ChangeNotifier {
   void initAuth(Auth auth) => this.auth = auth;
 
   void saveLastViewPortSeenIndex(Room selectedRoom) {
-    if (selectedRoom.minViewPortSeenIndex != minIndexOfChatListOnViewPort) {
-      // save on database
-      _hiveManager.updateMinViewPortSeenIndexOfRoom(
-          minIndexOfChatListOnViewPort, selectedRoom);
-      // save to local list
-      selectedRoom.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
-    }
+    if(selectedRoom.chatList.isNotEmpty){
 
-    if ((selectedRoom.lastIndex ?? -1) < maxIndexOfChatListOnViewPort) {
-      // save on database
-      _hiveManager.updateLastIndexOfRoom(
-          maxIndexOfChatListOnViewPort, selectedRoom);
-      selectedRoom.lastIndex = maxIndexOfChatListOnViewPort;
+      if (selectedRoom.minViewPortSeenIndex != minIndexOfChatListOnViewPort) {
+        // save on database
+        _hiveManager.updateMinViewPortSeenIndexOfRoom(
+            minIndexOfChatListOnViewPort, selectedRoom);
+        // save to local list
+        selectedRoom.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
+      }
+
+      if ((selectedRoom.lastIndex ?? -1) < maxIndexOfChatListOnViewPort) {
+        // save on database
+        _hiveManager.updateLastIndexOfRoom(
+            maxIndexOfChatListOnViewPort, selectedRoom);
+        selectedRoom.lastIndex = maxIndexOfChatListOnViewPort;
+      }
     }
   }
 
@@ -148,6 +153,7 @@ class ChatProvider extends ChangeNotifier {
       _loadMoreNext();
     } else if (minIndexOfChatListOnViewPort <= 3 &&
         selectedRoom!.reachedToStart == false &&
+
         /// load more (previous) chats
         ///
         /// change reachedToStart to true when the chat list empty after request
@@ -185,24 +191,17 @@ class ChatProvider extends ChangeNotifier {
       itemPositionsListener.itemPositions.value
           .where((ItemPosition position) => position.itemLeadingEdge < 1)
           .reduce((ItemPosition max, ItemPosition position) =>
-      position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
+              position.itemLeadingEdge > max.itemLeadingEdge ? position : max)
           .index;
 
   int get minIndexOfChatListOnViewPort =>
       itemPositionsListener.itemPositions.value
           .where((ItemPosition position) => position.itemTrailingEdge > 0)
           .reduce((ItemPosition min, ItemPosition position) =>
-      position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
+              position.itemTrailingEdge < min.itemTrailingEdge ? position : min)
           .index;
 
   Room? selectedRoom;
-
-
-
-
-
-
-
 
   void emojiToggle() {
     showEmoji = !showEmoji;
@@ -236,8 +235,7 @@ class ChatProvider extends ChangeNotifier {
 
   void stickerToggle() {
     showSticker = !showSticker;
-    if(showSticker){
-
+    if (showSticker) {
       if (chatFocusNode.hasFocus) {
         FocusManager.instance.primaryFocus?.unfocus();
       }
@@ -250,13 +248,12 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
   void searchRoomWith(
       {required String roomType,
-        required String searchType,
-        required String searchText,
-        required BuildContext context,
-        Function? callBack}) {
+      required String searchType,
+      required String searchText,
+      required BuildContext context,
+      Function? callBack}) {
     /// search from exist rooms
     /// then if not find room,
     /// search from server
@@ -268,10 +265,10 @@ class ChatProvider extends ChangeNotifier {
         .forEach((room) {
       if (room.members
           .where((element) =>
-      ((searchType == 'token')
-          ? element.user!.publicToken
-          : element.user?.username) ==
-          searchText)
+              ((searchType == 'token')
+                  ? element.user!.publicToken
+                  : element.user?.username) ==
+              searchText)
           .isNotEmpty) {
         /// room found
         selectedRoom = room;
@@ -330,10 +327,6 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-
-
-
-
   void emitText(Room room) {
     if (chatController.text.isEmpty) {
       return;
@@ -366,29 +359,66 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  Future emitFile(file, String type)async{
+  Future emitFile(file, String type) async {
     String fileName = '';
     Uint8List? uint8list;
-    if(file is PlatformFile){
+    if (file is PlatformFile) {
       fileName = file.name;
       uint8list = File(file.path!).readAsBytesSync();
+    } else if(file is File) {
+      uint8list = file.readAsBytesSync();
+      fileName = file.path;
     }
 
-    socket.emitWithAck('sendFile', {
-      'file': uint8list,
-      'type': type,
-      'chat': 'hello',
-      'fileName': fileName,
-      'roomId': selectedRoom!.id
-    }, ack: (data){
-
-    });
+    socket.emitWithAck(
+        'sendFile',
+        {
+          'file': uint8list,
+          'type': type,
+          'chat': 'hello',
+          'fileName': fileName,
+          'roomId': selectedRoom!.id
+        },
+        ack: (data) {});
   }
 
+  final recordVoice = Record();
 
-  void recordStart() {}
+  void recordStart() async {
+    if (showSendChat == false) {
+      // Check and request permission
 
-  void recordStop(BuildContext context, Room room) {}
+      Directory appDocDir = await getApplicationDocumentsDirectory();
+      if (await recordVoice.hasPermission()) {
+        // Start recording
+
+        var _voicePath =
+            '/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
+        if(await recordVoice.hasPermission()){
+          await recordVoice.start(
+            path: '${appDocDir.path}/$_voicePath.m4a',
+            encoder: AudioEncoder.aacLc, // by default
+            bitRate: 128000, // by default
+          );
+        }else{
+
+        }
+      }
+    }
+  }
+
+  void recordStop(BuildContext context, Room room) {
+    print('recordStop');
+    // if (showSendChat) {
+    //   return;
+    // }
+    recordVoice.isRecording().then((isRecording) async {
+      if (isRecording) {
+        var name = await recordVoice.stop();
+        emitFile(File(name!), 'voice');
+      }
+    });
+  }
 
   void onEmojiSelected(Emoji emoji) {
     chatController
@@ -405,7 +435,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void changeSelectedRoom(Room room) async {
-    if(selectedRoom == room){
+    if (selectedRoom == room) {
       return;
     }
 
@@ -491,7 +521,7 @@ class ChatProvider extends ChangeNotifier {
       print('receiveChat => $data');
     }
     try {
-      Chat chat = Chat.fromJson(data['chat']);
+      final chat = Chat.detectChatModelType(data['chat']);
 
       int indexOfRoom = rooms.indexWhere((element) => element.id == chat.room);
 
@@ -518,8 +548,7 @@ class ChatProvider extends ChangeNotifier {
         targetRoom.lastChat = chat;
 
         targetRoom.chatList.add(chat);
-      }
-      else {
+      } else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list
@@ -544,7 +573,7 @@ class ChatProvider extends ChangeNotifier {
             if (data['success']) {
               final chatList = data['chats'] as List;
               targetRoom.chatList =
-                  chatList.map((e) => Chat.fromJson(e)).toList();
+                  chatList.map((e) => Chat.detectChatModelType(e)).toList();
               targetRoom.chatList.add(chat);
               targetRoom.chatList
                   .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
@@ -639,7 +668,7 @@ class ChatProvider extends ChangeNotifier {
       if (res['success']) {
         List<Chat> _receivedChats = [];
         for (var item in res['chats']) {
-          _receivedChats.add(Chat.fromJson(item));
+          _receivedChats.add(Chat.detectChatModelType(item));
         }
         if (_receivedChats.isEmpty) {
           selectedRoom!.reachedToEnd = true;
@@ -668,17 +697,18 @@ class ChatProvider extends ChangeNotifier {
           'before': selectedRoom?.chatList.first.chatNumberId
         }), ack: (res) {
       res = jsonDecode(res);
-          loadingLoadMorePrevious = false;
+      loadingLoadMorePrevious = false;
       if (res['success']) {
         List<Chat> _receivedChats = [];
         for (var item in res['chats']) {
-          _receivedChats.add(Chat.fromJson(item));
+          _receivedChats.add(Chat.detectChatModelType(item));
         }
         if (_receivedChats.isEmpty) {
           selectedRoom!.reachedToStart = true;
         }
         selectedRoom!.chatList.addAll(_receivedChats);
-        selectedRoom!.chatList.sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
+        selectedRoom!.chatList
+            .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
         _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
       }
       notifyListeners();
@@ -687,13 +717,16 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> clearDatabase() async => await _hiveManager.clear();
 
-  Future sendFile(Uint8List bytes) async {
-    Chat chat = Chat()..fileUrl = bytes.toString()..type = ChatType.photo..user = auth?.myUser;
-    selectedRoom?.chatList.add(chat);
-    notifyListeners();
-  }
+  // Future sendFile(Uint8List bytes) async {
+  //   Chat chat = Chat()
+  //     ..fileUrl = bytes.toString()
+  //     ..type = ChatType.photo
+  //     ..user = auth?.myUser;
+  //   selectedRoom?.chatList.add(chat);
+  //   notifyListeners();
+  // }
 
-  void refreshPage(Room room) async{
+  void refreshPage(Room room) async {
     if (GlobalSettingProvider.isPhonePortraitSize) {
       selectedRoom = room;
       notifyListeners();
