@@ -19,7 +19,7 @@ class HomeSettingComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final globalSetting = context.watch<GlobalSettingProvider>();
-    final auth = context.read<Auth>();
+    final auth = context.watch<Auth>();
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -57,12 +57,17 @@ class HomeSettingComponent extends StatelessWidget {
                   ),
                   padding: EdgeInsets.zero,
                   onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => const ProfilePage(),)),
-                  child: Image.asset(
+                  child: auth.myUser?.profileUrl == null ?Image.asset(
                     'assets/images/p1.jpg',
                     height: 100,
                     width: 100,
                     fit: BoxFit.cover,
-                  ),
+                  ): Image.network(
+                    auth.myUser!.profileUrl!,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  )
                 ),
                 const SizedBox(
                   height: 10,
@@ -76,7 +81,7 @@ class HomeSettingComponent extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
-                      child: AppText(
+                      child: SelectableText(
                         auth.myUser?.publicToken ??
                             '',
                       ),

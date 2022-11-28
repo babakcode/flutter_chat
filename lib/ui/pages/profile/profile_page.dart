@@ -18,6 +18,8 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<Auth>();
     final globalSettingProvider = context.read<GlobalSettingProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+    print(auth.myUser?.profileUrl);
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -36,8 +38,11 @@ class ProfilePage extends StatelessWidget {
                     title: constraints.scrollOffset > 0
                         ? const AppText('Profile')
                         : const SizedBox(),
-                    background: Image.asset("assets/images/p1.jpg",
-                        width: double.infinity, fit: BoxFit.cover),
+                    background: auth.myUser?.profileUrl == null
+                        ? Image.asset("assets/images/p1.jpg",
+                            width: double.infinity, fit: BoxFit.cover)
+                        : Image.network(auth.myUser!.profileUrl!,
+                            width: double.infinity, fit: BoxFit.cover),
                   ),
                 );
               },
@@ -96,8 +101,13 @@ class ProfilePage extends StatelessWidget {
                                 await FilePicker.platform.pickFiles(
                               type: FileType.image,
                             );
-                            if (result != null) {
+
+                            if (result?.files.isNotEmpty ?? false) {
                               print(result);
+                              for (PlatformFile file in result!.files) {
+                                // var item = File(file.path!);
+                                profileProvider.updateProfileImage(file);
+                              }
                             }
                           },
                         )),

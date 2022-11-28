@@ -65,4 +65,15 @@ class Auth extends ChangeNotifier {
     print('---------- ${myUser.toSaveFormat()} ----------');
     notifyListeners();
   }
+
+  Future<void> changeProfileImage(String content) async{
+    User myUser = this.myUser!;
+
+    myUser.profileUrl = content;
+    final newMyUser = _cryptoManager.encryptData(jsonEncode(myUser.toSaveFormat()));
+    await me.put('myUser', newMyUser!.toMap()
+    );
+    print('---------- ${myUser.toSaveFormat()} ----------');
+    notifyListeners();
+  }
 }
