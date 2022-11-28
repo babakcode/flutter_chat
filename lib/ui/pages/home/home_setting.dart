@@ -120,7 +120,9 @@ class HomeSettingComponent extends StatelessWidget {
                   height: 10,
                 ),
                 ListTile(
-                  onTap: () => auth.logOut(),
+                  onTap: () {
+                    showDialog(context: context, builder: (context) => Utils.showWarningDialog(context));
+                  },
                   tileColor: globalSetting.isDarkTheme? AppConstants.primarySwatch[700]!.withOpacity(.5) : AppConstants.textColor[200]!.withOpacity(.5),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24)),
