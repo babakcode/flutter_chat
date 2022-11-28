@@ -8,8 +8,7 @@ import '../../../constants/app_constants.dart';
 import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
-
-part './chat_items.dart';
+import 'chat_item_voice.dart';
 
 class AppChatItem extends StatelessWidget {
   final int index;
@@ -24,7 +23,7 @@ class AppChatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final globalSettingProvider = context.read<GlobalSettingProvider>();
+    final globalSettingProvider = context.watch<GlobalSettingProvider>();
 
     var borders = BorderRadius.only(
         topLeft: previousChatFromUser
@@ -77,17 +76,11 @@ class AppChatItem extends StatelessWidget {
             return ChatItemText(fromMyAccount, chat: chat,);
           }else if(chat is ChatPhotoModel){
             return ChatItemPhoto(fromMyAccount, chat: chat,);
+          }else if(chat is ChatVoiceModel){
+            return ChatItemVoice(fromMyAccount, chat: chat,);
           }
           return const ChatItemUpdateRequired();
         },)
-
-        // chat.type == ChatType.text
-        //     ?
-        //     : chat.type == ChatType.photo
-        //         ? _ItemPhoto(fromMyAccount, index)
-        //         : chat.type == ChatType.voice
-        //             ? _itemVoice(context, fromMyAccount, index)
-        //             : ,
       ),
     );
   }

@@ -166,14 +166,14 @@ class ChatBottomNavComponent extends StatelessWidget {
                         Card(
                           shape: const CircleBorder(),
                           clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: InkWell(
+                          child: GestureDetector(
                             onTap: () {
                               if (chatProvider.showSendChat) {
                                 chatProvider.emitText(room);
                               }
                             },
                             onLongPress: () => chatProvider.recordStart(),
-                            onTapUp: (s) =>
+                            onLongPressEnd: (s) =>
                                 chatProvider.recordStop(context, room),
                             child: Padding(
                               padding: const EdgeInsets.all(13.0),
@@ -435,9 +435,7 @@ class ChatBottomNavComponent extends StatelessWidget {
                                       source: ImageSource.camera,
                                       maxHeight: 512,
                                       imageQuality: 60);
-                                  if (image != null) {
-
-                                  }
+                                  if (image != null) {}
                                 },
                                 trailing: const Icon(
                                     Icons.arrow_forward_ios_rounded,

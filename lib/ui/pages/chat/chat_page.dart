@@ -10,8 +10,6 @@ import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
 import 'chat_scrollable_list.dart';
 
-const scrollPhysic = NeverScrollableScrollPhysics();
-
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
@@ -21,6 +19,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   bool _canPop = true;
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +108,7 @@ class _ChatPageState extends State<ChatPage> {
       body: chatProvider.selectedRoom == null ? const Center(child: AppText('please select chat room')) : SingleChildScrollView(
         reverse: true,
         controller: ScrollController(),
-        physics: scrollPhysic,
+        physics: const NeverScrollableScrollPhysics(),
         // physics: const ClampingScrollPhysics(),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:chat_babakcode/constants/config.dart';
@@ -44,11 +45,12 @@ class ChatProvider extends ChangeNotifier {
         selectedRoom.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
       }
 
-      if ((selectedRoom.lastIndex ?? -1) < maxIndexOfChatListOnViewPort) {
+
+      if ((selectedRoom.lastIndex ?? -1) < selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
         // save on database
         _hiveManager.updateLastIndexOfRoom(
-            maxIndexOfChatListOnViewPort, selectedRoom);
-        selectedRoom.lastIndex = maxIndexOfChatListOnViewPort;
+            selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!, selectedRoom);
+        selectedRoom.lastIndex = selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
       }
     }
   }
@@ -69,6 +71,7 @@ class ChatProvider extends ChangeNotifier {
     socket.onConnect((_) {
       setConnectionStatus = 'Connected';
       debugPrint('socket connected');
+      debugPrint('last viewed date is ${auth?.lastGroupLoadedDate}');
       socket.emit('getAllMessages', auth?.lastGroupLoadedDate);
     });
     socket.onDisconnect((_) {
@@ -130,11 +133,12 @@ class ChatProvider extends ChangeNotifier {
     //   // save to local list
     //   selectedRoom!.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
     // }
-    if ((selectedRoom!.lastIndex ?? -1) < maxIndexOfChatListOnViewPort) {
+
+    if ((selectedRoom!.lastIndex ?? -1) < selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
       // save on database
       // _hiveManager.updateLastIndexOfRoom(
       //     maxIndexOfChatListOnViewPort, selectedRoom!);
-      selectedRoom!.lastIndex = maxIndexOfChatListOnViewPort;
+      selectedRoom!.lastIndex = selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
       notifyListeners();
     }
 
@@ -395,11 +399,11 @@ class ChatProvider extends ChangeNotifier {
         var _voicePath =
             '/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
         if(await recordVoice.hasPermission()){
-          await recordVoice.start(
-            path: '${appDocDir.path}/$_voicePath.m4a',
-            encoder: AudioEncoder.aacLc, // by default
-            bitRate: 128000, // by default
-          );
+            recordVoice.start(
+              path: '${appDocDir.path}/$_voicePath.m4a',
+              encoder: AudioEncoder.aacLc, // by default
+              bitRate: 128000, // by default
+            ).onError((error, stackTrace) => print(error)).then((value) => 'record started');
         }else{
 
         }
@@ -409,12 +413,14 @@ class ChatProvider extends ChangeNotifier {
 
   void recordStop(BuildContext context, Room room) {
     print('recordStop');
-    // if (showSendChat) {
-    //   return;
-    // }
+    if (showSendChat) {
+      return;
+    }
     recordVoice.isRecording().then((isRecording) async {
+      print(isRecording);
       if (isRecording) {
         var name = await recordVoice.stop();
+        print('saved voice location is: ' + name!);
         emitFile(File(name!), 'voice');
       }
     });
@@ -488,7 +494,7 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  void _userRoomsEvent(data) {
+  void _userRoomsEvent(data) async {
     if (kDebugMode) {
       print('userRooms => $data');
     }
@@ -504,10 +510,10 @@ class ChatProvider extends ChangeNotifier {
 
         rooms.sort((a, b) => b.changeAt!.compareTo(b.changeAt!));
         notifyListeners();
-        if (rooms.isNotEmpty) {
-          auth!.setLastGroupLoadedDate(rooms[0].changeAt.toString());
+        if (_rooms.isNotEmpty) {
+          await auth!.setLastGroupLoadedDate(rooms[0].changeAt!.toUtc().toString());
+          await _hiveManager.saveRooms(rooms);
         }
-        _hiveManager.saveRooms(rooms);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -589,6 +595,8 @@ class ChatProvider extends ChangeNotifier {
         }
       }
 
+      //
+
       /// after add chat to chat list of the target room then
       /// save chat
       _hiveManager.saveChats([chat], targetRoom.id!);
@@ -596,6 +604,7 @@ class ChatProvider extends ChangeNotifier {
       /// else just update the last chat of list
       targetRoom.lastChat = chat;
       targetRoom.changeAt = chat.utcDate;
+      await auth!.setLastGroupLoadedDate(targetRoom.changeAt!.toUtc().toString());
       _hiveManager.updateRoom(targetRoom);
       auth!.setLastGroupLoadedDate(targetRoom.changeAt.toString());
 
@@ -741,4 +750,35 @@ class ChatProvider extends ChangeNotifier {
         const Duration(milliseconds: 100), () => selectedRoom = room);
     notifyListeners();
   }
+
+
+  Future downloadImage(String url, String savePath , ChatVoiceModel chatVoiceModel) async {
+    try {
+      Response response = await Dio().get(
+        url,
+        onReceiveProgress:  (received, total) {
+          if (total != -1) {
+            chatVoiceModel.downloadProgress = double.tryParse((received / total * 100).toStringAsFixed(2));
+            notifyListeners();
+          }
+        },
+        //Received data with List<int>
+        options: Options(
+            responseType: ResponseType.bytes,
+            followRedirects: false,
+            validateStatus: (status) {
+              return status! == 200;
+            }),
+      );
+      print(response.headers);
+      File file = File(savePath);
+      var raf = file.openSync(mode: FileMode.write);
+      // response.data is List<int> type
+      raf.writeFromSync(response.data);
+      await raf.close();
+    } catch (e) {
+      print(e);
+    }
+  }
+
 }

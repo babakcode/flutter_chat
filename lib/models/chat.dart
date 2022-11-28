@@ -1,8 +1,10 @@
 import 'package:intl/intl.dart';
 import 'app_collection.dart';
+import 'package:just_audio/just_audio.dart';
 import 'user.dart';
 part 'chat_text_model.dart';
 part 'chat_photo_model.dart';
+part 'chat_voice_model.dart';
 
 abstract class Chat extends AppCollections {
   String? id;
@@ -21,7 +23,7 @@ abstract class Chat extends AppCollections {
         return ChatTextModel(chat);
       case 'sticker':
         return ChatStickerModel(chat);
-      case 'image':
+      case 'photo':
         return ChatPhotoModel(chat);
       case 'voice':
         return ChatVoiceModel(chat);
@@ -52,61 +54,10 @@ abstract class Chat extends AppCollections {
     json['replyId'] == null ? null : detectChatModelType(json['replayId']);
     version = json['__v'];
   }
-  //
-  // static ChatType chatTypeFromText(String type) {
-  //   switch (type) {
-  //     case 'text':
-  //       return ChatType.text;
-  //     case 'sticker':
-  //       return ChatType.sticker;
-  //     case 'video':
-  //       return ChatType.video;
-  //     case 'gif':
-  //       return ChatType.gif;
-  //     case 'voice':
-  //       return ChatType.voice;
-  //     case 'account':
-  //       return ChatType.account;
-  //     case 'action':
-  //       return ChatType.action;
-  //     case 'doc':
-  //       return ChatType.doc;
-  //     case 'photo':
-  //       return ChatType.photo;
-  //     default:
-  //       return ChatType.updateRequired;
-  //   }
-  // }
-  //
-  // static String chatTypeToString(ChatType type) {
-  //   switch (type) {
-  //     case ChatType.text:
-  //       return 'text';
-  //     case ChatType.sticker:
-  //       return 'sticker';
-  //     case ChatType.video:
-  //       return 'video';
-  //     case ChatType.gif:
-  //       return 'gif';
-  //     case ChatType.voice:
-  //       return 'voice';
-  //     case ChatType.account:
-  //       return 'account';
-  //     case ChatType.action:
-  //       return 'action';
-  //     case ChatType.doc:
-  //       return 'doc';
-  //     case ChatType.photo:
-  //       return 'photo';
-  //     default:
-  //       return 'updateRequired';
-  //   }
-  // }
 
   static List<Chat> getChatsFromJsonList(List jsonList) {
     return jsonList.map((e) => Chat.detectChatModelType(e)).toList();
   }
-
 
   @override
   Map<String, dynamic> toSaveFormat() {
@@ -115,7 +66,7 @@ abstract class Chat extends AppCollections {
       'id': chatNumberId,
       'user': user,
       'room': room,
-      'utcDate': utcDate.toString(),
+      'utcDate': utcDate?.toUtc().toString(),
       'edited': edited,
       'deleted': deleted,
       'replyId': replyId,
@@ -132,9 +83,6 @@ class ChatDocModel extends Chat {
   ChatDocModel(super.json);
 }
 
-class ChatVoiceModel extends Chat {
-  ChatVoiceModel(super.json);
-}
 
 
 class ChatStickerModel extends Chat{

@@ -29,23 +29,20 @@ class Room extends AppCollections {
   factory Room.fromJson(Map json, bool fromDatabase) {
     DateTime? createAtLocal;
     DateTime? changeAtLocal;
-    print(json['createAt']);
-    print(json['changeAt']);
+    print("createAt is : " + json['createAt']);
+    print("changeAt is : " + json['changeAt']);
     createAtLocal = DateTime.tryParse(json['createAt']);
     changeAtLocal = DateTime.parse(json['changeAt']);
-    if(!fromDatabase){
 
-      if (json['createAt'] != null) {
-        createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
-            .parse(createAtLocal.toString(), true)
-            .toLocal();
-      }
-      if (json['changeAt'] != null) {
-        changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
-            .parse(changeAtLocal.toString(), true)
-            .toLocal();
-      }
-
+    if (json['createAt'] != null) {
+      createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
+          .parse(createAtLocal.toString(), true)
+          .toLocal();
+    }
+    if (json['changeAt'] != null) {
+      changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
+          .parse(changeAtLocal.toString(), true)
+          .toLocal();
     }
 
     return Room()
@@ -70,8 +67,8 @@ class Room extends AppCollections {
   Map<String, dynamic> toSaveFormat() => {
         '_id': id,
         'roomName': roomName,
-        'changeAt': changeAt.toString(),
-        'createAt': createAt.toString(),
+        'changeAt': changeAt?.toUtc().toString(),
+        'createAt': createAt?.toUtc().toString(),
         'deleted': deleted,
         'members': members,
         'roomType': _RoomUtils.roomTypeToString(roomType!),
