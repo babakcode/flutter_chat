@@ -7,9 +7,12 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Widget child;
   final EdgeInsetsGeometry? margin;
+  final Color? color;
+  final Color? splashColor;
+  final double? elevation;
 
 
-  const AppButton({Key? key, required this.child, this.onPressed, this.margin})
+  const AppButton({Key? key, required this.child, this.onPressed, this.margin , this.color , this.elevation , this.splashColor})
       : super(key: key);
 
   @override
@@ -19,18 +22,19 @@ class AppButton extends StatelessWidget {
     return Padding(
       padding: margin ?? const EdgeInsets.all(8.0),
       child: MaterialButton(
+        elevation: elevation,
         onPressed: onPressed ?? (){},
         height: 56,
-        splashColor: AppConstants.primarySwatch[500]!.withOpacity(.9),
+        splashColor: splashColor ?? AppConstants.primarySwatch[500]!.withOpacity(.9),
         highlightColor: AppConstants.primarySwatch[200]!.withOpacity(.1),
         padding: const EdgeInsets.symmetric(horizontal: 26),
         textTheme: sharedProvider.isDarkTheme
             ? ButtonTextTheme.primary
             : ButtonTextTheme.accent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        color: sharedProvider.isDarkTheme
+        color: color??(sharedProvider.isDarkTheme
             ? AppConstants.primarySwatch[50]
-            : AppConstants.primarySwatch[800],
+            : AppConstants.primarySwatch[800]),
         child: child,
       ),
     );

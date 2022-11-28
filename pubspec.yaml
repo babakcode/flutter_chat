@@ -46,7 +46,7 @@ dependencies:
   custom_pop_up_menu: ^1.2.4
   flutter_linkify: ^5.0.2
   flutter_staggered_grid_view: ^0.6.2
-
+  rflutter_alert: ^2.0.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
