@@ -18,6 +18,7 @@ class User extends AppCollections{
       ..id = json['_id']
       ..publicToken = json['publicToken']
       ..name = json['name']
+      ..profileUrl = json['profileUrl']
       ..username = json['username']
       ..isOnline = json['isOnline']
       ..version = json['__v'];
