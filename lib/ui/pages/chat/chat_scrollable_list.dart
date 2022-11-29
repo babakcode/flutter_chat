@@ -82,11 +82,11 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   Widget chatItem(BuildContext context, int index) {
     double _width = MediaQuery.of(context).size.width;
 
-    var chatProvider = context.read<ChatProvider>();
+    final chatProvider = context.read<ChatProvider>();
 
     Room room = chatProvider.selectedRoom!;
 
-    Chat? chat = room.chatList[index];
+    final chat = room.chatList[index];
 
     bool fromMyAccount = chat.user!.id == chatProvider.auth!.myUser!.id;
     bool previousChatFromUser = false;

@@ -156,18 +156,18 @@ class HiveManager {
     return roomChatList;
   }
 
-  void updateMinViewPortSeenIndexOfRoom(int min, Room selectedRoom) {
+  Future updateMinViewPortSeenIndexOfRoom(int min, Room selectedRoom) async {
     if(saveCancel) {
       return;
     }
     var room = _roomBox.get(selectedRoom.id);
     if (room != null && room['minViewPortSeenIndex'] != min) {
       room['minViewPortSeenIndex'] = min;
-      _roomBox.put(room['_id'], room);
+      await _roomBox.put(room['_id'], room);
     }
   }
 
-  void updateLastIndexOfRoom(int lastIndex, Room selectedRoom) {
+  Future updateLastIndexOfRoom(int lastIndex, Room selectedRoom)async {
     if(saveCancel) {
       return;
     }
@@ -175,7 +175,7 @@ class HiveManager {
     var room = _roomBox.get(selectedRoom.id);
     if (room != null && room['property']['lastIndex'] != lastIndex) {
       room['property']['lastIndex'] = lastIndex;
-      _roomBox.put(room['_id'], room);
+      await _roomBox.put(room['_id'], room);
     }
   }
 

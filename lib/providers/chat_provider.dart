@@ -34,12 +34,12 @@ class ChatProvider extends ChangeNotifier {
 
   void initAuth(Auth auth) => this.auth = auth;
 
-  void saveLastViewPortSeenIndex(Room selectedRoom) {
+  Future saveLastViewPortSeenIndex(Room selectedRoom) async {
     if(selectedRoom.chatList.isNotEmpty){
 
       if (selectedRoom.minViewPortSeenIndex != minIndexOfChatListOnViewPort) {
         // save on database
-        _hiveManager.updateMinViewPortSeenIndexOfRoom(
+        await _hiveManager.updateMinViewPortSeenIndexOfRoom(
             minIndexOfChatListOnViewPort, selectedRoom);
         // save to local list
         selectedRoom.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
@@ -48,7 +48,7 @@ class ChatProvider extends ChangeNotifier {
 
       if ((selectedRoom.lastIndex ?? -1) < selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
         // save on database
-        _hiveManager.updateLastIndexOfRoom(
+        await _hiveManager.updateLastIndexOfRoom(
             selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!, selectedRoom);
         selectedRoom.lastIndex = selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
       }
@@ -332,6 +332,9 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void emitText(Room room) {
+    if(!showSendChat){
+      return;
+    }
     if (chatController.text.isEmpty) {
       return;
     }
@@ -770,15 +773,31 @@ class ChatProvider extends ChangeNotifier {
               return status! == 200;
             }),
       );
-      print(response.headers);
       File file = File(savePath);
       var raf = file.openSync(mode: FileMode.write);
       // response.data is List<int> type
       raf.writeFromSync(response.data);
       await raf.close();
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
+
+  Future<bool> onWillPopChatPage() async {
+    if (showSticker || showEmoji || showShareFile || chatFocusNode.hasFocus) {
+      showSticker = false;
+      showShareFile = false;
+      showEmoji = false;
+      chatFocusNode.unfocus();
+      notifyListeners();
+      return false;
+    }
+    if(selectedRoom != null){
+      await saveLastViewPortSeenIndex(selectedRoom!);
+    }
+    return true;
+  }
 }

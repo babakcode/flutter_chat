@@ -20,7 +20,6 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   bool _canPop = true;
 
-
   @override
   Widget build(BuildContext context) {
     final _width = MediaQuery.of(context).size.width;
@@ -73,7 +72,6 @@ class _ChatPageState extends State<ChatPage> {
         });
         return const SizedBox();
       }
-
     }
 
     final _bottomNavigationBarHeight =
@@ -81,52 +79,62 @@ class _ChatPageState extends State<ChatPage> {
             ? MediaQuery.of(context).viewPadding.vertical
             : 0;
 
-    return Scaffold(
-      appBar: chatProvider.selectedRoom == null ? null : AppBar(
-          leading: IconButton(
-              onPressed: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                } else {
-                  chatProvider.deselectRoom();
-                }
-              },
-              icon: const Icon(Icons.arrow_back_ios_rounded)),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(chatAppBarModel.roomName ?? 'guest'),
-            if(chatProvider.connectionStatus != null)
-              Text(chatProvider.connectionStatus!, style: const TextStyle(fontSize: 8),)
-          ],
-        ),
-        actions: [
-          IconButton(
-              onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
-        ],
-      ),
-      body: chatProvider.selectedRoom == null ? const Center(child: AppText('please select chat room')) : SingleChildScrollView(
-        reverse: true,
-        controller: ScrollController(),
-        physics: const NeverScrollableScrollPhysics(),
-        // physics: const ClampingScrollPhysics(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Container(
-              alignment: Alignment.bottomCenter,
-              height: MediaQuery.of(context).size.height -
-                  64 -
-                  AppBar().preferredSize.height -
-                  _bottomNavigationBarHeight,
-              child: const ChatScrollableList(),
-            ),
-            ChatBottomNavComponent(
-              room: chatProvider.selectedRoom!,
-            )
-          ],
-        ),
+    return WillPopScope(
+      onWillPop: chatProvider.onWillPopChatPage,
+      child: Scaffold(
+        appBar: chatProvider.selectedRoom == null
+            ? null
+            : AppBar(
+                leading: IconButton(
+                    onPressed: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        chatProvider.deselectRoom();
+                      }
+                    },
+                    icon: const Icon(Icons.arrow_back_ios_rounded)),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(chatAppBarModel.roomName ?? 'guest'),
+                    if (chatProvider.connectionStatus != null)
+                      Text(
+                        chatProvider.connectionStatus!,
+                        style: const TextStyle(fontSize: 8),
+                      )
+                  ],
+                ),
+                actions: [
+                  IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
+                ],
+              ),
+        body: chatProvider.selectedRoom == null
+            ? const Center(child: AppText('please select chat room'))
+            : SingleChildScrollView(
+                reverse: true,
+                controller: ScrollController(),
+                physics: const NeverScrollableScrollPhysics(),
+                // physics: const ClampingScrollPhysics(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      alignment: Alignment.bottomCenter,
+                      height: MediaQuery.of(context).size.height -
+                          64 -
+                          AppBar().preferredSize.height -
+                          _bottomNavigationBarHeight,
+                      child: const ChatScrollableList(),
+                    ),
+                    ChatBottomNavComponent(
+                      room: chatProvider.selectedRoom!,
+                    )
+                  ],
+                ),
+              ),
       ),
     );
   }

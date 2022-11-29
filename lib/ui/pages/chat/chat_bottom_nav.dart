@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:chat_babakcode/constants/app_constants.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/models/user.dart';
@@ -14,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-
 import '../../../providers/search_user_provider.dart';
 import '../../widgets/app_text.dart';
 
@@ -167,11 +164,7 @@ class ChatBottomNavComponent extends StatelessWidget {
                           shape: const CircleBorder(),
                           clipBehavior: Clip.antiAliasWithSaveLayer,
                           child: GestureDetector(
-                            onTap: () {
-                              if (chatProvider.showSendChat) {
-                                chatProvider.emitText(room);
-                              }
-                            },
+                            onTap: () => chatProvider.emitText(room),
                             onLongPress: () => chatProvider.recordStart(),
                             onLongPressEnd: (s) =>
                                 chatProvider.recordStop(context, room),
