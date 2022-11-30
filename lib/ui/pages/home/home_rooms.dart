@@ -344,8 +344,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                         ),
                       );
                       if (result != null) {
-                        context.read<ChatProvider>().searchRoomWith(
-                              roomType: 'pvUser',
+                        context.read<ChatProvider>().searchUser(
                               searchType: 'token',
                               searchText: result,
                               context: context,
@@ -495,8 +494,8 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
 
   Widget _roomItemSubTitle(Room room) => Row(
         children: [
-          Text(
-            (room.lastChat?.user?.name ?? '') + ' : ',
+          if(room.lastChat != null) Text(
+            (room.lastChat!.user?.name ?? '') + ' : ',
             overflow: TextOverflow.ellipsis,
             softWrap: false,
             style: const TextStyle(fontSize: 10),
@@ -505,17 +504,26 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           Expanded(
               child: Builder(
                 builder: (context) {
+                  String displayLastChat = '';
                   if(room.lastChat is ChatTextModel){
                     ChatTextModel? chat = room.lastChat as ChatTextModel;
-                    return Text(
-                      chat.text ?? '',
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
-                      style: const TextStyle(fontSize: 12),
-                      maxLines: 1,
-                    );
+                    displayLastChat = chat.text ?? '';
+                  }else if(room.lastChat is ChatPhotoModel){
+                    displayLastChat = 'Photo';
+                  }else if(room.lastChat is ChatDocModel){
+                    displayLastChat = 'Document';
+                  }else if(room.lastChat is ChatVoiceModel){
+                    displayLastChat = 'Voice';
+                  }else if(room.lastChat is ChatUpdateRequireModel){
+                    displayLastChat = 'this message is not supported on your version of business chat!';
                   }
-                  return const SizedBox();
+                  return Text(
+                    displayLastChat,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 1,
+                  );
                 }
               )),
           Text(

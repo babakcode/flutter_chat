@@ -17,6 +17,9 @@ abstract class Chat extends AppCollections {
   int? chatNumberId;
   int? version;
 
+  /// unnecessary to save variables
+  bool sendSuccessfully = true;
+
   static Chat detectChatModelType(Map chat) {
     switch (chat['type']) {
       case 'text':

@@ -1,4 +1,5 @@
 import 'package:chat_babakcode/models/chat.dart';
+import 'package:chat_babakcode/models/room_member.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/room.dart';
@@ -58,19 +59,23 @@ class HiveManager {
       }
       Map saveRoomItem = room.toSaveFormat();
 
-      /// convert members to array<Map> members
-      //#region members to map list
-      List<Map> arrayMembers = [];
-      for (var member in room.members) {
-        Map saveMemberMap = member.toSaveFormat();
+      if(room.members != null){
 
-        /// check the user checked once or not
-        await _updateUserIfExist(member.user!);
-        saveMemberMap['user'] = member.user!.id!;
-        arrayMembers.add(saveMemberMap);
+        /// convert members to array<Map> members
+        //#region members to map list
+        List<Map> arrayMembers = [];
+        for (RoomMember member in room.members!) {
+          Map saveMemberMap = member.toSaveFormat();
+
+          /// check the user checked once or not
+          await _updateUserIfExist(member.user!);
+          saveMemberMap['user'] = member.user!.id!;
+          arrayMembers.add(saveMemberMap);
+        }
+        saveRoomItem['members'] = arrayMembers;
+        //#endregion
+
       }
-      saveRoomItem['members'] = arrayMembers;
-      //#endregion
 
       /// change user to map
       //#region user to Map
@@ -186,20 +191,24 @@ class HiveManager {
     }
     Map saveRoomItem = room.toSaveFormat();
 
-    /// convert members to array<Map> members
-    //#region members to map list
-    List<Map> arrayMembers = [];
-    for (var member in room.members) {
-      Map saveMemberMap = member.toSaveFormat();
 
-      /// check the user checked once or not
-      await _updateUserIfExist(member.user!);
-      saveMemberMap['user'] = member.user!.id!;
-      arrayMembers.add(saveMemberMap);
+    if(room.members != null){
+
+      /// convert members to array<Map> members
+      //#region members to map list
+      List<Map> arrayMembers = [];
+      for (var member in room.members!) {
+        Map saveMemberMap = member.toSaveFormat();
+
+        /// check the user checked once or not
+        await _updateUserIfExist(member.user!);
+        saveMemberMap['user'] = member.user!.id!;
+        arrayMembers.add(saveMemberMap);
+      }
+      saveRoomItem['members'] = arrayMembers;
+      //#endregion
+
     }
-    saveRoomItem['members'] = arrayMembers;
-    //#endregion
-
     /// change user to map
     //#region user to Map
     if (room.lastChat != null) {

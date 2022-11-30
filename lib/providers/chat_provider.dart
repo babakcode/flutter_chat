@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart';
 import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
-
+import 'package:http/http.dart' as http;
 import '../models/chat.dart';
 import '../utils/hive_manager.dart';
 
@@ -252,8 +252,8 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void searchRoomWith(
-      {required String roomType,
+  void searchUser(
+      {
       required String searchType,
       required String searchText,
       required BuildContext context,
@@ -267,13 +267,14 @@ class ChatProvider extends ChangeNotifier {
         .where((element) => element.roomType == RoomType.pvUser)
         .toList()
         .forEach((room) {
-      if (room.members
+      if (room.members!
           .where((element) =>
               ((searchType == 'token')
                   ? element.user!.publicToken
                   : element.user?.username) ==
               searchText)
           .isNotEmpty) {
+
         /// room found
         selectedRoom = room;
         Navigator.pop(context);
@@ -297,9 +298,8 @@ class ChatProvider extends ChangeNotifier {
       return;
     }
 
-    socket.emitWithAck('searchRoom', {
+    socket.emitWithAck('searchUser', {
       'searchType': searchType,
-      'roomType': roomType,
       'searchText': searchText,
     }, ack: (data) {
       if (kDebugMode) {
@@ -331,6 +331,8 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
+
+  Chat? replayTo;
   void emitText(Room room) {
     if(!showSendChat){
       return;
@@ -344,21 +346,28 @@ class ChatProvider extends ChangeNotifier {
       'type': 'text'
     };
 
-    if (room.id == null &&
-        room.roomType == RoomType.pvUser &&
-        room.newRoomToGenerate) {
-      data['userId'] = room.members
-          .firstWhere((element) => element.user!.id != auth!.myUser!.id!)
-          .user!
-          .id;
-    }
+    final fakeChat = ChatTextModel({
+      'text': chatController.text,
+      'id': room.chatList.isNotEmpty ? (room.chatList.last.chatNumberId! + 1) : 1,
+      'room': room.id,
+      'user': auth?.myUser?.toSaveFormat(),
+      'deleted': false,
+      'utcDate': DateTime.now().toUtc().toString(),
+      'edited': false,
+      'replayId': replayTo?.toSaveFormat(),
+      '__v': 0
+    });
+    fakeChat.sendSuccessfully = false;
+    room.chatList.add(fakeChat);
+    notifyListeners();
+
+    chatController.clear();
     socket.emitWithAck('sendChat', data, ack: (data) {
       if (kDebugMode) {
         print('sendChat ack res: $data');
       }
       if (data['success']) {
-        chatController.clear();
-        // _receiveChatEvent(data['data']);
+        room.chatList.remove(fakeChat);
         notifyListeners();
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
@@ -371,12 +380,20 @@ class ChatProvider extends ChangeNotifier {
     Uint8List? uint8list;
     if (file is PlatformFile) {
       fileName = file.name;
-      uint8list = File(file.path!).readAsBytesSync();
+      if(!kIsWeb){
+        uint8list = File(file.path!).readAsBytesSync();
+      }else{
+        uint8list = file.bytes;
+      }
+    }else if(file is Uint8List){
+      uint8list = file;
+      if(type == 'voice'){
+        fileName = 'voice.m4a';
+      }
     } else if(file is File) {
       uint8list = file.readAsBytesSync();
       fileName = file.path;
     }
-
     socket.emitWithAck(
         'sendFile',
         {
@@ -386,7 +403,11 @@ class ChatProvider extends ChangeNotifier {
           'fileName': fileName,
           'roomId': selectedRoom!.id
         },
-        ack: (data) {});
+        ack: (data) {
+          if (kDebugMode) {
+            print(data);
+          }
+        });
   }
 
   final recordVoice = Record();
@@ -394,15 +415,19 @@ class ChatProvider extends ChangeNotifier {
   void recordStart() async {
     if (showSendChat == false) {
       // Check and request permission
-
-      Directory appDocDir = await getApplicationDocumentsDirectory();
+      Directory appDocDir;
+      if(!kIsWeb){
+        appDocDir = await getApplicationDocumentsDirectory();
+      }else{
+        appDocDir = Directory('/');
+      }
       if (await recordVoice.hasPermission()) {
         // Start recording
 
         var _voicePath =
             '/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
         if(await recordVoice.hasPermission()){
-            recordVoice.start(
+            await recordVoice.start(
               path: '${appDocDir.path}/$_voicePath.m4a',
               encoder: AudioEncoder.aacLc, // by default
               bitRate: 128000, // by default
@@ -424,7 +449,12 @@ class ChatProvider extends ChangeNotifier {
       if (isRecording) {
         var name = await recordVoice.stop();
         print('saved voice location is: ' + name!);
-        emitFile(File(name!), 'voice');
+        if(kIsWeb){
+          final res = await http.get(Uri.parse(name));
+          emitFile(Uint8List.fromList(res.bodyBytes), 'voice');
+        }else{
+          emitFile(File(name), 'voice');
+        }
       }
     });
   }
@@ -755,7 +785,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
 
-  Future downloadImage(String url, String savePath , ChatVoiceModel chatVoiceModel) async {
+  Future downloadFile(String url, String savePath , ChatVoiceModel chatVoiceModel) async {
     try {
       Response response = await Dio().get(
         url,

@@ -31,9 +31,9 @@ class _ChatPageState extends State<ChatPage> {
     if (chatProvider.selectedRoom != null) {
       switch (chatProvider.selectedRoom!.roomType) {
         case RoomType.pvUser:
-          if (chatProvider.selectedRoom!.members[0].user!.id ==
+          if (chatProvider.selectedRoom!.members![0].user!.id ==
                   auth.myUser!.id &&
-              chatProvider.selectedRoom!.members[1].user!.id ==
+              chatProvider.selectedRoom!.members![1].user!.id ==
                   auth.myUser!.id) {
             chatAppBarModel
               ..roomName = 'my Messages'
@@ -43,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
           }
 
           User friend = chatProvider.selectedRoom!.members
-              .firstWhere((element) => element.user!.id != auth.myUser!.id)
+              !.firstWhere((element) => element.user!.id != auth.myUser!.id)
               .user!;
           chatAppBarModel
             ..roomName = friend.name
@@ -124,7 +124,7 @@ class _ChatPageState extends State<ChatPage> {
                     Container(
                       alignment: Alignment.bottomCenter,
                       height: MediaQuery.of(context).size.height -
-                          64 -
+                          66 -
                           AppBar().preferredSize.height -
                           _bottomNavigationBarHeight,
                       child: const ChatScrollableList(),

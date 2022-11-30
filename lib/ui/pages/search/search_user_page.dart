@@ -89,7 +89,7 @@ class SearchUserPage extends StatelessWidget {
               controller: searchUserProvider.userSearchTextEditController,
             ),
             AppButton(
-              onPressed: () => searchUserProvider.searchUserWith(context),
+              onPressed: () => searchUserProvider.searchUser(context),
               child: const Text('search'),
               margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             )

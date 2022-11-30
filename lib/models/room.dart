@@ -12,7 +12,7 @@ class Room extends AppCollections {
   DateTime? changeAt;
   DateTime? createAt;
   bool? deleted;
-  List<RoomMember> members = [];
+  List<RoomMember>? members = [];
   RoomType? roomType;
   Chat? lastChat;
   String? roomImage;
@@ -102,15 +102,15 @@ class _RoomUtils {
   static populateRoomFields(Room room, User myAccount) {
     switch (room.roomType) {
       case RoomType.pvUser:
-        if (room.members[0].user!.id == myAccount.id &&
-            room.members[1].user!.id == myAccount.id) {
+        if (room.members![0].user!.id == myAccount.id &&
+            room.members![1].user!.id == myAccount.id) {
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
           room.roomType = RoomType.pvUser;
           break;
         }
 
-        User friend = room.members
+        User friend = room.members!
             .firstWhere((element) => element.user!.id != myAccount.id)
             .user!;
         room.roomName = friend.name;

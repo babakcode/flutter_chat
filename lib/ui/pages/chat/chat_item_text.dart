@@ -5,14 +5,14 @@ import 'package:provider/provider.dart';
 import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
 import 'package:intl/intl.dart' as intl;
 import '../../../constants/app_constants.dart';
-import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
 
 class ChatItemText extends StatelessWidget {
-
   final bool fromMyAccount;
   final ChatTextModel chat;
-  const ChatItemText(this.fromMyAccount,{Key? key, required this.chat}) : super(key: key);
+
+  const ChatItemText(this.fromMyAccount, {Key? key, required this.chat})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class ChatItemText extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment:
-        fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(10.0),
@@ -50,8 +50,8 @@ class ChatItemText extends StatelessWidget {
               basicStyle: TextStyle(
                   color: globalSettingProvider.isDarkTheme
                       ? fromMyAccount
-                      ? AppConstants.textColor[200]
-                      : AppConstants.textColor[700]
+                          ? AppConstants.textColor[200]
+                          : AppConstants.textColor[700]
                       : AppConstants.textColor[700]),
             ),
           ),
@@ -61,21 +61,24 @@ class ChatItemText extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  intl.DateFormat('HH:mm').format(chat.utcDate ?? DateTime.now()),
+                  intl.DateFormat('HH:mm')
+                      .format(chat.utcDate ?? DateTime.now()),
                   style: TextStyle(
                       fontSize: 12,
                       color: globalSettingProvider.isDarkTheme
                           ? fromMyAccount
-                          ? AppConstants.textColor[200]
-                          : AppConstants.textColor[700]
+                              ? AppConstants.textColor[200]
+                              : AppConstants.textColor[700]
                           : AppConstants.textColor[700]),
                 ),
                 const SizedBox(
                   width: 4,
                 ),
                 Icon(
-                  Icons.check_rounded,
-                  size: 8,
+                  chat.sendSuccessfully
+                      ? Icons.check_rounded
+                      : Icons.access_time_rounded,
+                  size: 10,
                   color: fromMyAccount
                       ? AppConstants.textColor[200]
                       : AppConstants.textColor[700],
