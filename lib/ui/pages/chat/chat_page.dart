@@ -9,7 +9,7 @@ import '../../../models/room.dart';
 import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
 import 'chat_scrollable_list.dart';
-
+final _scrollViewController = ScrollController();
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
@@ -80,7 +80,7 @@ class _ChatPageState extends State<ChatPage> {
             : 0;
 
     return WillPopScope(
-      onWillPop: chatProvider.onWillPopChatPage,
+      onWillPop: () => chatProvider.onWillPopChatPage(context),
       child: Scaffold(
         appBar: chatProvider.selectedRoom == null
             ? null
@@ -114,7 +114,7 @@ class _ChatPageState extends State<ChatPage> {
             ? const Center(child: AppText('please select chat room'))
             : SingleChildScrollView(
                 reverse: true,
-                controller: ScrollController(),
+                controller: _scrollViewController,
                 physics: const NeverScrollableScrollPhysics(),
                 // physics: const ClampingScrollPhysics(),
                 child: Column(

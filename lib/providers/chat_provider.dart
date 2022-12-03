@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:chat_babakcode/constants/config.dart';
@@ -19,6 +20,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:http/http.dart' as http;
 import '../models/chat.dart';
+import '../models/upload_file_model.dart';
 import '../utils/hive_manager.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -35,8 +37,7 @@ class ChatProvider extends ChangeNotifier {
   void initAuth(Auth auth) => this.auth = auth;
 
   Future saveLastViewPortSeenIndex(Room selectedRoom) async {
-    if(selectedRoom.chatList.isNotEmpty){
-
+    if (selectedRoom.chatList.isNotEmpty) {
       if (selectedRoom.minViewPortSeenIndex != minIndexOfChatListOnViewPort) {
         // save on database
         await _hiveManager.updateMinViewPortSeenIndexOfRoom(
@@ -45,12 +46,14 @@ class ChatProvider extends ChangeNotifier {
         selectedRoom.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
       }
 
-
-      if ((selectedRoom.lastIndex ?? -1) < selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
+      if ((selectedRoom.lastIndex ?? -1) <
+          selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
         // save on database
         await _hiveManager.updateLastIndexOfRoom(
-            selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!, selectedRoom);
-        selectedRoom.lastIndex = selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
+            selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!,
+            selectedRoom);
+        selectedRoom.lastIndex =
+            selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
       }
     }
   }
@@ -134,11 +137,13 @@ class ChatProvider extends ChangeNotifier {
     //   selectedRoom!.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
     // }
 
-    if ((selectedRoom!.lastIndex ?? -1) < selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
+    if ((selectedRoom!.lastIndex ?? -1) <
+        selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
       // save on database
       // _hiveManager.updateLastIndexOfRoom(
       //     maxIndexOfChatListOnViewPort, selectedRoom!);
-      selectedRoom!.lastIndex = selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
+      selectedRoom!.lastIndex =
+          selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
       notifyListeners();
     }
 
@@ -175,15 +180,19 @@ class ChatProvider extends ChangeNotifier {
 
   TextEditingController chatController = TextEditingController();
 
-  bool showSendChat = false;
-
   FocusNode chatFocusNode = FocusNode();
+
+  final ImagePicker imagePicker = ImagePicker();
+
+  bool showPreUploadFile = false;
+  List<UploadFileModel> preUploadFiles = [];
 
   bool showShareFile = false;
   bool showEmoji = false;
   bool showSticker = false;
   bool loadingLoadMoreNext = false;
   bool loadingLoadMorePrevious = false;
+  bool showSendChat = false;
 
   List<Room> rooms = [];
   final _hiveManager = HiveManager();
@@ -253,8 +262,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void searchUser(
-      {
-      required String searchType,
+      {required String searchType,
       required String searchText,
       required BuildContext context,
       Function? callBack}) {
@@ -274,7 +282,6 @@ class ChatProvider extends ChangeNotifier {
                   : element.user?.username) ==
               searchText)
           .isNotEmpty) {
-
         /// room found
         selectedRoom = room;
         Navigator.pop(context);
@@ -331,10 +338,10 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-
   Chat? replayTo;
+
   void emitText(Room room) {
-    if(!showSendChat){
+    if (!showSendChat) {
       return;
     }
     if (chatController.text.isEmpty) {
@@ -348,7 +355,8 @@ class ChatProvider extends ChangeNotifier {
 
     final fakeChat = ChatTextModel({
       'text': chatController.text,
-      'id': room.chatList.isNotEmpty ? (room.chatList.last.chatNumberId! + 1) : 1,
+      'id':
+          room.chatList.isNotEmpty ? (room.chatList.last.chatNumberId! + 1) : 1,
       'room': room.id,
       'user': auth?.myUser?.toSaveFormat(),
       'deleted': false,
@@ -358,6 +366,7 @@ class ChatProvider extends ChangeNotifier {
       '__v': 0
     });
     fakeChat.sendSuccessfully = false;
+
     room.chatList.add(fakeChat);
     notifyListeners();
 
@@ -368,57 +377,56 @@ class ChatProvider extends ChangeNotifier {
       }
       if (data['success']) {
         room.chatList.remove(fakeChat);
-        notifyListeners();
+        _receiveChatEvent(data);
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
       }
     });
   }
 
-  Future emitFile(file, String type) async {
-    String fileName = '';
-    Uint8List? uint8list;
-    if (file is PlatformFile) {
-      fileName = file.name;
-      if(!kIsWeb){
-        uint8list = File(file.path!).readAsBytesSync();
-      }else{
-        uint8list = file.bytes;
+  Future emitFile(Uint8List file, String type, String path) async {
+    // String fileName = '';
+    // Uint8List? uint8list;
+    // if (file is PlatformFile) {
+    //   fileName = file.name;
+    //   if(!kIsWeb){
+    //     uint8list = File(file.path!).readAsBytesSync();
+    //   }else{
+    //     uint8list = file.bytes;
+    //   }
+    // }
+    // else if(file is Uint8List){
+    //   uint8list = file;
+    //   if(type == 'voice'){
+    //     fileName = 'voice.m4a';
+    //   }
+    // }
+    // else if(file is File) {
+    //   uint8list = file.readAsBytesSync();
+    //   fileName = file.path;
+    // }
+    socket.emitWithAck('sendFile', {
+      'file': file,
+      'type': type,
+      'chat': 'hello',
+      'fileName': path,
+      'roomId': selectedRoom!.id
+    }, ack: (data) {
+      if (kDebugMode) {
+        print(data);
       }
-    }else if(file is Uint8List){
-      uint8list = file;
-      if(type == 'voice'){
-        fileName = 'voice.m4a';
-      }
-    } else if(file is File) {
-      uint8list = file.readAsBytesSync();
-      fileName = file.path;
-    }
-    socket.emitWithAck(
-        'sendFile',
-        {
-          'file': uint8list,
-          'type': type,
-          'chat': 'hello',
-          'fileName': fileName,
-          'roomId': selectedRoom!.id
-        },
-        ack: (data) {
-          if (kDebugMode) {
-            print(data);
-          }
-        });
+    });
   }
 
   final recordVoice = Record();
 
   void recordStart() async {
-    if (showSendChat == false) {
+    if (showSendChat == false && showPreUploadFile == false) {
       // Check and request permission
       Directory appDocDir;
-      if(!kIsWeb){
+      if (!kIsWeb) {
         appDocDir = await getApplicationDocumentsDirectory();
-      }else{
+      } else {
         appDocDir = Directory('/');
       }
       if (await recordVoice.hasPermission()) {
@@ -426,34 +434,44 @@ class ChatProvider extends ChangeNotifier {
 
         var _voicePath =
             '/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
-        if(await recordVoice.hasPermission()){
-            await recordVoice.start(
-              path: '${appDocDir.path}/$_voicePath.m4a',
-              encoder: AudioEncoder.aacLc, // by default
-              bitRate: 128000, // by default
-            ).onError((error, stackTrace) => print(error)).then((value) => 'record started');
-        }else{
-
-        }
+        if (await recordVoice.hasPermission()) {
+          await recordVoice
+              .start(
+            path: '${appDocDir.path}/$_voicePath.m4a',
+            encoder: AudioEncoder.aacLc, // by default
+            bitRate: 128000, // by default
+          )
+              .onError((error, stackTrace) {
+            if (kDebugMode) {
+              print('recordStop');
+            }
+          });
+        } else {}
       }
     }
   }
 
   void recordStop(BuildContext context, Room room) {
-    print('recordStop');
+    if (kDebugMode) {
+      print('recordStop');
+    }
     if (showSendChat) {
       return;
     }
     recordVoice.isRecording().then((isRecording) async {
-      print(isRecording);
       if (isRecording) {
-        var name = await recordVoice.stop();
-        print('saved voice location is: ' + name!);
-        if(kIsWeb){
-          final res = await http.get(Uri.parse(name));
-          emitFile(Uint8List.fromList(res.bodyBytes), 'voice');
-        }else{
-          emitFile(File(name), 'voice');
+        final name = await recordVoice.stop();
+        if (name != null) {
+          if (kDebugMode) {
+            print('saved voice location is: ' + name);
+          }
+          if (kIsWeb) {
+            final res = await http.get(Uri.parse(name));
+            preSendAttachment(Uint8List.fromList(res.bodyBytes),
+                type: 'voice', name: 'voice.m4a');
+          } else {
+            preSendAttachment(File(name), type: 'voice', name: name);
+          }
         }
       }
     });
@@ -544,7 +562,8 @@ class ChatProvider extends ChangeNotifier {
         rooms.sort((a, b) => b.changeAt!.compareTo(b.changeAt!));
         notifyListeners();
         if (_rooms.isNotEmpty) {
-          await auth!.setLastGroupLoadedDate(rooms[0].changeAt!.toUtc().toString());
+          await auth!
+              .setLastGroupLoadedDate(rooms[0].changeAt!.toUtc().toString());
           await _hiveManager.saveRooms(rooms);
         }
       }
@@ -637,7 +656,8 @@ class ChatProvider extends ChangeNotifier {
       /// else just update the last chat of list
       targetRoom.lastChat = chat;
       targetRoom.changeAt = chat.utcDate;
-      await auth!.setLastGroupLoadedDate(targetRoom.changeAt!.toUtc().toString());
+      await auth!
+          .setLastGroupLoadedDate(targetRoom.changeAt!.toUtc().toString());
       _hiveManager.updateRoom(targetRoom);
       auth!.setLastGroupLoadedDate(targetRoom.changeAt.toString());
 
@@ -651,8 +671,7 @@ class ChatProvider extends ChangeNotifier {
           (selectedRoom == targetRoom && chat.user!.id == auth!.myUser!.id)) {
         itemScrollController.scrollTo(
             index: targetRoom.chatList.length - 1,
-            duration: const Duration(milliseconds: 1000),
-            alignment: 0);
+            duration: const Duration(milliseconds: 1000));
       }
       notifyListeners();
     } catch (e) {
@@ -681,7 +700,6 @@ class ChatProvider extends ChangeNotifier {
     rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
     notifyListeners();
     for (var room in rooms) {
-      print('getAllRooms (room id) ${room.id}');
       await getRoomChatsFromDatabase(room);
     }
     notifyListeners();
@@ -784,14 +802,15 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  Future downloadFile(String url, String savePath , ChatVoiceModel chatVoiceModel) async {
+  Future downloadFile(
+      String url, String savePath, ChatVoiceModel chatVoiceModel) async {
     try {
       Response response = await Dio().get(
         url,
-        onReceiveProgress:  (received, total) {
+        onReceiveProgress: (received, total) {
           if (total != -1) {
-            chatVoiceModel.downloadProgress = double.tryParse((received / total * 100).toStringAsFixed(2));
+            chatVoiceModel.downloadProgress =
+                double.tryParse((received / total * 100).toStringAsFixed(2));
             notifyListeners();
           }
         },
@@ -815,19 +834,69 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-
-  Future<bool> onWillPopChatPage() async {
-    if (showSticker || showEmoji || showShareFile || chatFocusNode.hasFocus) {
+  Future<bool> onWillPopChatPage(BuildContext context) async {
+    if (showSticker ||
+        showEmoji ||
+        showShareFile ||
+        MediaQuery.of(context).viewInsets.bottom > 0) {
       showSticker = false;
       showShareFile = false;
       showEmoji = false;
-      chatFocusNode.unfocus();
+      chatFocusNode.unfocus(disposition: UnfocusDisposition.scope);
       notifyListeners();
       return false;
     }
-    if(selectedRoom != null){
-      await saveLastViewPortSeenIndex(selectedRoom!);
+    if (selectedRoom != null) {
+      saveLastViewPortSeenIndex(selectedRoom!);
+      selectedRoom = null;
     }
     return true;
+  }
+
+  void clearPreSendAttachment() {
+    preUploadFiles.clear();
+    showPreUploadFile = false;
+    notifyListeners();
+  }
+
+  void preSendAttachment(dynamic files, {required String type, String? name}) {
+    showPreUploadFile = true;
+    showShareFile = false;
+    if (files is FilePickerResult) {
+      for (var file in files.files) {
+        if (kIsWeb) {
+          preUploadFiles.add(UploadFileModel(
+              type: type, fileBytes: file.bytes!, path: file.name));
+        } else {
+          preUploadFiles.add(
+            UploadFileModel(
+                type: type,
+                fileBytes: File(file.path!).readAsBytesSync(),
+                path: file.name),
+          );
+        }
+      }
+    } else if (files is XFile) {
+      preUploadFiles.add(UploadFileModel(
+          type: type,
+          fileBytes: File(files.path).readAsBytesSync(),
+          path: files.name));
+    } else if (files is Uint8List) {
+      preUploadFiles
+          .add(UploadFileModel(type: type, fileBytes: files, path: name!));
+    }
+    notifyListeners();
+  }
+
+  void emitChat(Room room) {
+    if (showPreUploadFile) {
+      for (var file in preUploadFiles) {
+        emitFile(file.fileBytes, file.type, '');
+      }
+      return;
+    } else if (showSendChat) {
+      emitText(room);
+      return;
+    }
   }
 }

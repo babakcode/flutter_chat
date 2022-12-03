@@ -1,5 +1,6 @@
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'chat.dart';
@@ -29,11 +30,12 @@ class Room extends AppCollections {
   factory Room.fromJson(Map json, bool fromDatabase) {
     DateTime? createAtLocal;
     DateTime? changeAtLocal;
-    print("createAt is : " + json['createAt']);
-    print("changeAt is : " + json['changeAt']);
-    createAtLocal = DateTime.tryParse(json['createAt']);
-    changeAtLocal = DateTime.parse(json['changeAt']);
+    if (kDebugMode) {
+      print("room changeAt (json) is : " + json['changeAt']);
+    }
 
+    createAtLocal = DateTime.tryParse(json['createAt']);
+    changeAtLocal = DateTime.tryParse(json['changeAt']);
     if (json['createAt'] != null) {
       createAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
           .parse(createAtLocal.toString(), true)
@@ -44,13 +46,16 @@ class Room extends AppCollections {
           .parse(changeAtLocal.toString(), true)
           .toLocal();
     }
+    if (kDebugMode) {
+      print("room changeAt (dateTime) is : " + changeAtLocal.toString());
+    }
 
     return Room()
       ..id = json['_id']
       ..roomName = json['roomName']
       ..lastIndex = json['property']['lastIndex']
-      ..changeAt = createAtLocal
-      ..createAt = changeAtLocal
+      ..changeAt = changeAtLocal
+      ..createAt = createAtLocal
       ..deleted = json['deleted']
       ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
       ..members = (json['members'] as List).map((member) {

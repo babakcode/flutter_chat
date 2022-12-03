@@ -474,7 +474,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           ),
 
           /// show not read chats count
-          if ((room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0) > 1)
+          if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
