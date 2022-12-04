@@ -108,7 +108,7 @@ class ChatProvider extends ChangeNotifier {
       }
     });
 
-    itemPositionsListener.itemPositions.addListener(changeScrollIndexListener);
+    // itemPositionsListener.itemPositions.addListener(changeScrollIndexListener);
   }
 
   set setConnectionStatus(String? set) {
@@ -137,8 +137,15 @@ class ChatProvider extends ChangeNotifier {
     //   selectedRoom!.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
     // }
 
+    if (selectedRoom!.chatList.isNotEmpty &&
+        selectedRoom!.lastChat?.id == selectedRoom!.chatList.last.id) {
+      selectedRoom!.reachedToEnd = true;
+    }
+
+
+
     if ((selectedRoom!.lastIndex ?? -1) <
-        selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
+        (selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId ?? 0)) {
       // save on database
       // _hiveManager.updateLastIndexOfRoom(
       //     maxIndexOfChatListOnViewPort, selectedRoom!);
@@ -159,6 +166,7 @@ class ChatProvider extends ChangeNotifier {
         !loadingLoadMoreNext &&
         selectedRoom!.lastChat!.chatNumberId !=
             selectedRoom!.chatList.last.chatNumberId) {
+      loadingLoadMoreNext = true;
       _loadMoreNext();
     } else if (minIndexOfChatListOnViewPort <= 3 &&
         selectedRoom!.reachedToStart == false &&
@@ -370,6 +378,19 @@ class ChatProvider extends ChangeNotifier {
     room.chatList.add(fakeChat);
     notifyListeners();
 
+    if (selectedRoom == room) {
+      /// if we are at end of the list then scroll to received new chat
+      if ((selectedRoom == room &&
+              (maxIndexOfChatListOnViewPort - (room.chatList.length - 1)).abs() <=
+                  2) ||
+          (selectedRoom == room && fakeChat.user!.id == auth!.myUser!.id)) {
+        itemScrollController.scrollTo(
+            index: room.chatList.length - 1,
+            alignment: 0.1,
+            duration: const Duration(milliseconds: 1000));
+      }
+    }
+
     chatController.clear();
     socket.emitWithAck('sendChat', data, ack: (data) {
       if (kDebugMode) {
@@ -377,6 +398,7 @@ class ChatProvider extends ChangeNotifier {
       }
       if (data['success']) {
         room.chatList.remove(fakeChat);
+        notifyListeners();
         _receiveChatEvent(data);
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
@@ -384,38 +406,74 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  Future emitFile(Uint8List file, String type, String path) async {
-    // String fileName = '';
-    // Uint8List? uint8list;
-    // if (file is PlatformFile) {
-    //   fileName = file.name;
-    //   if(!kIsWeb){
-    //     uint8list = File(file.path!).readAsBytesSync();
-    //   }else{
-    //     uint8list = file.bytes;
-    //   }
-    // }
-    // else if(file is Uint8List){
-    //   uint8list = file;
-    //   if(type == 'voice'){
-    //     fileName = 'voice.m4a';
-    //   }
-    // }
-    // else if(file is File) {
-    //   uint8list = file.readAsBytesSync();
-    //   fileName = file.path;
-    // }
-    socket.emitWithAck('sendFile', {
-      'file': file,
-      'type': type,
-      'chat': 'hello',
-      'fileName': path,
-      'roomId': selectedRoom!.id
-    }, ack: (data) {
-      if (kDebugMode) {
-        print(data);
+  Future emitFile(Room room) async {
+    final sendFiles = preUploadFiles;
+    String chatText = chatController.text;
+    for (int i = 0; i < sendFiles.length; i++) {
+      final file = sendFiles[i];
+
+      /// roomId, chat, file, type, fileName
+      Map data = {
+        'roomId': room.id!,
+        'chat': i == sendFiles.length - 1 ? chatText : null,
+        'type': file.type,
+        'file': file.fileBytes,
+        'fileName': file.path
+      };
+
+      final fakeChat = Chat.detectChatModelType({
+        'text': chatController.text,
+        'id': room.chatList.isNotEmpty
+            ? (room.chatList.last.chatNumberId! + 1)
+            : 1,
+        'fakeFile': file.fileBytes,
+        'type': file.type,
+        'room': room.id,
+        'user': auth?.myUser?.toSaveFormat(),
+        'deleted': false,
+        'utcDate': DateTime.now().toUtc().toString(),
+        'edited': false,
+        'replayId': replayTo?.toSaveFormat(),
+        '__v': 0
+      });
+      fakeChat.sendSuccessfully = false;
+
+      room.chatList.add(fakeChat);
+      notifyListeners();
+
+      if (selectedRoom == room) {
+        /// if we are at end of the list then scroll to received new chat
+        if ((selectedRoom == room &&
+                (maxIndexOfChatListOnViewPort - room.chatList.length).abs() <=
+                    5) ||
+            (selectedRoom == room && fakeChat.user!.id == auth!.myUser!.id)) {
+          itemScrollController.scrollTo(
+              index: room.chatList.length - 1,
+              alignment: 0.1,
+              duration: const Duration(milliseconds: 1000));
+        }
       }
-    });
+
+      if (i == sendFiles.length - 1) {
+        chatController.clear();
+        clearPreSendAttachment();
+      }
+
+      socket.emitWithAck('sendFile', data, ack: (data) {
+        if (kDebugMode) {
+          print(data);
+        }
+
+        if (data['success']) {
+          room.chatList.remove(fakeChat);
+          notifyListeners();
+
+          _receiveChatEvent(data);
+        } else {
+          Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+        }
+      });
+    }
   }
 
   final recordVoice = Record();
@@ -424,20 +482,20 @@ class ChatProvider extends ChangeNotifier {
     if (showSendChat == false && showPreUploadFile == false) {
       // Check and request permission
       Directory appDocDir;
-      if (!kIsWeb) {
-        appDocDir = await getApplicationDocumentsDirectory();
-      } else {
+      if (kIsWeb) {
         appDocDir = Directory('/');
+      } else {
+        appDocDir = await getApplicationDocumentsDirectory();
       }
       if (await recordVoice.hasPermission()) {
         // Start recording
 
         var _voicePath =
-            '/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
+            '${appDocDir.path}/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
         if (await recordVoice.hasPermission()) {
           await recordVoice
               .start(
-            path: '${appDocDir.path}/$_voicePath.m4a',
+            path: _voicePath,
             encoder: AudioEncoder.aacLc, // by default
             bitRate: 128000, // by default
           )
@@ -470,7 +528,8 @@ class ChatProvider extends ChangeNotifier {
             preSendAttachment(Uint8List.fromList(res.bodyBytes),
                 type: 'voice', name: 'voice.m4a');
           } else {
-            preSendAttachment(File(name), type: 'voice', name: name);
+            preSendAttachment(File(name).readAsBytesSync(),
+                type: 'voice', name: name);
           }
         }
       }
@@ -664,14 +723,18 @@ class ChatProvider extends ChangeNotifier {
       rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
 
       /// if we are at end of the list then scroll to received new chat
-      if ((selectedRoom == targetRoom &&
-              (maxIndexOfChatListOnViewPort - targetRoom.chatList.length)
-                      .abs() <=
-                  5) ||
-          (selectedRoom == targetRoom && chat.user!.id == auth!.myUser!.id)) {
-        itemScrollController.scrollTo(
-            index: targetRoom.chatList.length - 1,
-            duration: const Duration(milliseconds: 1000));
+      if (selectedRoom == targetRoom) {
+        if ((maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <=
+                3 ||
+            chat.user!.id == auth!.myUser!.id) {
+          if (maxIndexOfChatListOnViewPort !=
+              ((selectedRoom?.chatList.length ?? -1) - 1)) {
+            itemScrollController.scrollTo(
+                index: targetRoom.chatList.length - 1,
+                alignment: 0.1,
+                duration: const Duration(milliseconds: 1000));
+          }
+        }
       }
       notifyListeners();
     } catch (e) {
@@ -724,6 +787,9 @@ class ChatProvider extends ChangeNotifier {
         jsonEncode(
             {'room': selectedRoom?.id, 'after': selectedRoom?.lastIndex}),
         ack: (res) {
+      if (kDebugMode) {
+        print('_loadMoreNext res : $res');
+      }
       res = jsonDecode(res);
       loadingLoadMoreNext = false;
       if (res['success']) {
@@ -733,14 +799,11 @@ class ChatProvider extends ChangeNotifier {
         }
         if (_receivedChats.isEmpty) {
           selectedRoom!.reachedToEnd = true;
+        } else {
+          selectedRoom!.chatList.addAll(_receivedChats);
+          _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
+          notifyListeners();
         }
-        selectedRoom!.chatList.addAll(_receivedChats);
-        _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
-      }
-      // notifyListeners();
-      notifyListeners();
-      if (kDebugMode) {
-        print(res);
       }
     });
     // selectedRoom.chatList
@@ -870,9 +933,10 @@ class ChatProvider extends ChangeNotifier {
         } else {
           preUploadFiles.add(
             UploadFileModel(
-                type: type,
-                fileBytes: File(file.path!).readAsBytesSync(),
-                path: file.name),
+              type: type,
+              fileBytes: File(file.path!).readAsBytesSync(),
+              path: file.name,
+            ),
           );
         }
       }
@@ -890,9 +954,7 @@ class ChatProvider extends ChangeNotifier {
 
   void emitChat(Room room) {
     if (showPreUploadFile) {
-      for (var file in preUploadFiles) {
-        emitFile(file.fileBytes, file.type, '');
-      }
+      emitFile(room);
       return;
     } else if (showSendChat) {
       emitText(room);

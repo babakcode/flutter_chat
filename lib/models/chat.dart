@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:intl/intl.dart';
 import 'app_collection.dart';
 import 'package:just_audio/just_audio.dart';

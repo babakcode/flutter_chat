@@ -350,7 +350,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                       maxHeight: 512,
                       imageQuality: 60);
                   if (image != null) {
-                    chatProvider.preSendAttachment(image, type: 'image');
+                    chatProvider.preSendAttachment(image, type: 'photo');
                   }
                 },
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
@@ -556,14 +556,27 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                     ),
                     child: Builder(builder: (context) {
                       switch(file.type){
-                        case 'image':
+                        case 'photo':
                           return Image.memory(file.fileBytes,
                             height: 200,
                             width: 200,
                             fit: BoxFit.cover,
                           );
+                        case 'doc':
+                          return SizedBox(width: 200, height: 200,
+                            child: Column(
+                              children: [
+                                const Expanded(child: Center(child: Icon(Icons.file_copy_rounded, size: 28,),), flex: 3,),
+                                const AppText('Document', fontWeight: FontWeight.bold, size: 18,maxLines:1,),
+                                AppText(file.path, size: 12, maxLines: 1,),
+                                const Spacer(flex: 1,)
+                              ],
+                            ),
+                          );
                       }
-                      return const Text('update Required!');
+                      return const SizedBox(
+                          width: 200,
+                          child: Center(child: AppText('update Required!')));
                     },),
                   );
                 },),

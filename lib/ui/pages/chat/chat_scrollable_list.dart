@@ -23,16 +23,18 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   void initState() {
     super.initState();
     _chatProvider = context.read<ChatProvider>();
-    minInitIndex = _chatProvider!.selectedRoom!.minViewPortSeenIndex;
-    _selectedRoom = _chatProvider!.selectedRoom!;
+    minInitIndex = _chatProvider.selectedRoom!.minViewPortSeenIndex;
+    _selectedRoom = _chatProvider.selectedRoom!;
+    _chatProvider.itemPositionsListener.itemPositions.addListener(_chatProvider.changeScrollIndexListener);
   }
 
-  ChatProvider? _chatProvider;
+  late ChatProvider _chatProvider;
   late Room _selectedRoom;
 
   @override
   void dispose() {
-    _chatProvider!.saveLastViewPortSeenIndex(_selectedRoom);
+    _chatProvider.saveLastViewPortSeenIndex(_selectedRoom);
+    _chatProvider.itemPositionsListener.itemPositions.removeListener(_chatProvider.changeScrollIndexListener);
     super.dispose();
   }
 

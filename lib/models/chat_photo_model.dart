@@ -1,9 +1,16 @@
 part of 'chat.dart';
 class ChatPhotoModel extends Chat {
-  late String fileUrl;
+
+  Uint8List? fakeFile;
+  String? fileUrl;
   String? text;
   ChatPhotoModel(Map json): super(json) {
-    fileUrl = json['fileUrl'];
+    if(json.containsKey('fileUrl')){
+      fileUrl = json['fileUrl'];
+    }
+    if(json.containsKey('fakeFile')){
+      fakeFile = json['fakeFile'];
+    }
     text = json['text'];
   }
   @override
