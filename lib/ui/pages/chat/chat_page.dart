@@ -9,7 +9,9 @@ import '../../../models/room.dart';
 import '../../../models/user.dart';
 import '../../../providers/auth_provider.dart';
 import 'chat_scrollable_list.dart';
+
 final _scrollViewController = ScrollController();
+
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
@@ -42,8 +44,8 @@ class _ChatPageState extends State<ChatPage> {
             break;
           }
 
-          User friend = chatProvider.selectedRoom!.members
-              !.firstWhere((element) => element.user!.id != auth.myUser!.id)
+          User friend = chatProvider.selectedRoom!.members!
+              .firstWhere((element) => element.user!.id != auth.myUser!.id)
               .user!;
           chatAppBarModel
             ..roomName = friend.name
@@ -107,7 +109,8 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 actions: [
                   IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.more_vert_rounded))
+                      onPressed: () {},
+                      icon: const Icon(Icons.more_vert_rounded))
                 ],
               ),
         body: chatProvider.selectedRoom == null
@@ -127,7 +130,9 @@ class _ChatPageState extends State<ChatPage> {
                           66 -
                           AppBar().preferredSize.height -
                           _bottomNavigationBarHeight,
-                      child: const ChatScrollableList(),
+                      child: chatProvider.selectedRoom!.chatList.isNotEmpty
+                          ? const ChatScrollableList()
+                          : const Center(child: Text('empty')),
                     ),
                     ChatBottomNavComponent(
                       room: chatProvider.selectedRoom!,

@@ -380,10 +380,10 @@ class ChatProvider extends ChangeNotifier {
 
     if (selectedRoom == room) {
       /// if we are at end of the list then scroll to received new chat
-      if ((selectedRoom == room &&
+      if (( room.chatList.length > 5 &&
               (maxIndexOfChatListOnViewPort - (room.chatList.length - 1)).abs() <=
                   2) ||
-          (selectedRoom == room && fakeChat.user!.id == auth!.myUser!.id)) {
+          (room.chatList.length > 5 && selectedRoom == room && fakeChat.user!.id == auth!.myUser!.id)) {
         itemScrollController.scrollTo(
             index: room.chatList.length - 1,
             alignment: 0.1,
@@ -397,9 +397,8 @@ class ChatProvider extends ChangeNotifier {
         print('sendChat ack res: $data');
       }
       if (data['success']) {
-        room.chatList.remove(fakeChat);
-        notifyListeners();
-        _receiveChatEvent(data);
+
+        _receiveChatEvent(data, fakeChat);
       } else {
         Utils.showSnack(navigatorKey.currentContext!, data['msg']);
       }
@@ -465,10 +464,10 @@ class ChatProvider extends ChangeNotifier {
         }
 
         if (data['success']) {
-          room.chatList.remove(fakeChat);
-          notifyListeners();
+          // room.chatList.remove(fakeChat);
+          // notifyListeners();
 
-          _receiveChatEvent(data);
+          _receiveChatEvent(data, fakeChat);
         } else {
           Utils.showSnack(navigatorKey.currentContext!, data['msg']);
         }
@@ -633,46 +632,50 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  void _receiveChatEvent(data) async {
+  void _receiveChatEvent(data, [Chat? fakeChat]) async {
     if (kDebugMode) {
       print('receiveChat => $data');
+      print(fakeChat);
     }
-    try {
-      final chat = Chat.detectChatModelType(data['chat']);
+    final chat = Chat.detectChatModelType(data['chat']);
 
-      int indexOfRoom = rooms.indexWhere((element) => element.id == chat.room);
+    int indexOfRoom = rooms.indexWhere((element) => element.id == chat.room);
 
-      /// add the room to the local list if not exist
-      if (indexOfRoom == -1) {
-        /// request to get room details
-        /// or insert from chat `room` property
-        Room room = Room.fromJson(data['room'], false);
+    /// add the room to the local list if not exist
+    if (indexOfRoom == -1) {
+      /// request to get room details
+      /// or insert from chat `room` property
+      Room room = Room.fromJson(data['room'], false);
 
-        rooms.add(room);
+      rooms.add(room);
 
-        /// after get room, update ``indexOfRoom``
-        indexOfRoom = rooms.indexOf(room);
-      }
+      /// after get room, update ``indexOfRoom``
+      indexOfRoom = rooms.indexOf(room);
+    }
 
-      /// get targetRoom from local list
-      Room targetRoom = rooms[indexOfRoom];
-      if (targetRoom.id == selectedRoom?.id) {
-        selectedRoom = targetRoom;
-      }
+    /// get targetRoom from local list
+    Room targetRoom = rooms[indexOfRoom];
+    if (targetRoom.id == selectedRoom?.id) {
+      selectedRoom = targetRoom;
+    }
+
+
+    if(fakeChat == null){
 
       /// check last chat of the target room
       if (targetRoom.lastChat == null) {
         targetRoom.lastChat = chat;
 
         targetRoom.chatList.add(chat);
-      } else {
+      }
+      else {
         /// if received new (chat number id) - 1 is room lastChat of
         /// `loaded` chat list number id
         /// then we reached to end of the chat list
         /// that means we won't load more of list
         if (chat.chatNumberId! - 1 ==
-                targetRoom
-                    .chatList[targetRoom.chatList.length - 1].chatNumberId ||
+            targetRoom
+                .chatList[targetRoom.chatList.length - 1].chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
         } else if (chat.user!.id == auth!.myUser!.id &&
@@ -686,62 +689,74 @@ class ChatProvider extends ChangeNotifier {
           socket.emitWithAck('loadMorePrevious',
               jsonEncode({'before': chat.chatNumberId, 'room': targetRoom.id}),
               ack: (data) {
-            data = jsonDecode(data);
-            if (data['success']) {
-              final chatList = data['chats'] as List;
-              targetRoom.chatList =
-                  chatList.map((e) => Chat.detectChatModelType(e)).toList();
-              targetRoom.chatList.add(chat);
-              targetRoom.chatList
-                  .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
+                data = jsonDecode(data);
+                if (data['success']) {
+                  final chatList = data['chats'] as List;
+                  targetRoom.chatList =
+                      chatList.map((e) => Chat.detectChatModelType(e)).toList();
+                  targetRoom.chatList.add(chat);
+                  targetRoom.chatList
+                      .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
 
-              /// after add chat to chat list of the target room then
-              /// save chat
-              _hiveManager.saveChats(targetRoom.chatList, targetRoom.id!,
-                  clearSavedList: true);
-            } else {
-              Utils.showSnack(navigatorKey.currentContext!, data['msg']);
-            }
-          });
+                  /// after add chat to chat list of the target room then
+                  /// save chat
+                  _hiveManager.saveChats(targetRoom.chatList, targetRoom.id!,
+                      clearSavedList: true);
+                } else {
+                  Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+                }
+              });
         }
       }
 
-      //
-
-      /// after add chat to chat list of the target room then
-      /// save chat
-      _hiveManager.saveChats([chat], targetRoom.id!);
-
-      /// else just update the last chat of list
-      targetRoom.lastChat = chat;
-      targetRoom.changeAt = chat.utcDate;
-      await auth!
-          .setLastGroupLoadedDate(targetRoom.changeAt!.toUtc().toString());
-      _hiveManager.updateRoom(targetRoom);
-      auth!.setLastGroupLoadedDate(targetRoom.changeAt.toString());
-
-      rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
-
-      /// if we are at end of the list then scroll to received new chat
-      if (selectedRoom == targetRoom) {
-        if ((maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <=
-                3 ||
-            chat.user!.id == auth!.myUser!.id) {
-          if (maxIndexOfChatListOnViewPort !=
-              ((selectedRoom?.chatList.length ?? -1) - 1)) {
-            itemScrollController.scrollTo(
-                index: targetRoom.chatList.length - 1,
-                alignment: 0.1,
-                duration: const Duration(milliseconds: 1000));
-          }
-        }
-      }
-      notifyListeners();
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
+    }else{
+      final indexOfOldChat = targetRoom.chatList.indexOf(fakeChat);
+      if(indexOfOldChat != -1){
+        targetRoom.chatList[indexOfOldChat] = chat;
+      }else{
+        targetRoom.chatList.add(chat);
       }
     }
+
+    //
+
+    /// after add chat to chat list of the target room then
+    /// save chat
+    _hiveManager.saveChats([chat], targetRoom.id!);
+
+    /// else just update the last chat of list
+    targetRoom.lastChat = chat;
+    targetRoom.changeAt = chat.utcDate;
+    notifyListeners();
+
+    await auth!
+        .setLastGroupLoadedDate(targetRoom.changeAt!.toUtc().toString());
+    _hiveManager.updateRoom(targetRoom);
+    auth!.setLastGroupLoadedDate(targetRoom.changeAt.toString());
+
+    rooms.sort((a, b) => b.changeAt!.compareTo(a.changeAt!));
+
+    /// if we are at end of the list then scroll to received new chat
+    if (selectedRoom == targetRoom) {
+      if ((maxIndexOfChatListOnViewPort - targetRoom.chatList.length).abs() <=
+          3 ||
+          chat.user!.id == auth!.myUser!.id) {
+        if (maxIndexOfChatListOnViewPort !=
+            ((selectedRoom?.chatList.length ?? -1) - 1)) {
+          itemScrollController.scrollTo(
+              index: targetRoom.chatList.length - 1,
+              alignment: 0.1,
+              duration: const Duration(milliseconds: 1000));
+        }
+      }
+    }
+    // try {
+    //
+    // } catch (e) {
+    //   if (kDebugMode) {
+    //     print(e);
+    //   }
+    // }
   }
 
   void _handleSocketErrorsEvent(error) async {
@@ -901,10 +916,15 @@ class ChatProvider extends ChangeNotifier {
     if (showSticker ||
         showEmoji ||
         showShareFile ||
-        MediaQuery.of(context).viewInsets.bottom > 0) {
+        MediaQuery.of(context).viewInsets.bottom > 0 ||
+      showPreUploadFile
+    ) {
       showSticker = false;
       showShareFile = false;
       showEmoji = false;
+      if(showPreUploadFile){
+        clearPreSendAttachment();
+      }
       chatFocusNode.unfocus(disposition: UnfocusDisposition.scope);
       notifyListeners();
       return false;

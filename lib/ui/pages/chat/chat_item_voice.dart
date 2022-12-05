@@ -80,7 +80,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             String fullPath =
-                                "${snapshot.data!.path}/${widget.chat.fileUrl.split('/').last}";
+                                "${snapshot.data!.path}/${widget.chat.fileUrl!.split('/').last}";
                             bool exist = File(fullPath).existsSync();
                             return Consumer<ChatProvider>(
                                 builder: (context, chatProvider, child) {
@@ -94,7 +94,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                                 onPressed: () async {
                                   if (exist == false) {
                                     chatProvider.downloadFile(
-                                        widget.chat.fileUrl,
+                                        widget.chat.fileUrl!,
                                         fullPath,
                                         widget.chat);
                                   } else {
@@ -125,7 +125,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                         widget.chat.isPlaying = true;
                         _chatProvider.notifyListeners();
                         await widget.chat.audioPlayer
-                            .setUrl(widget.chat.fileUrl);
+                            .setUrl(widget.chat.fileUrl!);
                         _controller.forward();
                         _controller.repeat();
                         await widget.chat.audioPlayer.play();

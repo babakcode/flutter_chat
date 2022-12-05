@@ -6,9 +6,17 @@ class ChatVoiceModel extends Chat {
   bool isPlaying = false;
   AudioPlayer audioPlayer = AudioPlayer();
 
-  late String fileUrl;
+  Uint8List? fakeFile;
+  String? fileUrl;
+  String? text;
   ChatVoiceModel(Map json): super(json) {
-    fileUrl = json['fileUrl'];
+    if(json.containsKey('fileUrl')){
+      fileUrl = json['fileUrl'];
+    }
+    if(json.containsKey('fakeFile')){
+      fakeFile = json['fakeFile'];
+    }
+    text = json['text'];
   }
   @override
   Map<String, dynamic> toSaveFormat() {

@@ -66,7 +66,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
               : Column(
                   children: [
                     /// pre send files section
-                    _preSendFilesOffstageSection(chatProvider, globalSetting),
+                    _preSendFilesOffstageSection(chatProvider, globalSetting, _width),
 
                     /// for search `@users`
                     _atSignSection(chatProvider),
@@ -382,12 +382,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                 );
 
                 if (result?.files.isNotEmpty ?? false) {
-                  print(result);
-                  for (PlatformFile file in result!.files) {
-                    // var item = File(file.path!);
-                    chatProvider.preSendAttachment(file, type: 'photo');
-                    // chatProvider.emitFile(file, 'photo');
-                  }
+                  chatProvider.preSendAttachment(result, type: 'photo');
                 }
               },
               trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
@@ -501,7 +496,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
     );
   }
 
-  Widget _preSendFilesOffstageSection(ChatProvider chatProvider, GlobalSettingProvider globalSetting) {
+  Widget _preSendFilesOffstageSection(ChatProvider chatProvider, GlobalSettingProvider globalSetting, double width) {
     return Offstage(
       offstage: !chatProvider.showPreUploadFile,
       child: SingleChildScrollView(
@@ -512,7 +507,6 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
               child: Divider(color: Colors.blueGrey, height: 2),
               height: 25,
             ),
-
 
             /// text + close icon
             Padding(
@@ -569,6 +563,17 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                                 const Expanded(child: Center(child: Icon(Icons.file_copy_rounded, size: 28,),), flex: 3,),
                                 const AppText('Document', fontWeight: FontWeight.bold, size: 18,maxLines:1,),
                                 AppText(file.path, size: 12, maxLines: 1,),
+                                const Spacer(flex: 1,)
+                              ],
+                            ),
+                          );
+                        case 'voice':
+                          return SizedBox(width: width - 70, height: 200,
+                            child: Column(
+                              children: [
+                                const Expanded(child: Center(child: Icon(Icons.keyboard_voice_rounded, size: 28,),), flex: 3,),
+                                const AppText('Voice', fontWeight: FontWeight.bold, size: 18,maxLines:1,),
+                                // AppText(file.path, size: 12, maxLines: 1,),
                                 const Spacer(flex: 1,)
                               ],
                             ),
