@@ -44,6 +44,7 @@ class ProfileProvider extends ChangeNotifier {
             Navigator.pop(navigatorKey.currentContext!);
           }
           Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+
         } catch (e) {
           print(e);
         }

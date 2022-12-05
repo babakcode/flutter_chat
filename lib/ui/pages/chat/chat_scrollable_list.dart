@@ -1,3 +1,5 @@
+import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +27,8 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     _chatProvider = context.read<ChatProvider>();
     minInitIndex = _chatProvider.selectedRoom!.minViewPortSeenIndex;
     _selectedRoom = _chatProvider.selectedRoom!;
-    _chatProvider.itemPositionsListener.itemPositions.addListener(_chatProvider.changeScrollIndexListener);
+    _chatProvider.itemPositionsListener.itemPositions
+        .addListener(_chatProvider.changeScrollIndexListener);
   }
 
   late ChatProvider _chatProvider;
@@ -34,7 +37,8 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   @override
   void dispose() {
     _chatProvider.saveLastViewPortSeenIndex(_selectedRoom);
-    _chatProvider.itemPositionsListener.itemPositions.removeListener(_chatProvider.changeScrollIndexListener);
+    _chatProvider.itemPositionsListener.itemPositions
+        .removeListener(_chatProvider.changeScrollIndexListener);
     super.dispose();
   }
 
@@ -96,14 +100,14 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     bool middleChatFromUser = false;
 
     try {
-      if(index != 0){
+      if (index != 0) {
         previousChatFromUser = (room.chatList[index - 1].user!.id ==
-            chatProvider.auth!.myUser!.id) ==
+                chatProvider.auth!.myUser!.id) ==
             fromMyAccount;
       }
-      if(index != (room.chatList.length - 1)){
+      if (index != (room.chatList.length - 1)) {
         nextChatFromUser = (room.chatList[index + 1].user!.id ==
-            chatProvider.auth!.myUser!.id) ==
+                chatProvider.auth!.myUser!.id) ==
             fromMyAccount;
       }
       middleChatFromUser = (previousChatFromUser && nextChatFromUser);
@@ -150,9 +154,23 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),
                         clipBehavior: Clip.antiAliasWithSaveLayer,
-                        child: Image.asset(
-                          'assets/images/p2.jpg',
-                          fit: BoxFit.cover,
+                        child: InkWell(
+                          onTap: () {
+                            print(chat.user!.toSaveFormat());
+                            Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (context) =>
+                                      ProfilePage(user: chat.user!),
+                                ));
+                          },
+                          child: chat.user?.profileUrl == null? Image.asset(
+                            'assets/images/p2.jpg',
+                            fit: BoxFit.cover,
+                          ): Image.network(
+                            chat.user!.profileUrl!,
+                            fit: BoxFit.cover,
+                          )
                         ),
                       ),
               ),
