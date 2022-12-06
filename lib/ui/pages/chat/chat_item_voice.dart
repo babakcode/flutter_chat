@@ -4,6 +4,7 @@ import 'package:chat_babakcode/constants/app_constants.dart';
 import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
+import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:chat_babakcode/models/chat.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl;
 import '../../../providers/chat_provider.dart';
+import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
 import '../../widgets/app_text.dart';
 
 class ChatItemVoice extends StatefulWidget {
@@ -105,7 +107,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                                       onPressed: () async {
                                         if (exist == false) {
                                           chatProvider.downloadFile(
-                                              widget.chat.fileUrl!,
+                                              widget.chat.fileUrl!  + '/${auth.accessToken!}',
                                               fullPath,
                                               widget.chat);
                                         } else {
@@ -235,6 +237,39 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
             ],
           ),
         ),
+
+        if (widget.chat.text != null)
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: detectable.DetectableText(
+              text: widget.chat.text ?? '',
+              trimLines: 10,
+              moreStyle: const TextStyle(color: Colors.blueGrey),
+              lessStyle: const TextStyle(color: Colors.blueGrey),
+              colorClickableText: Colors.blue,
+              trimMode: detectable.TrimMode.Line,
+              trimCollapsedText: 'more',
+              trimExpandedText: '...less',
+              onTap: (tappedText) {
+                debugPrint(tappedText);
+                if (tappedText.startsWith('#')) {
+                  debugPrint('DetectableText >>>>>>> #');
+                } else if (tappedText.startsWith('@')) {
+                  debugPrint('DetectableText >>>>>>> @');
+                } else if (tappedText.startsWith('http')) {
+                  debugPrint('DetectableText >>>>>>> http');
+                }
+              },
+              detectionRegExp: hashTagAtSignUrlRegExp,
+              basicStyle: TextStyle(
+                  color: globalSetting.isDarkTheme
+                      ? widget.fromMyAccount
+                      ? AppConstants.textColor[200]
+                      : AppConstants.textColor[700]
+                      : AppConstants.textColor[700]),
+            ),
+          ),
+
       ],
     );
   }

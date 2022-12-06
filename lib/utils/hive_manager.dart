@@ -176,11 +176,14 @@ class HiveManager {
     if(saveCancel) {
       return;
     }
-    print('updateLastIndexOfRoom ( lastIndex: $lastIndex , selectedRoom: ${selectedRoom.id}');
+    if (kDebugMode) {
+      print('updateLastIndexOfRoom ( lastIndex: $lastIndex , selectedRoom: ${selectedRoom.id}');
+    }
     var room = _roomBox.get(selectedRoom.id);
     if (room != null && room['property']['lastIndex'] != lastIndex) {
       room['property']['lastIndex'] = lastIndex;
       await _roomBox.put(room['_id'], room);
+      selectedRoom.lastIndex = lastIndex;
     }
   }
 

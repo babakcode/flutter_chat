@@ -31,9 +31,6 @@ class Room extends AppCollections {
   factory Room.fromJson(Map json, bool fromDatabase) {
     DateTime? createAtLocal;
     DateTime? changeAtLocal;
-    if (kDebugMode) {
-      print("room changeAt (json) is : " + json['changeAt']);
-    }
 
     createAtLocal = DateTime.tryParse(json['createAt']);
     changeAtLocal = DateTime.tryParse(json['changeAt']);
@@ -46,9 +43,6 @@ class Room extends AppCollections {
       changeAtLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
           .parse(changeAtLocal.toString(), true)
           .toLocal();
-    }
-    if (kDebugMode) {
-      print("room changeAt (dateTime) is : " + changeAtLocal.toString());
     }
 
     return Room()

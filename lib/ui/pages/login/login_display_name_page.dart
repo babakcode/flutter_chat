@@ -20,6 +20,7 @@ class LoginDisplayNameProvider extends StatelessWidget {
         child: SizedBox(
             height: MediaQuery.of(context).size.height,
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -44,7 +45,7 @@ class LoginDisplayNameProvider extends StatelessWidget {
                   // Spacer()
                   
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .10,
+                  height: MediaQuery.of(context).size.height * .04,
                 ),
                   Card(
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -56,7 +57,7 @@ class LoginDisplayNameProvider extends StatelessWidget {
                         height: 240,
                       )),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * .16,
+                    height: MediaQuery.of(context).size.height * .10,
                   ),
                 
                   AppText(

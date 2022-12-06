@@ -86,9 +86,6 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                     return true;
                   }
                   if (notification is ScrollEndNotification) {
-                    if (kDebugMode) {
-                      print('ScrollEndNotification');
-                    }
                     _chatProvider.saveLastViewPortSeenIndex(_selectedRoom);
                   }
                   return true;

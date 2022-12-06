@@ -19,6 +19,7 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Center(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -30,7 +31,7 @@ class LoginPage extends StatelessWidget {
                   width: 60,
                 ),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * .16,
+                    height: MediaQuery.of(context).size.height * .12,
                   ),
                 Card(
                     clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -42,7 +43,7 @@ class LoginPage extends StatelessWidget {
                       height: 240,
                     )),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * .16,
+                    height: MediaQuery.of(context).size.height * .10,
                   ),
                 SizedBox(
                   width: 300,

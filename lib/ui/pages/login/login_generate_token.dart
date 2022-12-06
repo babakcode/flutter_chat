@@ -34,6 +34,7 @@ class _LoginGenerateTokenPageState extends State<LoginGenerateTokenPage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Center(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -54,7 +55,7 @@ class _LoginGenerateTokenPageState extends State<LoginGenerateTokenPage> {
                   ],
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .10,
+                  height: MediaQuery.of(context).size.height * .04,
                 ),
                 Card(
                     clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -66,7 +67,7 @@ class _LoginGenerateTokenPageState extends State<LoginGenerateTokenPage> {
                       height: 240,
                     )),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .14,
+                  height: MediaQuery.of(context).size.height * .10,
                 ),
                 AppText(
                   'Your public token',

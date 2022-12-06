@@ -461,36 +461,40 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
     );
   }
 
-  Widget _roomItemTitle(Room room) => Row(
-        children: [
-          Expanded(
-            child: Text(
-              room.roomName ?? 'guest',
-              overflow: TextOverflow.ellipsis,
-              softWrap: false,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              maxLines: 1,
-            ),
-          ),
+  Widget _roomItemTitle(Room room) {
 
-          /// show not read chats count
-          if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14)),
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
-                child: Text(
-                  '${(room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0)}',
-                  style: const TextStyle(fontSize: 12),
-                ),
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            room.roomName ?? 'guest',
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+            maxLines: 1,
+          ),
+        ),
+
+
+        /// show not read chats count
+        if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            child: Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
+              child: Text(
+                '${(room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0)}',
+                style: const TextStyle(fontSize: 12),
               ),
             ),
-        ],
-      );
+          ),
+      ],
+    );
+  }
 
   Widget _roomItemSubTitle(Room room) => Row(
         children: [

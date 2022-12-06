@@ -20,6 +20,7 @@ class LoginRecovery extends StatelessWidget {
         child: SizedBox(
           height: MediaQuery.of(context).size.height,
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -42,7 +43,7 @@ class LoginRecovery extends StatelessWidget {
                   // Spacer()
                   
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * .07,
+                  height: MediaQuery.of(context).size.height * .04,
                 ),
                   Card(
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -54,7 +55,7 @@ class LoginRecovery extends StatelessWidget {
                         height: 240,
                       )),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * .10,
+                    height: MediaQuery.of(context).size.height * .08,
                   ),
 
                   AppText(
@@ -111,7 +112,7 @@ class LoginRecovery extends StatelessWidget {
                     margin: const EdgeInsets.only(top: 10, right: 5),
                   ),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * .05,
+                    height: MediaQuery.of(context).size.height * .04,
                   ),
                 ],
               ),
