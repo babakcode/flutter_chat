@@ -79,7 +79,7 @@ class AppChatItem extends StatelessWidget {
           }else if(chat is ChatVoiceModel){
             return ChatItemVoice(fromMyAccount, chat: chat,);
           }
-          return const ChatItemUpdateRequired();
+          return ChatItemUpdateRequired(fromMyAccount);
         },)
       ),
     );
