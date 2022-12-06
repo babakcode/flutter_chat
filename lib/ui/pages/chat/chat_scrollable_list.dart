@@ -9,6 +9,8 @@ import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
 import 'app_text_item.dart';
+import 'package:swipe_to/swipe_to.dart';
+
 
 final _bucket = PageStorageBucket();
 
@@ -150,77 +152,91 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
       }
     }
 
-    return Container(
-      padding: EdgeInsets.only(
-          right: 8,
-          left: 8,
-          bottom: middleChatFromUser
-              ? 2
-              : nextChatFromUser
-                  ? 2
-                  : previousChatFromUser
-                      ? 2
-                      : 16,
-          top: middleChatFromUser
-              ? 2
-              : previousChatFromUser
-                  ? 2
-                  : nextChatFromUser
-                      ? 2
-                      : 16),
-      alignment: fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!fromMyAccount)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: SizedBox(
-                height: 36,
-                width: 36,
-                child: nextChatFromUser
-                    ? null
-                    : Card(
-                        margin: EdgeInsets.zero,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        clipBehavior: Clip.antiAliasWithSaveLayer,
-                        child: InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                CupertinoPageRoute(
-                                  builder: (context) =>
-                                      ProfilePage(user: chat.user!),
-                                ),
-                              );
-                            },
-                            child: chat.user?.profileUrl == null
-                                ? Image.asset(
-                                    'assets/images/p2.jpg',
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.network(
-                                    chat.user!.profileUrl!,
-                                    fit: BoxFit.cover,
-                                  )),
-                      ),
+    return SwipeTo(
+      onLeftSwipe: fromMyAccount ? () {
+        if(fromMyAccount){
+          _chatProvider.enableChatReplay(chat);
+          print('fromMyAccount');
+        }
+      }: null,
+      onRightSwipe: !fromMyAccount ? () {
+        if(!fromMyAccount){
+          print('notFromMyAccount');
+        }
+      }: null,
+      child: Container(
+        padding: EdgeInsets.only(
+            right: 8,
+            left: 8,
+            bottom: middleChatFromUser
+                ? 2
+                : nextChatFromUser
+                    ? 2
+                    : previousChatFromUser
+                        ? 2
+                        : 16,
+            top: middleChatFromUser
+                ? 2
+                : previousChatFromUser
+                    ? 2
+                    : nextChatFromUser
+                        ? 2
+                        : 16),
+        alignment: fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (!fromMyAccount)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SizedBox(
+                  height: 36,
+                  width: 36,
+                  child: nextChatFromUser
+                      ? null
+                      : Card(
+                          margin: EdgeInsets.zero,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) =>
+                                        ProfilePage(user: chat.user!),
+                                  ),
+                                );
+                              },
+                              child: chat.user?.profileUrl == null
+                                  ? Image.asset(
+                                      'assets/images/p2.jpg',
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.network(
+                                      chat.user!.profileUrl!,
+                                      fit: BoxFit.cover,
+                                    )),
+                        ),
+                ),
               ),
-            ),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: _width *
-                  (GlobalSettingProvider.isPhonePortraitSize ? .8 : .3),
-            ),
+            Container(
+              constraints: BoxConstraints(
+                maxWidth: _width *
+                    (GlobalSettingProvider.isPhonePortraitSize ? .8 : .3),
+              ),
 
-            ///
-            child: AppChatItem(index, fromMyAccount, previousChatFromUser,
-                nextChatFromUser, middleChatFromUser),
-          ),
-        ],
+              ///
+              child: AppChatItem(index, fromMyAccount, previousChatFromUser,
+                  nextChatFromUser, middleChatFromUser),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+//3f782171543144e6a06f00f46f95865ea52b8bca8519a90a6e294c2a79d2a4de rubbed-highway-balloon-position-snow-stock-whale-stiff-whatever-worse-lunch-turn-spider-daughter-fun-hole

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../../../models/chat.dart';
 import '../../../providers/search_user_provider.dart';
 import '../../widgets/app_text.dart';
 
@@ -66,10 +67,14 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
               : Column(
                   children: [
                     /// pre send files section
-                    _preSendFilesOffstageSection(chatProvider, globalSetting, _width),
+                    _preSendFilesOffstageSection(
+                        chatProvider, globalSetting, _width),
 
                     /// for search `@users`
                     _atSignSection(chatProvider),
+
+                    /// for replay chat
+                    _replayOffStateSection(chatProvider),
 
                     /// input box
                     /// emoji + chat + attachment + send chat card
@@ -496,14 +501,16 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
     );
   }
 
-  Widget _preSendFilesOffstageSection(ChatProvider chatProvider, GlobalSettingProvider globalSetting, double width) {
+  Widget _preSendFilesOffstageSection(ChatProvider chatProvider,
+      GlobalSettingProvider globalSetting, double width) {
     return Offstage(
       offstage: !chatProvider.showPreUploadFile,
       child: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
         child: Column(
           children: [
-            const SizedBox(width: 100,
+            const SizedBox(
+              width: 100,
               child: Divider(color: Colors.blueGrey, height: 2),
               height: 25,
             ),
@@ -517,8 +524,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: AppText(
-                        'Send ${chatProvider.preUploadFiles.length == 1 ?
-                        chatProvider.preUploadFiles.first.type : 'files'}'),
+                        'Send ${chatProvider.preUploadFiles.length == 1 ? chatProvider.preUploadFiles.first.type : 'files'}'),
                   ),
                   AppButtonTransparent(
                     child: const Icon(Icons.close),
@@ -546,45 +552,88 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                   return Card(
                     clipBehavior: Clip.antiAliasWithSaveLayer,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppConfig.radiusCircular),
+                      borderRadius:
+                          BorderRadius.circular(AppConfig.radiusCircular),
                     ),
-                    child: Builder(builder: (context) {
-                      switch(file.type){
-                        case 'photo':
-                          return Image.memory(file.fileBytes,
-                            height: 200,
+                    child: Builder(
+                      builder: (context) {
+                        switch (file.type) {
+                          case 'photo':
+                            return Image.memory(
+                              file.fileBytes,
+                              height: 200,
+                              width: 200,
+                              fit: BoxFit.cover,
+                            );
+                          case 'doc':
+                            return SizedBox(
+                              width: 200,
+                              height: 200,
+                              child: Column(
+                                children: [
+                                  const Expanded(
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.file_copy_rounded,
+                                        size: 28,
+                                      ),
+                                    ),
+                                    flex: 3,
+                                  ),
+                                  const AppText(
+                                    'Document',
+                                    fontWeight: FontWeight.bold,
+                                    size: 18,
+                                    maxLines: 1,
+                                  ),
+                                  AppText(
+                                    file.path,
+                                    size: 12,
+                                    maxLines: 1,
+                                  ),
+                                  const Spacer(
+                                    flex: 1,
+                                  )
+                                ],
+                              ),
+                            );
+                          case 'voice':
+                            return SizedBox(
+                              width: width - 70,
+                              height: 200,
+                              child: Column(
+                                children: [
+                                  const Expanded(
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.keyboard_voice_rounded,
+                                        size: 28,
+                                      ),
+                                    ),
+                                    flex: 3,
+                                  ),
+                                  const AppText(
+                                    'Voice',
+                                    fontWeight: FontWeight.bold,
+                                    size: 18,
+                                    maxLines: 1,
+                                  ),
+                                  // AppText(file.path, size: 12, maxLines: 1,),
+                                  const Spacer(
+                                    flex: 1,
+                                  )
+                                ],
+                              ),
+                            );
+                        }
+                        return const SizedBox(
                             width: 200,
-                            fit: BoxFit.cover,
-                          );
-                        case 'doc':
-                          return SizedBox(width: 200, height: 200,
-                            child: Column(
-                              children: [
-                                const Expanded(child: Center(child: Icon(Icons.file_copy_rounded, size: 28,),), flex: 3,),
-                                const AppText('Document', fontWeight: FontWeight.bold, size: 18,maxLines:1,),
-                                AppText(file.path, size: 12, maxLines: 1,),
-                                const Spacer(flex: 1,)
-                              ],
-                            ),
-                          );
-                        case 'voice':
-                          return SizedBox(width: width - 70, height: 200,
-                            child: Column(
-                              children: [
-                                const Expanded(child: Center(child: Icon(Icons.keyboard_voice_rounded, size: 28,),), flex: 3,),
-                                const AppText('Voice', fontWeight: FontWeight.bold, size: 18,maxLines:1,),
-                                // AppText(file.path, size: 12, maxLines: 1,),
-                                const Spacer(flex: 1,)
-                              ],
-                            ),
-                          );
-                      }
-                      return const SizedBox(
-                          width: 200,
-                          child: Center(child: AppText('update Required!')));
-                    },),
+                            child: Center(child: AppText('update Required!')));
+                      },
+                    ),
                   );
-                },),
+                },
+              ),
             ),
 
             Center(
@@ -600,4 +649,69 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
       ),
     );
   }
+}
+
+Widget _replayOffStateSection(ChatProvider chatProvider) {
+  print(chatProvider.replayTo?.toSaveFormat());
+  String displayLastChat = '';
+  if (chatProvider.replayTo != null) {
+    if (chatProvider.replayTo is ChatTextModel) {
+      ChatTextModel? chat = chatProvider.replayTo as ChatTextModel;
+      displayLastChat = chat.text ?? '';
+    } else if (chatProvider.replayTo is ChatPhotoModel) {
+      displayLastChat = 'Photo';
+    } else if (chatProvider.replayTo is ChatDocModel) {
+      displayLastChat = 'Document';
+    } else if (chatProvider.replayTo is ChatVoiceModel) {
+      displayLastChat = 'Voice';
+    } else if (chatProvider.replayTo is ChatUpdateRequireModel) {
+      displayLastChat =
+          'this message is not supported on your version of business chat!';
+    }
+  }
+
+  return Offstage(
+    offstage: chatProvider.replayTo == null,
+    child: chatProvider.replayTo != null
+        ? Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Icon(Icons.reply_all_rounded),
+                ),
+                Expanded(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            chatProvider.replayTo!.user!.name!,
+                            style: const TextStyle(color: Colors.blueGrey),
+                          ),
+                          const SizedBox(
+                            height: 4,
+                          ),
+                          AppText(displayLastChat)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                    onPressed: () {
+                      chatProvider.clearChatReplay();
+                    },
+                    icon: const Icon(Icons.close_rounded))
+              ],
+            ),
+          )
+        : const SizedBox(),
+  );
 }

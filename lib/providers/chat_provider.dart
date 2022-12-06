@@ -987,4 +987,13 @@ class ChatProvider extends ChangeNotifier {
       return;
     }
   }
+
+  void enableChatReplay(Chat chat) {
+    replayTo = chat;
+    notifyListeners();
+  }
+  void clearChatReplay() {
+    replayTo = null;
+    notifyListeners();
+  }
 }
