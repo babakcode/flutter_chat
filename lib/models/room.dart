@@ -24,6 +24,7 @@ class Room extends AppCollections {
   bool newRoomToGenerate = false;
   bool reachedToEnd = false;
   bool reachedToStart = false;
+  bool firstOpenRoom = true;
 
   Room();
 

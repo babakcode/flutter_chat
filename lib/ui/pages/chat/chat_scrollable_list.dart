@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../../constants/app_constants.dart';
-import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
 import 'app_text_item.dart';
+
+final _bucket = PageStorageBucket();
 
 class ChatScrollableList extends StatefulWidget {
   const ChatScrollableList({Key? key}) : super(key: key);
@@ -25,10 +26,26 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   void initState() {
     super.initState();
     _chatProvider = context.read<ChatProvider>();
-    minInitIndex = _chatProvider.selectedRoom!.minViewPortSeenIndex;
     _selectedRoom = _chatProvider.selectedRoom!;
     _chatProvider.itemPositionsListener.itemPositions
         .addListener(_chatProvider.changeScrollIndexListener);
+    // if(_selectedRoom.firstOpenRoom){
+    //
+    // }
+    //
+    minInitIndex = _chatProvider.selectedRoom!.minViewPortSeenIndex;
+    // _chatProvider.itemScrollController.jumpTo(index: minInitIndex!);
+    if (_selectedRoom.firstOpenRoom) {
+      _selectedRoom.firstOpenRoom = false;
+      try {
+        Future.microtask(() => _chatProvider.itemScrollController
+            .jumpTo(index: _chatProvider.selectedRoom!.minViewPortSeenIndex));
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
+      }
+    }
   }
 
   late ChatProvider _chatProvider;
@@ -37,6 +54,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   @override
   void dispose() {
     _chatProvider.saveLastViewPortSeenIndex(_selectedRoom);
+
     _chatProvider.itemPositionsListener.itemPositions
         .removeListener(_chatProvider.changeScrollIndexListener);
     super.dispose();
@@ -46,42 +64,60 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (chatProvider.loadingLoadMorePrevious)
-          SizedBox(
-            child: LinearProgressIndicator(
-              backgroundColor: AppConstants.blueAccent,
+    return PageStorage(
+      bucket: _bucket,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (chatProvider.loadingLoadMorePrevious)
+            SizedBox(
+              child: LinearProgressIndicator(
+                backgroundColor: AppConstants.blueAccent,
+              ),
+              width: 80,
             ),
-            width: 80,
-          ),
-        Expanded(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: ScrollablePositionedList.builder(
-              padding: const EdgeInsets.only(top: 100),
-              physics: const ClampingScrollPhysics(),
-              shrinkWrap: true,
-              scrollDirection: Axis.vertical,
-              itemScrollController: chatProvider.itemScrollController,
-              addAutomaticKeepAlives: true,
-              initialScrollIndex: minInitIndex ?? 0,
-              itemPositionsListener: chatProvider.itemPositionsListener,
-              itemCount: chatProvider.selectedRoom!.chatList.length,
-              itemBuilder: chatItem,
+          Expanded(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: NotificationListener(
+                onNotification: (notification) {
+                  if (kIsWeb) {
+                    return true;
+                  }
+                  if (notification is ScrollEndNotification) {
+                    if (kDebugMode) {
+                      print('ScrollEndNotification');
+                    }
+                    _chatProvider.saveLastViewPortSeenIndex(_selectedRoom);
+                  }
+                  return true;
+                },
+                child: ScrollablePositionedList.builder(
+                  key: PageStorageKey<String>(_selectedRoom.id!),
+                  padding: const EdgeInsets.only(top: 100),
+                  physics: const ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  scrollDirection: Axis.vertical,
+                  itemScrollController: chatProvider.itemScrollController,
+                  addAutomaticKeepAlives: true,
+                  // initialScrollIndex: minInitIndex ?? 0,
+                  itemPositionsListener: chatProvider.itemPositionsListener,
+                  itemCount: chatProvider.selectedRoom!.chatList.length,
+                  itemBuilder: chatItem,
+                ),
+              ),
             ),
           ),
-        ),
-        if (chatProvider.loadingLoadMoreNext)
-          SizedBox(
-            child: LinearProgressIndicator(
-              backgroundColor: AppConstants.blueAccent,
+          if (chatProvider.loadingLoadMoreNext)
+            SizedBox(
+              child: LinearProgressIndicator(
+                backgroundColor: AppConstants.blueAccent,
+              ),
+              width: 80,
             ),
-            width: 80,
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -155,23 +191,24 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                             borderRadius: BorderRadius.circular(14)),
                         clipBehavior: Clip.antiAliasWithSaveLayer,
                         child: InkWell(
-                          onTap: () {
-                            print(chat.user!.toSaveFormat());
-                            Navigator.push(
+                            onTap: () {
+                              Navigator.push(
                                 context,
                                 CupertinoPageRoute(
                                   builder: (context) =>
                                       ProfilePage(user: chat.user!),
-                                ));
-                          },
-                          child: chat.user?.profileUrl == null? Image.asset(
-                            'assets/images/p2.jpg',
-                            fit: BoxFit.cover,
-                          ): Image.network(
-                            chat.user!.profileUrl!,
-                            fit: BoxFit.cover,
-                          )
-                        ),
+                                ),
+                              );
+                            },
+                            child: chat.user?.profileUrl == null
+                                ? Image.asset(
+                                    'assets/images/p2.jpg',
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.network(
+                                    chat.user!.profileUrl!,
+                                    fit: BoxFit.cover,
+                                  )),
                       ),
               ),
             ),

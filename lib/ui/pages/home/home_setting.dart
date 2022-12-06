@@ -1,6 +1,4 @@
-import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
-import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
 import 'package:chat_babakcode/ui/pages/qr_code/qr_page.dart';
@@ -59,7 +57,7 @@ class HomeSettingComponent extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfilePage(user: auth.myUser!),)),
                   child: auth.myUser?.profileUrl == null ?Image.asset(
-                    'assets/images/p1.jpg',
+                    'assets/images/p2.jpg',
                     height: 100,
                     width: 100,
                     fit: BoxFit.cover,

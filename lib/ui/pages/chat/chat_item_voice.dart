@@ -74,14 +74,24 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                   borderRadius: BorderRadius.circular(AppConfig.radiusCircular),
                 ),
                 clipBehavior: Clip.antiAliasWithSaveLayer,
-                child: LoginProvider.platform == 'android' || LoginProvider.platform == 'ios'
+                child: LoginProvider.platform == 'android' ||
+                        LoginProvider.platform == 'ios'
                     ? FutureBuilder<Directory>(
                         future: getApplicationDocumentsDirectory(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            String fullPath =
-                                "${snapshot.data!.path}/${widget.chat.fileUrl!.split('/').last}";
-                            bool exist = File(fullPath).existsSync();
+                            bool exist = false;
+                            String fullPath = '';
+                            if (widget.chat.sendSuccessfully) {
+                              fullPath =
+                                  "${snapshot.data!.path}/${widget.chat.fileUrl!.split('/').last}";
+                              exist = File(fullPath).existsSync();
+                            } else {
+                              final file =
+                                  File.fromRawPath(widget.chat.fakeFile!);
+                              exist = file.existsSync();
+                              fullPath = file.path;
+                            }
                             return Consumer<ChatProvider>(
                                 builder: (context, chatProvider, child) {
                               if (widget.chat.downloadProgress != null &&
@@ -90,33 +100,45 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                                   value: widget.chat.downloadProgress! / 100,
                                 );
                               }
-                              return IconButton(
-                                onPressed: () async {
-                                  if (exist == false) {
-                                    chatProvider.downloadFile(
-                                        widget.chat.fileUrl!,
-                                        fullPath,
-                                        widget.chat);
-                                  } else {
-                                    widget.chat.isPlaying = true;
-                                    chatProvider.notifyListeners();
-                                    await widget.chat.audioPlayer
-                                        .setFilePath(fullPath);
-                                    _controller.forward();
-                                    _controller.repeat();
-                                    await widget.chat.audioPlayer.play();
-                                    await widget.chat.audioPlayer.pause();
-                                    _controller.stop();
-                                    widget.chat.isPlaying = false;
-                                    chatProvider.notifyListeners();
-                                  }
-                                },
-                                icon: exist
-                                    ? widget.chat.isPlaying
-                                        ? const Icon(Icons.pause_rounded)
-                                        : const Icon(Icons.play_arrow_rounded)
-                                    : const Icon(Icons.download_rounded),
-                              );
+                              return widget.chat.sendSuccessfully
+                                  ? IconButton(
+                                      onPressed: () async {
+                                        if (exist == false) {
+                                          chatProvider.downloadFile(
+                                              widget.chat.fileUrl!,
+                                              fullPath,
+                                              widget.chat);
+                                        } else {
+                                          widget.chat.isPlaying = true;
+                                          chatProvider.notifyListeners();
+                                          await widget.chat.audioPlayer
+                                              .setFilePath(fullPath);
+                                          _controller.forward();
+                                          _controller.repeat();
+                                          await widget.chat.audioPlayer.play();
+                                          await widget.chat.audioPlayer.pause();
+                                          _controller.stop();
+                                          widget.chat.isPlaying = false;
+                                          chatProvider.notifyListeners();
+                                        }
+                                      },
+                                      icon: exist
+                                          ? widget.chat.isPlaying
+                                              ? const Icon(Icons.pause_rounded)
+                                              : const Icon(
+                                                  Icons.play_arrow_rounded)
+                                          : const Icon(Icons.download_rounded),
+                                    )
+                                  : SizedBox(
+                                      height: 40,
+                                      width: 40,
+                                      child: Stack(
+                                        children: const [
+                                          Icon(Icons.upload_rounded),
+                                          CircularProgressIndicator()
+                                        ],
+                                      ),
+                                    );
                             });
                           }
                           return const CircularProgressIndicator();

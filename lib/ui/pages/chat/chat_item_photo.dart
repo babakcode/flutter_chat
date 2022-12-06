@@ -1,8 +1,11 @@
 import 'package:chat_babakcode/models/chat.dart';
+import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
 import '../../../constants/app_constants.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
 
@@ -17,6 +20,7 @@ class ChatItemPhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     final globalSettingProvider = context.read<GlobalSettingProvider>();
     final chatProvider = context.read<ChatProvider>();
+    final auth = context.read<Auth>();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -25,9 +29,15 @@ class ChatItemPhoto extends StatelessWidget {
       children: [
         Stack(
           children: [
-            chat.sendSuccessfully
-                ? Image.network(chat.fileUrl!,
-                    errorBuilder: (context, error, stackTrace) {
+            Container(
+              constraints: const BoxConstraints(
+                maxHeight: 300
+              ),
+              child: chat.sendSuccessfully
+                  ? Image.network(chat.fileUrl! + '/${auth.accessToken!}',
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
                     return Center(
                       child: InkWell(
                         onTap: () => chatProvider
@@ -53,13 +63,15 @@ class ChatItemPhoto extends StatelessWidget {
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                            loadingProgress.expectedTotalBytes!
                             : null,
                       ),
                     );
                   })
-                : Image.memory(chat.fakeFile!,
-                    errorBuilder: (context, error, stackTrace) {
+                  : Image.memory(chat.fakeFile!,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
                     return Center(
                       child: InkWell(
                         onTap: () => chatProvider
@@ -80,6 +92,7 @@ class ChatItemPhoto extends StatelessWidget {
                       ),
                     );
                   }),
+            ),
             Align(
               alignment: Alignment.bottomRight,
               child: Container(
@@ -109,15 +122,36 @@ class ChatItemPhoto extends StatelessWidget {
           ],
         ),
         if (chat.text != null)
-          Text(
-            chat.text!,
-            style: TextStyle(
-                color: globalSettingProvider.isDarkTheme
-                    ? fromMyAccount
-                        ? AppConstants.textColor[200]
-                        : AppConstants.textColor[700]
-                    : AppConstants.textColor[700]),
-          )
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: detectable.DetectableText(
+              text: chat.text ?? '',
+              trimLines: 10,
+              moreStyle: const TextStyle(color: Colors.blueGrey),
+              lessStyle: const TextStyle(color: Colors.blueGrey),
+              colorClickableText: Colors.blue,
+              trimMode: detectable.TrimMode.Line,
+              trimCollapsedText: 'more',
+              trimExpandedText: '...less',
+              onTap: (tappedText) {
+                debugPrint(tappedText);
+                if (tappedText.startsWith('#')) {
+                  debugPrint('DetectableText >>>>>>> #');
+                } else if (tappedText.startsWith('@')) {
+                  debugPrint('DetectableText >>>>>>> @');
+                } else if (tappedText.startsWith('http')) {
+                  debugPrint('DetectableText >>>>>>> http');
+                }
+              },
+              detectionRegExp: hashTagAtSignUrlRegExp,
+              basicStyle: TextStyle(
+                  color: globalSettingProvider.isDarkTheme
+                      ? fromMyAccount
+                      ? AppConstants.textColor[200]
+                      : AppConstants.textColor[700]
+                      : AppConstants.textColor[700]),
+            ),
+          ),
       ],
     );
   }

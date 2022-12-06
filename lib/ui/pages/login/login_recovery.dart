@@ -70,7 +70,7 @@ class LoginRecovery extends StatelessWidget {
                   ),
                   const SizedBox(
                     width: 310,
-                    child: AppText('enter your recovery phrase whitout space that was given to you when you signed up to restore your account.',
+                    child: AppText('enter your recovery phrase without space that was given to you when you signed up to restore your account.',
                       size: 14,
                     ),
                   ),

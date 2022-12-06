@@ -4,7 +4,6 @@ import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/profile_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/profile/edit_profile_page.dart';
-import 'package:chat_babakcode/ui/widgets/app_button.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +47,6 @@ class _ProfilePageState extends State<ProfilePage> {
           return [
             SliverLayoutBuilder(
               builder: (BuildContext context, constraints) {
-                print(constraints.scrollOffset);
                 return SliverAppBar(
                   leading: IconButton(
                     onPressed: () => Navigator.pop(context),
@@ -56,15 +54,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   pinned: true,
                   floating: false,
-                  expandedHeight: MediaQuery.of(context).size.height * .44,
+                  expandedHeight: MediaQuery.of(context).size.height * .3,
                   flexibleSpace: FlexibleSpaceBar(
-                    title:
-                         AnimatedOpacity(
-                            opacity: constraints.scrollOffset > 0 ? 1 : 0,
-                            duration: const Duration(milliseconds: 600),
-                            child: const AppText('Profile')),
+                    title: AnimatedOpacity(
+                        opacity: constraints.scrollOffset > 0 ? 1 : 0,
+                        duration: const Duration(milliseconds: 600),
+                        child: const AppText('Profile')),
                     background: user.profileUrl == null
-                        ? Image.asset("assets/images/p1.jpg",
+                        ? Image.asset("assets/images/p2.jpg",
                             width: double.infinity, fit: BoxFit.cover)
                         : Image.network(user.profileUrl!,
                             width: double.infinity, fit: BoxFit.cover),

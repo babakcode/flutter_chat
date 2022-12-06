@@ -143,15 +143,20 @@ class ChatProvider extends ChangeNotifier {
     }
 
 
-
-    if ((selectedRoom!.lastIndex ?? -1) <
-        (selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId ?? 0)) {
-      // save on database
-      // _hiveManager.updateLastIndexOfRoom(
-      //     maxIndexOfChatListOnViewPort, selectedRoom!);
-      selectedRoom!.lastIndex =
-          selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
-      notifyListeners();
+    try{
+      if ((selectedRoom!.lastIndex ?? -1) <
+          (selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId ?? 0)) {
+        // save on database
+        // _hiveManager.updateLastIndexOfRoom(
+        //     maxIndexOfChatListOnViewPort, selectedRoom!);
+        selectedRoom!.lastIndex =
+        selectedRoom!.chatList[maxIndexOfChatListOnViewPort].chatNumberId!;
+        notifyListeners();
+      }
+    }catch(e){
+      if (kDebugMode) {
+        print(e);
+      }
     }
 
     /// load more (next) chats
@@ -486,7 +491,8 @@ class ChatProvider extends ChangeNotifier {
       } else {
         appDocDir = await getApplicationDocumentsDirectory();
       }
-      if (await recordVoice.hasPermission()) {
+      var hasPermission = await recordVoice.hasPermission();
+      if (hasPermission) {
         // Start recording
 
         var _voicePath =
