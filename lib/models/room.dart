@@ -25,6 +25,7 @@ class Room extends AppCollections {
   bool reachedToEnd = false;
   bool reachedToStart = false;
   bool firstOpenRoom = true;
+  bool canScrollList = false;
 
   Room();
 

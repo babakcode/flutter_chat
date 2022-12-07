@@ -50,10 +50,12 @@ class ChatProvider extends ChangeNotifier {
         if ( (selectedRoom.lastIndex ?? -1) <=
             selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
           // save on database
-          _hiveManager.updateLastIndexOfRoom(
-              selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!,
-              selectedRoom);
-          notifyListeners();
+          Future.microtask(() {
+            _hiveManager.updateLastIndexOfRoom(
+                selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!,
+                selectedRoom);
+            notifyListeners();
+          });
         }
       }
     }catch(e){
@@ -801,6 +803,10 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> _loadMoreNext() async {
+    // if(loadingLoadMoreNext){
+    //   return;
+    // }
+
     loadingLoadMoreNext = true;
     notifyListeners();
 
@@ -817,16 +823,19 @@ class ChatProvider extends ChangeNotifier {
       if (res['success']) {
         List<Chat> _receivedChats = [];
         for (var item in res['chats']) {
-          _receivedChats.add(Chat.detectChatModelType(item));
+          final chat = Chat.detectChatModelType(item);
+          if(selectedRoom!.chatList.where((element) => element.id == chat.id).isEmpty){
+            _receivedChats.add(chat);
+            selectedRoom!.chatList.add(chat);
+          }
         }
         if (_receivedChats.isEmpty) {
           selectedRoom!.reachedToEnd = true;
         } else {
-          selectedRoom!.chatList.addAll(_receivedChats);
           _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
-          notifyListeners();
         }
       }
+      notifyListeners();
     });
     // selectedRoom.chatList
     // .

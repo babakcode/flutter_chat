@@ -11,7 +11,6 @@ import '../../../providers/global_setting_provider.dart';
 import 'app_text_item.dart';
 import 'package:swipe_to/swipe_to.dart';
 
-
 final _bucket = PageStorageBucket();
 
 class ChatScrollableList extends StatefulWidget {
@@ -22,7 +21,6 @@ class ChatScrollableList extends StatefulWidget {
 }
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
-  int? minInitIndex;
 
   @override
   void initState() {
@@ -31,14 +29,11 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     _selectedRoom = _chatProvider.selectedRoom!;
     _chatProvider.itemPositionsListener.itemPositions
         .addListener(_chatProvider.changeScrollIndexListener);
-    // if(_selectedRoom.firstOpenRoom){
-    //
-    // }
-    //
-    minInitIndex = _chatProvider.selectedRoom!.minViewPortSeenIndex;
-    // _chatProvider.itemScrollController.jumpTo(index: minInitIndex!);
+
     if (_selectedRoom.firstOpenRoom) {
-      _selectedRoom.firstOpenRoom = false;
+      if(_selectedRoom.chatList.length > 16){
+        _selectedRoom.firstOpenRoom = false;
+      }
       try {
         Future.microtask(() => _chatProvider.itemScrollController
             .jumpTo(index: _chatProvider.selectedRoom!.minViewPortSeenIndex));
@@ -82,8 +77,15 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
           Expanded(
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: NotificationListener(
+              child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) {
+                  // if(notification.metrics.maxScrollExtent > 0){
+                  //   if(!_selectedRoom.canScrollList){
+                  //     print('can scroll');
+                  //     _selectedRoom.canScrollList = true;
+                  //     notification;
+                  //   }
+                  // }
                   if (kIsWeb) {
                     return true;
                   }
@@ -93,13 +95,14 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                   return true;
                 },
                 child: ScrollablePositionedList.builder(
-                  key: PageStorageKey<String>(_selectedRoom.id!),
+                  key: _selectedRoom.chatList.length > 16
+                      ? PageStorageKey<String>(_selectedRoom.id!)
+                      : null,
                   padding: const EdgeInsets.only(top: 100),
-                  physics: const ClampingScrollPhysics(),
-                  shrinkWrap: true,
                   scrollDirection: Axis.vertical,
                   itemScrollController: chatProvider.itemScrollController,
                   addAutomaticKeepAlives: true,
+                  shrinkWrap: true,
                   // initialScrollIndex: minInitIndex ?? 0,
                   itemPositionsListener: chatProvider.itemPositionsListener,
                   itemCount: chatProvider.selectedRoom!.chatList.length,
@@ -153,17 +156,12 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     }
 
     return SwipeTo(
-      onLeftSwipe: fromMyAccount ? () {
-        if(fromMyAccount){
-          _chatProvider.enableChatReplay(chat);
-          print('fromMyAccount');
-        }
-      }: null,
-      onRightSwipe: !fromMyAccount ? () {
-        if(!fromMyAccount){
-          print('notFromMyAccount');
-        }
-      }: null,
+      onLeftSwipe: () {
+        _chatProvider.enableChatReplay(chat);
+      },
+      onRightSwipe: () {
+        _chatProvider.enableChatReplay(chat);
+      },
       child: Container(
         padding: EdgeInsets.only(
             right: 8,
@@ -228,8 +226,6 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                 maxWidth: _width *
                     (GlobalSettingProvider.isPhonePortraitSize ? .8 : .3),
               ),
-
-              ///
               child: AppChatItem(index, fromMyAccount, previousChatFromUser,
                   nextChatFromUser, middleChatFromUser),
             ),

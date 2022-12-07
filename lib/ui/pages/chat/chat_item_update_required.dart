@@ -18,7 +18,7 @@ class ChatItemUpdateRequired extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.all(10.0),
         child: DetectableText(
-          text: 'this message is not supported on your version of business chat!\nPlease checkout the @app channel to see and update the app to newer version.',
+          text: 'This message is not supported on your version of business chat!\nPlease checkout the @app channel to see and update the app to newer version.',
           trimLines: 10,
           moreStyle: const TextStyle(color: Colors.blueGrey),
           lessStyle: const TextStyle(color: Colors.blueGrey),
