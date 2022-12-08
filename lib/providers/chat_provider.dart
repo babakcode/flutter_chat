@@ -37,7 +37,7 @@ class ChatProvider extends ChangeNotifier {
   void initAuth(Auth auth) => this.auth = auth;
 
   Future saveLastViewPortSeenIndex(Room selectedRoom) async {
-    try{
+    try {
       if (selectedRoom.chatList.isNotEmpty) {
         if (selectedRoom.minViewPortSeenIndex != minIndexOfChatListOnViewPort) {
           // save on database
@@ -47,18 +47,19 @@ class ChatProvider extends ChangeNotifier {
           selectedRoom.minViewPortSeenIndex = minIndexOfChatListOnViewPort;
         }
 
-        if ( (selectedRoom.lastIndex ?? -1) <=
+        if ((selectedRoom.lastIndex ?? -1) <=
             selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!) {
           // save on database
           Future.microtask(() {
             _hiveManager.updateLastIndexOfRoom(
-                selectedRoom.chatList[maxIndexOfChatListOnViewPort].chatNumberId!,
+                selectedRoom
+                    .chatList[maxIndexOfChatListOnViewPort].chatNumberId!,
                 selectedRoom);
             notifyListeners();
           });
         }
       }
-    }catch(e){
+    } catch (e) {
       if (kDebugMode) {
         print('saveLastViewPortSeenIndex exception $e');
       }
@@ -82,8 +83,7 @@ class ChatProvider extends ChangeNotifier {
       setConnectionStatus = 'Connected';
       debugPrint('socket connected');
       debugPrint('last viewed date is ${auth?.lastGroupLoadedDate}');
-      socket.emit(
-          'getAllMessages', auth?.lastGroupLoadedDate);
+      socket.emit('getAllMessages', auth?.lastGroupLoadedDate);
     });
     socket.onDisconnect((_) {
       debugPrint('socket disconnected');
@@ -284,8 +284,8 @@ class ChatProvider extends ChangeNotifier {
   void searchUser(
       {required String searchType,
       required String searchText,
-      required BuildContext context,
-      Function? callBack}) {
+      required BuildContext context, required Function callBack}) {
+
     /// search from exist rooms
     /// then if not find room,
     /// search from server
@@ -302,22 +302,11 @@ class ChatProvider extends ChangeNotifier {
                   : element.user?.username) ==
               searchText)
           .isNotEmpty) {
-        /// room found
-        selectedRoom = room;
-        Navigator.pop(context);
-        if (GlobalSettingProvider.isPhonePortraitSize) {
-          Navigator.push(
-              navigatorKey.currentContext!,
-              CupertinoPageRoute(
-                builder: (context) => const ChatPage(),
-              ));
-        } else {
-          notifyListeners();
-        }
         foundLocalExistGroup = true;
-        callBack?.call({
+        callBack.call({
           'success': true,
           'findFromExistRoom': true,
+          'room': room
         });
       }
     });
@@ -334,26 +323,29 @@ class ChatProvider extends ChangeNotifier {
       }
 
       if (data['success']) {
-        callBack?.call({
+        callBack.call({
           'success': true,
           'findFromExistRoom': false,
+          'room': Room.fromJson(data['room'], false)
         });
-        Navigator.pop(context);
-        selectedRoom = Room.fromJson(data['room'], false);
-
-        if (GlobalSettingProvider.isPhonePortraitSize) {
-          Navigator.push(
-            navigatorKey.currentContext!,
-            CupertinoPageRoute(
-              builder: (context) => const ChatPage(),
-            ),
-          );
-        } else {
-          notifyListeners();
-        }
+        // Navigator.pop(context);
+        //
+        // selectedRoom = Room.fromJson(data['room'], false);
+        //
+        // if (GlobalSettingProvider.isPhonePortraitSize) {
+        //   Navigator.push(
+        //     navigatorKey.currentContext!,
+        //     CupertinoPageRoute(
+        //       builder: (context) => const ChatPage(),
+        //     ),
+        //   );
+        // } else {
+        //   notifyListeners();
+        // }
       } else {
-        callBack?.call(
+        callBack.call(
             {'success': false, 'findFromExistRoom': false, 'msg': data['msg']});
+        Utils.showSnack(context, data['msg']);
       }
     });
   }
@@ -635,8 +627,7 @@ class ChatProvider extends ChangeNotifier {
         rooms.sort((a, b) => b.changeAt!.compareTo(b.changeAt!));
         notifyListeners();
         if (_rooms.isNotEmpty) {
-          auth!
-              .setLastGroupLoadedDate(rooms[0].changeAt!.toUtc().toString());
+          auth!.setLastGroupLoadedDate(rooms[0].changeAt!.toUtc().toString());
           _hiveManager.saveRooms(rooms);
         }
       }
@@ -824,7 +815,9 @@ class ChatProvider extends ChangeNotifier {
         List<Chat> _receivedChats = [];
         for (var item in res['chats']) {
           final chat = Chat.detectChatModelType(item);
-          if(selectedRoom!.chatList.where((element) => element.id == chat.id).isEmpty){
+          if (selectedRoom!.chatList
+              .where((element) => element.id == chat.id)
+              .isEmpty) {
             _receivedChats.add(chat);
             selectedRoom!.chatList.add(chat);
           }
@@ -896,34 +889,36 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future downloadFile(
-      String url, String savePath, ChatVoiceModel chatVoiceModel) async {
-    try {
-      Response response = await Dio().get(
-        url,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            chatVoiceModel.downloadProgress =
-                double.tryParse((received / total * 100).toStringAsFixed(2));
-            notifyListeners();
-          }
-        },
-        //Received data with List<int>
-        options: Options(
-            responseType: ResponseType.bytes,
-            followRedirects: false,
-            validateStatus: (status) {
-              return status! == 200;
-            }),
-      );
-      File file = File(savePath);
-      var raf = file.openSync(mode: FileMode.write);
-      // response.data is List<int> type
-      raf.writeFromSync(response.data);
-      await raf.close();
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
+  Future downloadFile(String url, String savePath, chat) async {
+    if (chat is ChatVoiceModel || chat is ChatDocModel) {
+      try {
+        Response response = await Dio().get(
+          url,
+          onReceiveProgress: (received, total) {
+            if (total != -1) {
+              chat.downloadProgress =
+                  double.tryParse((received / total * 100).toStringAsFixed(2));
+              notifyListeners();
+            }
+          },
+          //Received data with List<int>
+          options: Options(
+              responseType: ResponseType.bytes,
+              followRedirects: false,
+              validateStatus: (status) {
+                return status! == 200;
+              }),
+        );
+        File file = File(savePath);
+        var raf = file.openSync(mode: FileMode.write);
+        // response.data is List<int> type
+        print(savePath);
+        raf.writeFromSync(response.data);
+        await raf.close();
+      } catch (e) {
+        if (kDebugMode) {
+          print(e);
+        }
       }
     }
   }
@@ -1001,8 +996,10 @@ class ChatProvider extends ChangeNotifier {
     replayTo = chat;
     notifyListeners();
   }
+
   void clearChatReplay() {
     replayTo = null;
     notifyListeners();
   }
+
 }

@@ -13,7 +13,7 @@
 // import '/providers/login_provider.dart';
 // import '/providers/profile_provider.dart';
 // import '/ui/pages/chat/chat_page.dart';
-// import '/ui/pages/profile/profile_page.dart';
+// import '/ui/pages/profile/profile_user_page.dart';
 // import '/ui/pages/search/search_page.dart';
 // import '../../../providers/chat_provider.dart';
 

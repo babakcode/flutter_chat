@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/room.dart';
 import 'chat_provider.dart';
 
 class ProfileProvider extends ChangeNotifier {
@@ -87,4 +88,7 @@ class ProfileProvider extends ChangeNotifier {
       },
     );
   }
+
+
+
 }

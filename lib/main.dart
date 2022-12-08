@@ -5,16 +5,19 @@ import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/profile_provider.dart';
 import 'package:chat_babakcode/providers/security_provider.dart';
-import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
+import 'package:chat_babakcode/ui/pages/profile/profile_user_page.dart';
 import 'package:chat_babakcode/ui/pages/splash/splash_page.dart';
+import 'package:chat_babakcode/utils/firebase_maager.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
+import 'package:url_strategy/url_strategy.dart';
 import 'constants/app_constants.dart';
 import 'providers/chat_provider.dart';
 import 'providers/search_user_provider.dart';
+import 'utils/notification_controller.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -28,15 +31,12 @@ class MyHttpOverrides extends HttpOverrides {
 void main() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
-  //
-  // if (!kIs) {
-  //
-  // }
+  setPathUrlStrategy();
   Hive.init('./');
   if (!kIsWeb) {
     if (Platform.isAndroid || Platform.isIOS) {
       await Hive.initFlutter();
-      await Firebase.initializeApp();
+      await FirebaseManager.initFirebaseOnPhone();
     }
   }
 
@@ -48,6 +48,10 @@ void main() async {
 
   await Hive.openBox('me');
   await Hive.openBox('setting');
+
+  // Always initialize Awesome Notifications
+  await NotificationController.initializeLocalNotifications();
+
   runApp(const _Provider());
 }
 

@@ -7,6 +7,7 @@ import 'user.dart';
 part 'chat_text_model.dart';
 part 'chat_photo_model.dart';
 part 'chat_voice_model.dart';
+part 'chat_doc_model.dart';
 
 abstract class Chat extends AppCollections {
   String? id;
@@ -84,9 +85,6 @@ class ChatUpdateRequireModel extends Chat {
   ChatUpdateRequireModel(super.json);
 }
 
-class ChatDocModel extends Chat {
-  ChatDocModel(super.json);
-}
 
 
 

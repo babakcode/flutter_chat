@@ -8,6 +8,7 @@ import '../../../constants/app_constants.dart';
 import '../../../models/chat.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
+import 'chat_item_doc.dart';
 import 'chat_item_voice.dart';
 
 class AppChatItem extends StatelessWidget {
@@ -77,7 +78,9 @@ class AppChatItem extends StatelessWidget {
           }else if(chat is ChatPhotoModel){
             return ChatItemPhoto(fromMyAccount, chat: chat,);
           }else if(chat is ChatVoiceModel){
-            return ChatItemVoice(fromMyAccount, chat: chat,);
+            return ChatItemVoice(fromMyAccount, chat: chat,roomType: room.roomType!,);
+          }else if(chat is ChatDocModel){
+            return ChatItemDoc(fromMyAccount, chat: chat,);
           }
           return ChatItemUpdateRequired(fromMyAccount);
         },)

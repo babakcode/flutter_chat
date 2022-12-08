@@ -1,7 +1,10 @@
 import 'package:chat_babakcode/providers/chat_provider.dart';
+import 'package:chat_babakcode/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../models/user.dart';
+import '../ui/pages/chat/chat_page.dart';
+import 'global_setting_provider.dart';
 
 class SearchUserProvider extends ChangeNotifier {
   ChatProvider? chatProvider;
@@ -82,8 +85,54 @@ class SearchUserProvider extends ChangeNotifier {
         context: context,
         callBack: (Map data) {
           if(data['success']){
+
             loading = false;
             notifyListeners();
+
+            final room = data['room'];
+            chatProvider?.selectedRoom = room;
+            Navigator.pop(context);
+
+            if (GlobalSettingProvider.isPhonePortraitSize) {
+              Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => const ChatPage(),
+                  ));
+            } else {
+              notifyListeners();
+            }
+            // if(data['findFromExistRoom']){
+            //
+            //   /// room found
+            //
+            //   if (GlobalSettingProvider.isPhonePortraitSize) {
+            //     Navigator.push(
+            //         context,
+            //         CupertinoPageRoute(
+            //           builder: (context) => const ChatPage(),
+            //         ));
+            //   } else {
+            //     notifyListeners();
+            //   }
+            // }else{
+            //
+            //   selectedRoom = Room.fromJson(data['room'], false);
+            //
+            //   if (GlobalSettingProvider.isPhonePortraitSize) {
+            //     Navigator.push(
+            //       navigatorKey.currentContext!,
+            //       CupertinoPageRoute(
+            //         builder: (context) => const ChatPage(),
+            //       ),
+            //     );
+            //   } else {
+            //     notifyListeners();
+            //   }
+            // }
+
+          }else{
+            Utils.showSnack(context, data['msg']);
           }
         });
   }

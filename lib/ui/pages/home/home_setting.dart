@@ -1,6 +1,6 @@
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
-import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
+import 'package:chat_babakcode/ui/pages/profile/profile_user_page.dart';
 import 'package:chat_babakcode/ui/pages/qr_code/qr_page.dart';
 import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
@@ -55,7 +55,7 @@ class HomeSettingComponent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfilePage(user: auth.myUser!),)),
+                  onPressed: () => Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileUserPage(user: auth.myUser!),)),
                   child: auth.myUser?.profileUrl == null ?Image.asset(
                     'assets/images/p2.jpg',
                     height: 100,

@@ -19,6 +19,8 @@ import 'package:phlox_animations/phlox_animations.dart';
 import 'package:provider/provider.dart';
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
+import '../../../utils/notification_controller.dart';
+import '../../../utils/utils.dart';
 import '../qr_code/qr_page.dart';
 
 class HomeRoomsComponent extends StatefulWidget {
@@ -65,6 +67,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 IconButton(
                   onPressed: () => {
                     /*showSearchUsersByToken(context)*/
+                    NotificationController.createNewNotification()
                   },
                   icon: const Icon(Icons.search_rounded),
                 ),
@@ -344,11 +347,62 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                         ),
                       );
                       if (result != null) {
-                        context.read<ChatProvider>().searchUser(
-                              searchType: 'token',
-                              searchText: result,
-                              context: context,
-                            );
+                        final chatProvider = context.read<ChatProvider>();
+                        chatProvider.searchUser(
+                            searchType: 'token',
+                            searchText: result,
+                            context: context,
+                            callBack: (data) {
+                              if (data['success']) {
+                                // loading = false;
+                                // notifyListeners();
+
+                                final room = data['room'];
+                                chatProvider.selectedRoom = room;
+                                Navigator.pop(context);
+
+                                if (GlobalSettingProvider.isPhonePortraitSize) {
+                                  Navigator.push(
+                                      context,
+                                      CupertinoPageRoute(
+                                        builder: (context) => const ChatPage(),
+                                      ));
+                                } else {
+                                  chatProvider.notifyListeners();
+                                }
+                                // if(data['findFromExistRoom']){
+                                //
+                                //   /// room found
+                                //
+                                //   if (GlobalSettingProvider.isPhonePortraitSize) {
+                                //     Navigator.push(
+                                //         context,
+                                //         CupertinoPageRoute(
+                                //           builder: (context) => const ChatPage(),
+                                //         ));
+                                //   } else {
+                                //     notifyListeners();
+                                //   }
+                                // }else{
+                                //
+                                //   selectedRoom = Room.fromJson(data['room'], false);
+                                //
+                                //   if (GlobalSettingProvider.isPhonePortraitSize) {
+                                //     Navigator.push(
+                                //       navigatorKey.currentContext!,
+                                //       CupertinoPageRoute(
+                                //         builder: (context) => const ChatPage(),
+                                //       ),
+                                //     );
+                                //   } else {
+                                //     notifyListeners();
+                                //   }
+                                // }
+
+                              } else {
+                                Utils.showSnack(context, data['msg']);
+                              }
+                            });
                       }
                     },
                     icon: Icons.qr_code_scanner_rounded,
@@ -462,7 +516,6 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
   }
 
   Widget _roomItemTitle(Room room) {
-
     return Row(
       children: [
         Expanded(
@@ -475,17 +528,16 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           ),
         ),
 
-
         /// show not read chats count
         if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
           Card(
             elevation: 0,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             clipBehavior: Clip.antiAliasWithSaveLayer,
             child: Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
+                  const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
               child: Text(
                 '${(room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0)}',
                 style: const TextStyle(fontSize: 12),
@@ -498,38 +550,37 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
 
   Widget _roomItemSubTitle(Room room) => Row(
         children: [
-          if(room.lastChat != null) Text(
-            (room.lastChat!.user?.name ?? '') + ' : ',
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: const TextStyle(fontSize: 10),
-            maxLines: 1,
-          ),
-          Expanded(
-              child: Builder(
-                builder: (context) {
-                  String displayLastChat = '';
-                  if(room.lastChat is ChatTextModel){
-                    ChatTextModel? chat = room.lastChat as ChatTextModel;
-                    displayLastChat = chat.text ?? '';
-                  }else if(room.lastChat is ChatPhotoModel){
-                    displayLastChat = 'Photo';
-                  }else if(room.lastChat is ChatDocModel){
-                    displayLastChat = 'Document';
-                  }else if(room.lastChat is ChatVoiceModel){
-                    displayLastChat = 'Voice';
-                  }else if(room.lastChat is ChatUpdateRequireModel){
-                    displayLastChat = 'this message is not supported on your version of business chat!';
-                  }
-                  return Text(
-                    displayLastChat,
-                    overflow: TextOverflow.ellipsis,
-                    softWrap: false,
-                    style: const TextStyle(fontSize: 12),
-                    maxLines: 1,
-                  );
-                }
-              )),
+          if (room.lastChat != null)
+            Text(
+              (room.lastChat!.user?.name ?? '') + ' : ',
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: const TextStyle(fontSize: 10),
+              maxLines: 1,
+            ),
+          Expanded(child: Builder(builder: (context) {
+            String displayLastChat = '';
+            if (room.lastChat is ChatTextModel) {
+              ChatTextModel? chat = room.lastChat as ChatTextModel;
+              displayLastChat = chat.text ?? '';
+            } else if (room.lastChat is ChatPhotoModel) {
+              displayLastChat = 'Photo';
+            } else if (room.lastChat is ChatDocModel) {
+              displayLastChat = 'Document';
+            } else if (room.lastChat is ChatVoiceModel) {
+              displayLastChat = 'Voice';
+            } else if (room.lastChat is ChatUpdateRequireModel) {
+              displayLastChat =
+                  'this message is not supported on your version of business chat!';
+            }
+            return Text(
+              displayLastChat,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: const TextStyle(fontSize: 12),
+              maxLines: 1,
+            );
+          })),
           Text(
             ' ${intl.DateFormat('HH:mm').format(room.changeAt ?? DateTime.now())} ',
             style: const TextStyle(fontSize: 10),

@@ -1,5 +1,9 @@
+import 'package:chat_babakcode/main.dart';
+import 'package:chat_babakcode/models/chat.dart';
+import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
+import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/profile_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
@@ -13,16 +17,16 @@ import '../../../constants/app_constants.dart';
 import '../../../utils/utils.dart';
 import '../../widgets/app_text.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfileUserPage extends StatefulWidget {
   final User user;
 
-  const ProfilePage({Key? key, required this.user}) : super(key: key);
+  const ProfileUserPage({Key? key, required this.user}) : super(key: key);
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfileUserPage> createState() => _ProfileUserPageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfileUserPageState extends State<ProfileUserPage> {
   late User user;
   bool isMyUser = false;
 
@@ -41,6 +45,8 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     final globalSettingProvider = context.read<GlobalSettingProvider>();
     final profileProvider = context.read<ProfileProvider>();
+    final chatProvider = context.read<ChatProvider>();
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -141,13 +147,72 @@ class _ProfilePageState extends State<ProfilePage> {
                               }
                               return;
                             }
+                            chatProvider.searchUser(
+                                searchType: 'token',
+                                searchText: user.publicToken!,
+                                context: context,
+                            callBack: (data) async {
 
-                            /// todo create fake chat page
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ChatPage(),
-                                ));
+                              if(data['success']){
+
+                                // Navigator.pop(context);
+                                int count = 0;
+                                Navigator.of(context).popUntil((_) => count++ >= 2);
+
+                                final room = data['room'];
+                                chatProvider.selectedRoom = room;
+
+                                await Future.delayed(const Duration(milliseconds: 100));
+
+                                if (GlobalSettingProvider.isPhonePortraitSize) {
+                                  Navigator.push(
+                                      navigatorKey.currentContext!,
+                                      CupertinoPageRoute(
+                                        builder: (context) => const ChatPage(),
+                                      ));
+                                } else {
+                                  chatProvider.notifyListeners();
+                                }
+                                // if(data['findFromExistRoom']){
+                                //
+                                //   /// room found
+                                //
+                                //   if (GlobalSettingProvider.isPhonePortraitSize) {
+                                //     Navigator.push(
+                                //         context,
+                                //         CupertinoPageRoute(
+                                //           builder: (context) => const ChatPage(),
+                                //         ));
+                                //   } else {
+                                //     notifyListeners();
+                                //   }
+                                // }else{
+                                //
+                                //   selectedRoom = Room.fromJson(data['room'], false);
+                                //
+                                //   if (GlobalSettingProvider.isPhonePortraitSize) {
+                                //     Navigator.push(
+                                //       navigatorKey.currentContext!,
+                                //       CupertinoPageRoute(
+                                //         builder: (context) => const ChatPage(),
+                                //       ),
+                                //     );
+                                //   } else {
+                                //     notifyListeners();
+                                //   }
+                                // }
+
+                              }else{
+                                Utils.showSnack(context, data['msg']);
+                              }
+                            });
+
+                            // /// todo create fake chat page
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //       builder: (context) => const ChatPage(),
+                            //     ));
                           },
                         )),
                   ),

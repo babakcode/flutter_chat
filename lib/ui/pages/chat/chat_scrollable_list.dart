@@ -1,4 +1,4 @@
-import 'package:chat_babakcode/ui/pages/profile/profile_page.dart';
+import 'package:chat_babakcode/ui/pages/profile/profile_user_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +22,8 @@ class ChatScrollableList extends StatefulWidget {
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
 
+  ItemScrollController itemScrollController = ItemScrollController();
+  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   @override
   void initState() {
     super.initState();
@@ -205,7 +207,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                                   context,
                                   CupertinoPageRoute(
                                     builder: (context) =>
-                                        ProfilePage(user: chat.user!),
+                                        ProfileUserPage(user: chat.user!),
                                   ),
                                 );
                               },
