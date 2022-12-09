@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:chat_babakcode/utils/firebase_maager.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -82,8 +83,18 @@ class ChatProvider extends ChangeNotifier {
     socket.onConnect((_) {
       setConnectionStatus = 'Connected';
       debugPrint('socket connected');
-      debugPrint('last viewed date is ${auth?.lastGroupLoadedDate}');
-      socket.emit('getAllMessages', auth?.lastGroupLoadedDate);
+
+      String? lastViewedDate;
+      if (auth?.lastGroupLoadedDate != null) {
+        lastViewedDate = auth!.lastGroupLoadedDate;
+        if (lastViewedDate!.split('').last != 'Z') {
+          lastViewedDate += 'Z';
+        }
+      }
+
+      socket.emit('getAllMessages', lastViewedDate);
+
+      _sendOnceFirebaseToken();
     });
     socket.onDisconnect((_) {
       debugPrint('socket disconnected');
@@ -284,8 +295,8 @@ class ChatProvider extends ChangeNotifier {
   void searchUser(
       {required String searchType,
       required String searchText,
-      required BuildContext context, required Function callBack}) {
-
+      required BuildContext context,
+      required Function callBack}) {
     /// search from exist rooms
     /// then if not find room,
     /// search from server
@@ -303,11 +314,8 @@ class ChatProvider extends ChangeNotifier {
               searchText)
           .isNotEmpty) {
         foundLocalExistGroup = true;
-        callBack.call({
-          'success': true,
-          'findFromExistRoom': true,
-          'room': room
-        });
+        callBack
+            .call({'success': true, 'findFromExistRoom': true, 'room': room});
       }
     });
     if (foundLocalExistGroup) {
@@ -1002,4 +1010,18 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool sentOnceFirebaseToken = false;
+
+  void _sendOnceFirebaseToken() {
+    if(sentOnceFirebaseToken){
+      return;
+    }
+    FirebaseManager.firebaseToken.then(
+        (value) {
+          socket.emitWithAck('firebaseToken', value, ack: (res) {
+
+          });
+          sentOnceFirebaseToken = true;
+        });
+  }
 }

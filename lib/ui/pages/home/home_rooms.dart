@@ -531,6 +531,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
         /// show not read chats count
         if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
           Card(
+            color: AppConstants.blueAccent,
             elevation: 0,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -540,7 +541,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
               child: Text(
                 '${(room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0)}',
-                style: const TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: 12, color: AppConstants.scaffoldDarkBackground),
               ),
             ),
           ),

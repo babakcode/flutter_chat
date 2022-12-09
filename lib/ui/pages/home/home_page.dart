@@ -2,6 +2,7 @@ import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
 import 'package:chat_babakcode/ui/pages/home/home_rooms.dart';
+import 'package:chat_babakcode/utils/firebase_maager.dart';
 import 'package:chat_babakcode/utils/notification_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,7 +24,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     chatProvider = context.read<ChatProvider>();
     chatProvider?.connectSocket();
-    NotificationController.startListeningNotificationEvents();
+    FirebaseManager.setupInteractedMessage();
   }
 
   @override

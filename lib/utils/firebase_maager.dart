@@ -6,9 +6,13 @@ import 'package:flutter/foundation.dart';
 class FirebaseManager {
   static Future<void> initFirebaseOnPhone() async {
     await Firebase.initializeApp();
+    if (kDebugMode) {
+      print('------ firebase token --- is : ');
+      firebaseToken.then((value) => print(value));
+    }
   }
 
-  Future<void> setupInteractedMessage() async {
+  static Future<void> setupInteractedMessage() async {
     // Get any messages which caused the application to open from
     // a terminated state.
     RemoteMessage? initialMessage =
@@ -30,7 +34,7 @@ class FirebaseManager {
     // FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
   }
 
-  void handleMessage(RemoteMessage message) async {
+  static void handleMessage(RemoteMessage message) async {
     try {
       RemoteNotification? notification = message.notification;
       final android = message.notification?.android;
@@ -38,8 +42,6 @@ class FirebaseManager {
 
       if (notification != null) {
         if (android != null) {
-
-
           NotificationController.createNewChatNotification(
               message.notification, message.data['message']);
         }
@@ -51,6 +53,10 @@ class FirebaseManager {
     }
   }
 
-  Future<String?> get firebaseToken async =>
+  static Future<String?> get firebaseToken async =>
       await FirebaseMessaging.instance.getToken();
+
+
+
+
 }
