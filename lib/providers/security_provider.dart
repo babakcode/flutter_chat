@@ -31,7 +31,6 @@ class SecurityProvider extends ChangeNotifier{
 
     chatProvider?.socket.emitWithAck('myRecoveryPhrase',
         'some data required', ack: (credential){
-      print(credential);
       loadingPhrases = false;
       visibilityPhrases = true;
       myRecoveryPhrases = credential['credential']['recoveryPhrase'];

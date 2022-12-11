@@ -29,7 +29,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>chat_babakcode</title>
+  <title>Business Chat Application</title>
   <link rel="manifest" href="manifest.json">
 
   <script>
@@ -40,8 +40,31 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/firebase-messaging-sw.js");
+  });
+}
+</script>
+<!--<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>-->
+<!--<script>-->
+<!--     const firebaseConfig = {-->
+<!--       apiKey: "AIzaSyC7lfF_K5-Wktm6DSv5ZoNk18F1MvVpQAI",-->
+<!--       authDomain: "babakcode-chat.firebaseapp.com",-->
+<!--       projectId: "babakcode-chat",-->
+<!--       storageBucket: "babakcode-chat.appspot.com",-->
+<!--       messagingSenderId: "69437946182",-->
+<!--       appId: "1:69437946182:web:3ca0be4cb3f2caa0284d47",-->
+<!--       measurementId: "G-M8P6YDB49X"-->
+<!--     };-->
+
+<!--      // Initialize Firebase-->
+<!--      firebase.initializeApp(firebaseConfig);-->
+<!--    </script>-->
   <script>
     window.addEventListener('load', function(ev) {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js');
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {

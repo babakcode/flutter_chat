@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:chat_babakcode/constants/app_constants.dart';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
@@ -12,6 +11,8 @@ import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:url_launcher/url_launcher.dart';
+import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
 import '../../widgets/app_text.dart';
@@ -19,8 +20,9 @@ import '../../widgets/app_text.dart';
 class ChatItemDoc extends StatelessWidget {
   final bool fromMyAccount;
   final ChatDocModel chat;
+  final RoomType roomType;
 
-  const ChatItemDoc(this.fromMyAccount, {Key? key, required this.chat})
+  const ChatItemDoc(this.fromMyAccount, {Key? key, required this.chat, required this.roomType})
       : super(key: key);
 
   @override
@@ -51,7 +53,7 @@ class ChatItemDoc extends StatelessWidget {
                     ? AppConstants.textColor
                     : AppConstants.textColor[100],
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConfig.radiusCircular),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusCircular),
                 ),
                 clipBehavior: Clip.antiAliasWithSaveLayer,
                 child: LoginProvider.platform == 'android' ||
@@ -89,7 +91,6 @@ class ChatItemDoc extends StatelessWidget {
                                               fullPath,
                                               chat);
                                         } else {
-                                          print('file open clicked');
                                           OpenFile.open(fullPath);
                                         }
                                       },
@@ -115,8 +116,9 @@ class ChatItemDoc extends StatelessWidget {
                     : IconButton(onPressed: () async {
                         // await launchUrl(Uri.parse(chat.fileUrl!));
                     if(kIsWeb){
-                      /// todo : before release on web uncomment following line
-                      // WebDownloadService.openInANewTab(chat.fileUrl! + '/${auth.accessToken!}');
+                      if (!await launchUrl(Uri.parse(chat.fileUrl! + '/${auth.accessToken!}'))) {
+                        throw 'Could not launch ${AppConstants.appLandingWebPageUri}';
+                      }
                     }
                   // OpenFile.open(chat.fileUrl!);
                       }, icon:
@@ -127,8 +129,7 @@ class ChatItemDoc extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    Container(
-                      width: double.infinity,
+                    if(roomType != RoomType.pvUser) Container(
                       alignment: Alignment.topRight,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: AppText(
@@ -138,7 +139,12 @@ class ChatItemDoc extends StatelessWidget {
                       ),
                     ),
                     AppText(chat.fileUrl ?? 'document sending...',
-                        maxLines: 1, size: 12),
+                        maxLines: 1, size: 12,
+                      color: globalSetting.isDarkTheme
+                      ? fromMyAccount
+                      ? AppConstants.textColor[200]
+                          : AppConstants.textColor[700]
+                      : AppConstants.textColor[700],),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Row(
@@ -152,10 +158,10 @@ class ChatItemDoc extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 12,
                                 color: globalSetting.isDarkTheme
-                                    ? fromMyAccount
-                                        ? AppConstants.textColor[200]
-                                        : AppConstants.textColor[700]
-                                    : AppConstants.textColor[700]),
+                            ? fromMyAccount
+                            ? AppConstants.textColor[200]
+                                : AppConstants.textColor[700]
+                                : AppConstants.textColor[700],),
                           ),
                           const SizedBox(
                             width: 4,
@@ -165,8 +171,10 @@ class ChatItemDoc extends StatelessWidget {
                                 ? Icons.check_rounded
                                 : Icons.access_time_rounded,
                             size: 8,
-                            color: fromMyAccount
+                            color: globalSetting.isDarkTheme
+                                ? fromMyAccount
                                 ? AppConstants.textColor[200]
+                                : AppConstants.textColor[700]
                                 : AppConstants.textColor[700],
                           )
                         ],

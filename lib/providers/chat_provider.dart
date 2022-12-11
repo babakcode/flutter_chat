@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:chat_babakcode/utils/firebase_maager.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
-import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
 import 'package:chat_babakcode/utils/utils.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,13 +19,14 @@ import 'package:record/record.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:http/http.dart' as http;
+import '../constants/app_constants.dart';
 import '../models/chat.dart';
 import '../models/upload_file_model.dart';
 import '../utils/hive_manager.dart';
 
 class ChatProvider extends ChangeNotifier {
   io.Socket socket = io.io(
-      AppConfig.socketBaseUrl,
+      AppConstants.socketBaseUrl,
       io.OptionBuilder()
           .enableForceNewConnection()
           .disableAutoConnect()
@@ -95,6 +95,7 @@ class ChatProvider extends ChangeNotifier {
       socket.emit('getAllMessages', lastViewedDate);
 
       _sendOnceFirebaseToken();
+      _checkOnceUpdate();
     });
     socket.onDisconnect((_) {
       debugPrint('socket disconnected');
@@ -327,7 +328,7 @@ class ChatProvider extends ChangeNotifier {
       'searchText': searchText,
     }, ack: (data) {
       if (kDebugMode) {
-        print(data);
+        print("socket.emitWithAck('searchUser', data = $data);");
       }
 
       if (data['success']) {
@@ -336,20 +337,6 @@ class ChatProvider extends ChangeNotifier {
           'findFromExistRoom': false,
           'room': Room.fromJson(data['room'], false)
         });
-        // Navigator.pop(context);
-        //
-        // selectedRoom = Room.fromJson(data['room'], false);
-        //
-        // if (GlobalSettingProvider.isPhonePortraitSize) {
-        //   Navigator.push(
-        //     navigatorKey.currentContext!,
-        //     CupertinoPageRoute(
-        //       builder: (context) => const ChatPage(),
-        //     ),
-        //   );
-        // } else {
-        //   notifyListeners();
-        // }
       } else {
         callBack.call(
             {'success': false, 'findFromExistRoom': false, 'msg': data['msg']});
@@ -358,7 +345,7 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  Chat? replayTo;
+  Chat? replyTo;
 
   void emitText(Room room) {
     if (!showSendChat) {
@@ -367,10 +354,14 @@ class ChatProvider extends ChangeNotifier {
     if (chatController.text.isEmpty) {
       return;
     }
+    print("replyTo != null = ${replyTo != null}");
+    print("replay : ${replyTo?.toSaveFormat()}");
+
     Map data = {
       'roomId': room.id ?? 'new',
       'chat': chatController.text,
-      'type': 'text'
+      'type': 'text',
+      'replyId': replyTo?.id
     };
 
     final fakeChat = ChatTextModel({
@@ -381,8 +372,8 @@ class ChatProvider extends ChangeNotifier {
       'user': auth?.myUser?.toSaveFormat(),
       'deleted': false,
       'utcDate': DateTime.now().toUtc().toString(),
-      'edited': false,
-      'replayId': replayTo?.toSaveFormat(),
+      'edited': false, //replyId
+      'replyId': Chat.chatToMap(replyTo),
       '__v': 0
     });
     fakeChat.sendSuccessfully = false;
@@ -407,6 +398,10 @@ class ChatProvider extends ChangeNotifier {
     }
 
     chatController.clear();
+    if (replyTo != null) {
+      clearChatReplay();
+    }
+
     socket.emitWithAck('sendChat', data, ack: (data) {
       if (kDebugMode) {
         print('sendChat ack res: $data');
@@ -431,6 +426,7 @@ class ChatProvider extends ChangeNotifier {
         'chat': i == sendFiles.length - 1 ? chatText : null,
         'type': file.type,
         'file': file.fileBytes,
+        'replyId': replyTo?.id,
         'fileName': file.path
       };
 
@@ -446,7 +442,7 @@ class ChatProvider extends ChangeNotifier {
         'deleted': false,
         'utcDate': DateTime.now().toUtc().toString(),
         'edited': false,
-        'replayId': replayTo?.toSaveFormat(),
+        'replyId': replyTo?.toSaveFormat(),
         '__v': 0
       });
       fakeChat.sendSuccessfully = false;
@@ -474,7 +470,7 @@ class ChatProvider extends ChangeNotifier {
 
       socket.emitWithAck('sendFile', data, ack: (data) {
         if (kDebugMode) {
-          print(data);
+          print("socket.emitWithAck('sendFile', $data);");
         }
 
         if (data['success']) {
@@ -649,7 +645,7 @@ class ChatProvider extends ChangeNotifier {
   void _receiveChatEvent(data, [Chat? fakeChat]) async {
     if (kDebugMode) {
       print('receiveChat => $data');
-      print(fakeChat);
+      print("_receiveChatEvent(data, [Chat? $fakeChat])");
     }
     final chat = Chat.detectChatModelType(data['chat']);
 
@@ -776,7 +772,7 @@ class ChatProvider extends ChangeNotifier {
       }
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        print('exception #0001 $e');
       }
     }
   }
@@ -920,12 +916,12 @@ class ChatProvider extends ChangeNotifier {
         File file = File(savePath);
         var raf = file.openSync(mode: FileMode.write);
         // response.data is List<int> type
-        print(savePath);
+        print('savePath is $savePath');
         raf.writeFromSync(response.data);
         await raf.close();
       } catch (e) {
         if (kDebugMode) {
-          print(e);
+          print('exception #002 $e');
         }
       }
     }
@@ -1000,28 +996,72 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  void enableChatReplay(Chat chat) {
-    replayTo = chat;
+  void enableChatReplay(int index) {
+    replyTo = selectedRoom?.chatList[index];
     notifyListeners();
   }
 
   void clearChatReplay() {
-    replayTo = null;
+    replyTo = null;
     notifyListeners();
   }
 
-  bool sentOnceFirebaseToken = false;
+  bool sentOnceFirebaseToken = false,
+      checkedOnceUpdate = false,
+      updateAvailable = false;
 
   void _sendOnceFirebaseToken() {
-    if(sentOnceFirebaseToken){
+    if (sentOnceFirebaseToken) {
       return;
     }
-    FirebaseManager.firebaseToken.then(
-        (value) {
-          socket.emitWithAck('firebaseToken', value, ack: (res) {
 
-          });
-          sentOnceFirebaseToken = true;
+    try{
+
+      FirebaseManager.firebaseToken(
+          validKey:
+          'BEOJb0aM5gE-_c8ro6-c1SrOQGF7NzTAbDylWNh1C82pP4oTYImJxzL_ZENcIMvuHEjvX8L_jJxR07JkK3PmC34')
+          .then((value) {
+        socket.emitWithAck('firebaseToken', value, ack: (res) {
+          if (kDebugMode) {
+            print('socket.emitWithAck firebaseToken res is $res');
+          }
         });
+        sentOnceFirebaseToken = true;
+      });
+    }catch(e){
+      if (kDebugMode) {
+        print('FirebaseManager.firebaseToken exception $e');
+      }
+    }
+  }
+
+  void _checkOnceUpdate() async {
+    if (checkedOnceUpdate) {
+      return;
+    }
+
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    String appName = packageInfo.appName;
+    String packageName = packageInfo.packageName;
+    String version = packageInfo.version;
+    String buildNumber = packageInfo.buildNumber;
+
+    if (kDebugMode) {
+      print('==================================');
+      print('appName : $appName');
+      print('packageName : $packageName');
+      print('version : $version');
+      print('buildNumber : $buildNumber');
+      print('==================================');
+    }
+
+    socket.emitWithAck('checkUpdate', buildNumber, ack: (updateAvailable) {
+      checkedOnceUpdate = true;
+      if (updateAvailable) {
+        this.updateAvailable = true;
+        notifyListeners();
+      }
+    });
   }
 }

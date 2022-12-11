@@ -30,16 +30,12 @@ class ProfileProvider extends ChangeNotifier {
       ack: (data) async {
         try {
           data = jsonDecode(data);
-          print(data);
           if (data['success'] == true) {
-            print('////////// $data');
             if (type == 'name') {
-              print(content);
               await chatProvider?.auth?.changeName(content);
             }
 
             if (type == 'username') {
-              print(content);
               await chatProvider?.auth?.changeUsername(content);
             }
             Navigator.pop(navigatorKey.currentContext!);
@@ -47,7 +43,9 @@ class ProfileProvider extends ChangeNotifier {
           Utils.showSnack(navigatorKey.currentContext!, data['msg']);
 
         } catch (e) {
-          print(e);
+          if (kDebugMode) {
+            print('exception #003 $e');
+          }
         }
       },
     );
@@ -75,15 +73,15 @@ class ProfileProvider extends ChangeNotifier {
         'name': fileName,
       },
       ack: (data) async {
-        print(data);
         try {
           if (data['success'] == true) {
-            print('////////// $data');
             await chatProvider?.auth?.changeProfileImage(data['url']);
           }
           Utils.showSnack(navigatorKey.currentContext!, data['msg']);
         } catch (e) {
-          print(e);
+          if (kDebugMode) {
+            print('exception #004 $e');
+          }
         }
       },
     );

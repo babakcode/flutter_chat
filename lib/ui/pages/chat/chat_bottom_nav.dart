@@ -1,5 +1,4 @@
 import 'package:chat_babakcode/constants/app_constants.dart';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
@@ -16,6 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../models/chat.dart';
 import '../../../providers/search_user_provider.dart';
+import '../../../utils/utils.dart';
 import '../../widgets/app_text.dart';
 
 class ChatBottomNavComponent extends StatefulWidget {
@@ -31,7 +31,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
-    final globalSetting = context.read<GlobalSettingProvider>();
+    final globalSetting = context.watch<GlobalSettingProvider>();
 
     var _width = MediaQuery.of(context).size.width;
     if (_width > 960) {
@@ -74,7 +74,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                     _atSignSection(chatProvider),
 
                     /// for replay chat
-                    _replayOffStateSection(chatProvider),
+                    _replyOffStateSection(chatProvider),
 
                     /// input box
                     /// emoji + chat + attachment + send chat card
@@ -303,11 +303,11 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                 ? AppConstants.textColor[900]!
                 : AppConstants.textColor[50]!,
             indicatorColor: Colors.blue,
-            iconColor: Colors.grey,
+            iconColor: Colors.blueGrey,
             iconColorSelected: Colors.blue,
             backspaceColor: Colors.blue,
             skinToneDialogBgColor: Colors.white,
-            skinToneIndicatorColor: Colors.grey,
+            skinToneIndicatorColor: Colors.blueGrey,
             enableSkinTones: true,
             showRecentsTab: true,
             recentsLimit: 100,
@@ -553,7 +553,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                     clipBehavior: Clip.antiAliasWithSaveLayer,
                     shape: RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(AppConfig.radiusCircular),
+                          BorderRadius.circular(AppConstants.radiusCircular),
                     ),
                     child: Builder(
                       builder: (context) {
@@ -651,28 +651,27 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
   }
 }
 
-Widget _replayOffStateSection(ChatProvider chatProvider) {
-  print(chatProvider.replayTo?.toSaveFormat());
-  String displayLastChat = '';
-  if (chatProvider.replayTo != null) {
-    if (chatProvider.replayTo is ChatTextModel) {
-      ChatTextModel? chat = chatProvider.replayTo as ChatTextModel;
-      displayLastChat = chat.text ?? '';
-    } else if (chatProvider.replayTo is ChatPhotoModel) {
-      displayLastChat = 'Photo';
-    } else if (chatProvider.replayTo is ChatDocModel) {
-      displayLastChat = 'Document';
-    } else if (chatProvider.replayTo is ChatVoiceModel) {
-      displayLastChat = 'Voice';
-    } else if (chatProvider.replayTo is ChatUpdateRequireModel) {
-      displayLastChat =
-          'this message is not supported on your version of business chat!';
-    }
-  }
+Widget _replyOffStateSection(ChatProvider chatProvider) {
+  // String displayLastChat = '';
+  // if (chatProvider.replyTo != null) {
+  //   if (chatProvider.replyTo is ChatTextModel) {
+  //     ChatTextModel? chat = chatProvider.replyTo as ChatTextModel;
+  //     displayLastChat = chat.text ?? '';
+  //   } else if (chatProvider.replyTo is ChatPhotoModel) {
+  //     displayLastChat = 'Photo';
+  //   } else if (chatProvider.replyTo is ChatDocModel) {
+  //     displayLastChat = 'Document';
+  //   } else if (chatProvider.replyTo is ChatVoiceModel) {
+  //     displayLastChat = 'Voice';
+  //   } else if (chatProvider.replyTo is ChatUpdateRequireModel) {
+  //     displayLastChat =
+  //         'this message is not supported on your version of business chat!';
+  //   }
+  // }
 
   return Offstage(
-    offstage: chatProvider.replayTo == null,
-    child: chatProvider.replayTo != null
+    offstage: chatProvider.replyTo == null,
+    child: chatProvider.replyTo != null
         ? Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -692,13 +691,13 @@ Widget _replayOffStateSection(ChatProvider chatProvider) {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            chatProvider.replayTo!.user!.name!,
+                            chatProvider.replyTo!.user!.name!,
                             style: const TextStyle(color: Colors.blueGrey),
                           ),
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(displayLastChat)
+                          AppText(Utils.displayLastChat(chatProvider.replyTo!))
                         ],
                       ),
                     ),

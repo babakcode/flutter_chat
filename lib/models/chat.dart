@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:chat_babakcode/utils/hive_manager.dart';
 import 'package:intl/intl.dart';
 import 'app_collection.dart';
 import 'package:just_audio/just_audio.dart';
@@ -8,6 +9,8 @@ part 'chat_text_model.dart';
 part 'chat_photo_model.dart';
 part 'chat_voice_model.dart';
 part 'chat_doc_model.dart';
+
+HiveManager _hiveManager = HiveManager();
 
 abstract class Chat extends AppCollections {
   String? id;
@@ -46,6 +49,10 @@ abstract class Chat extends AppCollections {
         .parse(utcDateUtc.toString(), true)
         .toLocal();
 
+    if(json['replyId'] is String){
+      json['replyId'] = _hiveManager.chatsBox.get(json['replyId']);
+    }
+
     id = json['_id'];
     chatNumberId = json['id'];
     user = User.fromJson(json['user']);
@@ -57,7 +64,7 @@ abstract class Chat extends AppCollections {
     // type = chatTypeFromText(json['type']);
     edited = json['edited'];
     replyId =
-    json['replyId'] == null ? null : detectChatModelType(json['replayId']);
+    json['replyId'] == null ? null : detectChatModelType(json['replyId']);
     version = json['__v'];
   }
 
@@ -78,6 +85,16 @@ abstract class Chat extends AppCollections {
       'replyId': replyId,
       '__v': version,
     };
+  }
+
+  static Map? chatToMap(Chat? chat){
+    if(chat == null){
+      return null;
+    }
+    Map saveFormat = chat.toSaveFormat();
+    saveFormat['user'] = chat.user!.toSaveFormat();
+    saveFormat['replyId'] = null;
+    return saveFormat;
   }
 }
 

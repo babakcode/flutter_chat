@@ -1,7 +1,9 @@
 import 'package:chat_babakcode/models/app_collection.dart';
+import 'package:chat_babakcode/utils/hive_manager.dart';
 // import 'package:hive/hive.dart';
 //
 // final _userBox = Hive.box('user');
+HiveManager _hiveManager = HiveManager();
 class User extends AppCollections{
   String? id;
   String? publicToken;
@@ -14,6 +16,10 @@ class User extends AppCollections{
   User();
 
   factory User.fromJson(json) {
+
+    if(json is String){
+      json = _hiveManager.usersBox.get(json);
+    }
     return User()
       ..id = json['_id']
       ..publicToken = json['publicToken']

@@ -51,7 +51,7 @@ class EditProfilePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 30.0),
             child: Text(
               description,
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.blueGrey),
             ),
           )
         ],

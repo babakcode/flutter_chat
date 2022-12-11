@@ -52,7 +52,6 @@ class Auth extends ChangeNotifier {
     final newMyUser = _cryptoManager.encryptData(jsonEncode(myUser.toSaveFormat()));
     await me.put('myUser', newMyUser!.toMap()
     );
-    print(myUser.toSaveFormat());
     notifyListeners();
   }
 
@@ -63,7 +62,6 @@ class Auth extends ChangeNotifier {
     await me.put('myUser', newMyUser!.toMap()
     );
 
-    print('---------- ${myUser.toSaveFormat()} ----------');
     notifyListeners();
   }
 
@@ -74,7 +72,6 @@ class Auth extends ChangeNotifier {
     final newMyUser = _cryptoManager.encryptData(jsonEncode(myUser.toSaveFormat()));
     await me.put('myUser', newMyUser!.toMap()
     );
-    print('---------- ${myUser.toSaveFormat()} ----------');
 
     notifyListeners();
   }

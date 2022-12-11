@@ -23,6 +23,7 @@ class ChatVoiceModel extends Chat {
     Map<String, dynamic> _chatSaveFormat = super.toSaveFormat();
     _chatSaveFormat['fileUrl'] = fileUrl;
     _chatSaveFormat['type'] = 'voice';
+    _chatSaveFormat['text'] = text;
     return _chatSaveFormat;
   }
 }

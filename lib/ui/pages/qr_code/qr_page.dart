@@ -1,11 +1,7 @@
 import 'package:chat_babakcode/constants/app_constants.dart';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/generated/assets.dart';
-import 'package:chat_babakcode/providers/global_setting_provider.dart';
-import 'package:chat_babakcode/ui/widgets/app_button.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../models/user.dart';
@@ -37,7 +33,7 @@ class QrPage extends StatelessWidget {
                   elevation: 0,
                   color: AppConstants.textColor,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppConfig.radiusCircular)
+                    borderRadius: BorderRadius.circular(AppConstants.radiusCircular)
                   ),
                   child: QrImage(
                     data: user.publicToken!,

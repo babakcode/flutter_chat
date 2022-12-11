@@ -3,10 +3,28 @@ import 'package:flutter/material.dart';
 class AppConstants {
 
   AppConstants._();
+  /// sandbox url
+  static String get baseUrl => 'http://192.168.149.220:50001/api';
+  static String get socketBaseUrl => 'http://192.168.149.220:50001/';
+
+  /// localhost
+  // static String get baseUrl => 'http://localhost:50001/api';
+  // static String get socketBaseUrl => 'http://localhost:50001/';
+
+  // localhost 2
+  // static String get baseUrl => 'http://192.168.1.173:50001/api';
+  // static String get socketBaseUrl => 'http://192.168.1.173:50001/';
+
+  // localhost 3
+  // static String get baseUrl => 'http://217.144.106.223:50001/api';
+  // static String get socketBaseUrl => 'http://217.144.106.223:50001/';
+
+  static String get globalEncryptKey => 'jwudownwaodw21ewje2elq2ekwamkwda';
   static Color blueAccent = const Color(0xFF10B2F6);
   // static Color redAccent = Color(0xFFC6DCEF);
   // static Color redAccentChatHomeColor = const Color(0xFFFFEFEF);
 
+  static Uri appLandingWebPageUri = Uri.parse('https://chat.babakcode.com/landing');
 
   static Color scaffoldLightBackground = const Color(0xFFDAF1FF);
   static Color scaffoldDarkBackground = const Color(0xFF0C1D2F);
@@ -54,4 +72,10 @@ class AppConstants {
   //       Color(0xFF151F38),
   //       Color(0xFF1F2E52),
   //     ]);
+
+
+
+  static double get radiusCircular => 20;
+
+
 }

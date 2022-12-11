@@ -38,6 +38,8 @@ void main() async {
       await Hive.initFlutter();
       await FirebaseManager.initFirebaseOnPhone();
     }
+  }else{
+    await FirebaseManager.initFirebaseOnWeb();
   }
 
   // final box = await Hive.openLazyBox<Map>('rooms');

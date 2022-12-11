@@ -59,7 +59,6 @@ class SearchUserProvider extends ChangeNotifier {
   }
 
   void onDetectionTyped(String value) async {
-    print(value);
     atSign = value;
     _usersList = await getUsers();
     notifyListeners();
@@ -101,6 +100,8 @@ class SearchUserProvider extends ChangeNotifier {
                   ));
             } else {
               notifyListeners();
+              Future.delayed(const Duration(milliseconds: 100), () =>
+              {chatProvider?.selectedRoom = room, chatProvider?.notifyListeners()},);
             }
             // if(data['findFromExistRoom']){
             //

@@ -1,4 +1,3 @@
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
@@ -12,11 +11,12 @@ import 'package:chat_babakcode/ui/pages/search/search_user_page.dart';
 import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:phlox_animations/phlox_animations.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
 import '../../../utils/notification_controller.dart';
@@ -61,7 +61,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       tooltip: 'open navigation menu',
                       onPressed: () =>
                           _roomScaffoldKey.currentState?.openDrawer(),
-                      icon: const Icon(Icons.more_vert_rounded))
+                      icon: const Icon(Icons.menu_rounded))
                   : null,
               actions: [
                 IconButton(
@@ -72,73 +72,52 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   icon: const Icon(Icons.search_rounded),
                 ),
               ],
-              bottom: !globalSettingProvider.showSecurityRecoveryPhrase
-                  ? null
-                  : PreferredSize(
-                      child: AppBar(
-                        backgroundColor: globalSettingProvider.isDarkTheme
-                            ? AppConstants.textColor[800]
-                            : const Color(0xFFCFE9F8),
-                        leading: const SizedBox(),
-                        automaticallyImplyLeading: true,
-                        leadingWidth: 0,
-                        toolbarHeight: 60,
-                        title: const Text('Get recovery phrase'),
-                        actions: [
-                          IconButton(
-                            onPressed: () => Navigator.push(
-                                context,
-                                CupertinoPageRoute(
-                                    builder: (context) =>
-                                        const SecurityPage())),
-                            icon: Stack(
-                              children: const [
-                                Icon(Icons.security_rounded),
-                                PhloxAnimations(
-                                  loop: true,
-                                  duration: Duration(seconds: 1),
-                                  fromOpacity: .1,
-                                  toOpacity: 1,
-                                  child: Icon(
-                                    Icons.circle,
-                                    size: 10,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
-                        // bottom: PreferredSize(
-                        //   child: Container(
-                        //     height: 60,
-                        //     color: globalSettingProvider.isDarkTheme
-                        //         ? AppConstants.textColor[800]
-                        //         : AppConstants.textColor[100],
-                        //     child: const Padding(
-                        //       padding: EdgeInsets.all(8.0),
-                        //       child: Text("Save your account recovery phrase and do not share it with other accounts !!"),
-                        //     ),
-                        //   ),
-                        //   preferredSize: const Size.fromHeight(60),
-                        // ),
-                      ),
-                      preferredSize: const Size.fromHeight(60),
-                    ),
             ),
-
-            // const SliverAppBar(
-            //   backgroundColor: Colors.amber,
-            //   title: Text('Kindacode.com'),
-            //   expandedHeight: 30,
-            //   collapsedHeight: 150,
-            // ),
-            // const SliverAppBar(
-            //   backgroundColor: Colors.green,
-            //   title: Text('Have a nice day'),
-            //   floating: true,
-            //   pinned: true,
-            // ),
+            if(chatProvider.updateAvailable || globalSettingProvider.showSecurityRecoveryPhrase )
+              SliverList(
+              delegate: SliverChildListDelegate.fixed([
+                if (globalSettingProvider.showSecurityRecoveryPhrase)
+                  ListTile(
+                    tileColor: globalSettingProvider.isDarkTheme
+                        ? AppConstants.textColor[800]
+                        : const Color(0xFFCFE9F8),
+                    title: const Text('Get recovery phrase'),
+                    onTap: () => Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                            builder: (context) => const SecurityPage())),
+                    trailing: Stack(
+                      children:  [
+                        const Icon(Icons.security_rounded),
+                        PhloxAnimations(
+                          loop: true,
+                          duration: const Duration(seconds: 1),
+                          fromOpacity: .01,
+                          toOpacity: 1,
+                          child: Icon(
+                            Icons.circle,
+                            size: 12,
+                            color: AppConstants.blueAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (chatProvider.updateAvailable)
+                  ListTile(
+                    tileColor: AppConstants.blueAccent,
+                    onTap: () async {
+                      if (!await launchUrl(AppConstants.appLandingWebPageUri)) {
+                        throw 'Could not launch ${AppConstants.appLandingWebPageUri}';
+                      }
+                    },
+                    iconColor: Colors.white,
+                    textColor: Colors.white,
+                    title: const Text('Update available'),
+                    trailing: const Icon(Icons.system_update_rounded),
+                  ),
+              ]),
+            ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(6, 12, 6, 112),
               sliver: SliverList(
@@ -150,13 +129,10 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: ListTile(
-                        title: _roomItemTitle(room),
+                        title: _roomItemTitle(room, globalSettingProvider),
                         subtitle: _roomItemSubTitle(room),
                         leading: _roomItemLeading(room),
                         onTap: () {
-                          if (kDebugMode) {
-                            print(_width);
-                          }
                           chatProvider.changeSelectedRoom(room);
                           if (_width < 600) {
                             Navigator.push(
@@ -205,7 +181,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               isExtended: provider.extendedFloatingActionButton,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(
-                  AppConfig.radiusCircular,
+                  AppConstants.radiusCircular,
                 ),
               ),
             ),
@@ -224,7 +200,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
   //     context: context,
   //     builder: (context) => Dialog(
   //       shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(AppConfig.radiusCircular)),
+  //           borderRadius: BorderRadius.circular(AppConstants.radiusCircular)),
   //       backgroundColor: globalSettingProvider.isDarkTheme
   //           ? AppConstants.textColor[600]
   //           : AppConstants.textColor[50],
@@ -515,10 +491,10 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
     );
   }
 
-  Widget _roomItemTitle(Room room) {
+  Widget _roomItemTitle(Room room, GlobalSettingProvider settingProvider) {
     return Row(
       children: [
-        Expanded(
+        Flexible(
           child: Text(
             room.roomName ?? 'guest',
             overflow: TextOverflow.ellipsis,
@@ -527,6 +503,13 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
             maxLines: 1,
           ),
         ),
+
+        if (room.verified)
+          SvgPicture.asset(
+            'assets/svg/verified_account.svg',
+            height: 25,
+            width: 25,
+          ),
 
         /// show not read chats count
         if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
@@ -538,10 +521,15 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
             clipBehavior: Clip.antiAliasWithSaveLayer,
             child: Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1.0),
+                  const EdgeInsets.symmetric(horizontal: 5.0, vertical: 3.0),
               child: Text(
                 '${(room.lastChat?.chatNumberId ?? 0) - (room.lastIndex ?? 0)}',
-                style: TextStyle(fontSize: 12, color: AppConstants.scaffoldDarkBackground),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: settingProvider.isDarkTheme
+                        ? AppConstants.scaffoldDarkBackground
+                        : AppConstants.scaffoldLightBackground),
               ),
             ),
           ),

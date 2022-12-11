@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:chat_babakcode/constants/app_constants.dart';
-import 'package:chat_babakcode/models/chat.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
@@ -59,8 +60,6 @@ class NotificationController {
   static Future<void> onActionReceivedMethod(
       ReceivedAction receivedAction) async {
 
-    print('--------------------------');
-    print(receivedAction.toMap());
     if(
     receivedAction.actionType == ActionType.SilentAction ||
         receivedAction.actionType == ActionType.SilentBackgroundAction
@@ -231,7 +230,43 @@ class NotificationController {
     await AwesomeNotifications().cancelAll();
   }
 
-  static void createNewChatNotification(RemoteNotification? notification,Chat chat) {
+  static Future<void> createNewChatNotification(RemoteNotification? notification,Map<String, dynamic> notificationData) async {
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed) isAllowed = await displayNotificationRationale();
+    if (!isAllowed) return;
 
+    // final chat =
+    // Chat.detectChatModelType(notificationData);
+    // if (chat.room == chatsProvider.selectedRoom?.id ||
+    //     chat.user?.id == chatsProvider.auth?.myUser?.id) {
+    //   break;
+    // }
+    await AwesomeNotifications().createNotification(
+        content: NotificationContent(
+            id: -1, // -1 is replaced by a random number
+            channelKey: 'alerts',
+            title: notification?.title,
+            body: notification?.body,
+            //bigPicture: 'https://storage.googleapis.com/cms-storage-bucket/d406c736e7c4c57f5f61.png',
+            // largeIcon: 'resource://drawable/ic_logo',
+            notificationLayout: NotificationLayout.Default,
+            color: const Color(0xFF10b2f6),
+            backgroundColor: const Color(0xFF0C1D2F),
+            payload: {'room': notificationData['room']}),
+        actionButtons: [
+          NotificationActionButton(key: 'REDIRECT', label: 'Redirect',),
+          // NotificationActionButton(
+          //     key: 'REPLY',
+          //     label: 'Reply',
+          //     requireInputText: true,
+          //     actionType: ActionType.SilentAction
+          // ),
+          NotificationActionButton(
+              key: 'DISMISS',
+              label: 'Dismiss',
+              actionType: ActionType.DismissAction,
+              isDangerousOption: true)
+        ]);
   }
+
 }

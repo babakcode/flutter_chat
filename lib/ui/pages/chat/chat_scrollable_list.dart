@@ -22,8 +22,6 @@ class ChatScrollableList extends StatefulWidget {
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
 
-  ItemScrollController itemScrollController = ItemScrollController();
-  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   @override
   void initState() {
     super.initState();
@@ -41,7 +39,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
             .jumpTo(index: _chatProvider.selectedRoom!.minViewPortSeenIndex));
       } catch (e) {
         if (kDebugMode) {
-          print(e);
+          print('exception #005 $e');
         }
       }
     }
@@ -126,11 +124,11 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
   }
 
   Widget chatItem(BuildContext context, int index) {
-    double _width = MediaQuery.of(context).size.width;
+    final _width = MediaQuery.of(context).size.width;
 
-    final chatProvider = context.read<ChatProvider>();
+    final chatProvider = context.watch<ChatProvider>();
 
-    Room room = chatProvider.selectedRoom!;
+    final room = chatProvider.selectedRoom!;
 
     final chat = room.chatList[index];
 
@@ -159,10 +157,10 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
 
     return SwipeTo(
       onLeftSwipe: () {
-        _chatProvider.enableChatReplay(chat);
+        _chatProvider.enableChatReplay(index);
       },
       onRightSwipe: () {
-        _chatProvider.enableChatReplay(chat);
+        _chatProvider.enableChatReplay(index);
       },
       child: Container(
         padding: EdgeInsets.only(

@@ -139,7 +139,7 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
                               );
 
                               if (result?.files.isNotEmpty ?? false) {
-                                print(result);
+
                                 for (PlatformFile file in result!.files) {
                                   // var item = File(file.path!);
                                   profileProvider.updateProfileImage(file);
@@ -155,24 +155,30 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
 
                               if(data['success']){
 
-                                // Navigator.pop(context);
-                                int count = 0;
-                                Navigator.of(context).popUntil((_) => count++ >= 2);
 
                                 final room = data['room'];
-                                chatProvider.selectedRoom = room;
+                                if(chatProvider.selectedRoom == room){
+                                  Navigator.pop(context);
+                                }else{
 
-                                await Future.delayed(const Duration(milliseconds: 100));
+                                  if (GlobalSettingProvider.isPhonePortraitSize) {
+                                    Navigator.pop(context);
+                                  } else {
+                                    final n = Navigator.of(context);
+                                    n.pop();
+                                    n.pop();
+                                  }
+                                  chatProvider.changeSelectedRoom(room);
 
-                                if (GlobalSettingProvider.isPhonePortraitSize) {
-                                  Navigator.push(
-                                      navigatorKey.currentContext!,
-                                      CupertinoPageRoute(
-                                        builder: (context) => const ChatPage(),
-                                      ));
-                                } else {
-                                  chatProvider.notifyListeners();
                                 }
+                                // Navigator.pop(context);
+                                // int count = 0;
+                                // Navigator.of(context).popUntil((_) => count++ >= 2);
+                                //
+                                // chatProvider.selectedRoom = room;
+                                //
+                                // await Future.delayed(const Duration(milliseconds: 100));
+
                                 // if(data['findFromExistRoom']){
                                 //
                                 //   /// room found
@@ -227,7 +233,7 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
                     ? ListTile(
                         subtitle: const Text(
                           'Username',
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(color: Colors.blueGrey),
                         ),
                         contentPadding:
                             const EdgeInsets.symmetric(horizontal: 10),

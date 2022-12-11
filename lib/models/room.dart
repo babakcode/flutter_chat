@@ -1,6 +1,5 @@
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'chat.dart';
@@ -20,6 +19,7 @@ class Room extends AppCollections {
   List<Chat> chatList = [];
   int? lastIndex;
   int minViewPortSeenIndex = 0;
+  bool verified = false;
 
   bool newRoomToGenerate = false;
   bool reachedToEnd = false;
@@ -30,6 +30,7 @@ class Room extends AppCollections {
   Room();
 
   factory Room.fromJson(Map json, bool fromDatabase) {
+
     DateTime? createAtLocal;
     DateTime? changeAtLocal;
 
@@ -53,6 +54,7 @@ class Room extends AppCollections {
       ..changeAt = changeAtLocal
       ..createAt = createAtLocal
       ..deleted = json['deleted']
+      ..verified = json['verified'] ?? false
       ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
       ..members = (json['members'] as List).map((member) {
         var roomMember = RoomMember.fromJson(member);
@@ -72,6 +74,7 @@ class Room extends AppCollections {
         'createAt': createAt?.toUtc().toString(),
         'deleted': deleted,
         'members': members,
+        'verified': verified,
         'roomType': _RoomUtils.roomTypeToString(roomType!),
         'lastChat': lastChat?.toSaveFormat(),
         'roomImage': roomImage,

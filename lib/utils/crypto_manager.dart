@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:convert/convert.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
+
+import '../constants/app_constants.dart';
 
 class CryptoManager {
 
   final _encryptor = encrypt.Encrypter(encrypt.AES(
-      encrypt.Key.fromUtf8(AppConfig.globalEncryptKey),
+      encrypt.Key.fromUtf8(AppConstants.globalEncryptKey),
       mode: encrypt.AESMode.ctr,
       padding: null));
 
@@ -29,7 +30,6 @@ class CryptoManager {
       final encrypted = _encryptor.encrypt(data, iv: iv);
       return EncryptModel(hex.encode(encrypted.bytes), hex.encode(iv.bytes));
     } catch (e) {
-      print(e);
       return null;
     }
   }

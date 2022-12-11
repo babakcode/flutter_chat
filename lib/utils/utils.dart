@@ -1,10 +1,7 @@
 import 'dart:math';
-
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/main.dart';
-import 'package:chat_babakcode/providers/global_setting_provider.dart';
+import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/ui/widgets/app_button.dart';
-import 'package:chat_babakcode/ui/widgets/app_button_rounded.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +20,7 @@ class Utils {
     final auth = context.read<Auth>();
     return Dialog(
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConfig.radiusCircular)),
+          borderRadius: BorderRadius.circular(AppConstants.radiusCircular)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -81,5 +78,23 @@ class Utils {
     if (showSnackBar) {
       showSnack(navigatorKey.currentContext!, 'copied!');
     }
+  }
+
+  static String displayLastChat(Chat data) {
+    String displayLastChat = '';
+    if (data is ChatTextModel) {
+      ChatTextModel? chat = data;
+      displayLastChat = chat.text ?? '';
+    } else if (data is ChatPhotoModel) {
+      displayLastChat = 'Photo';
+    } else if (data is ChatDocModel) {
+      displayLastChat = 'Document';
+    } else if (data is ChatVoiceModel) {
+      displayLastChat = 'Voice';
+    } else if (data is ChatUpdateRequireModel) {
+      displayLastChat =
+      'this message is not supported on your version of business chat!';
+    }
+    return displayLastChat;
   }
 }

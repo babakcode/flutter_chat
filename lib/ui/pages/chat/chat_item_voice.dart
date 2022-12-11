@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:chat_babakcode/constants/app_constants.dart';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
@@ -75,7 +74,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                     ? AppConstants.textColor
                     : AppConstants.textColor[100],
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConfig.radiusCircular),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusCircular),
                 ),
                 clipBehavior: Clip.antiAliasWithSaveLayer,
                 child: LoginProvider.platform == 'android' ||
@@ -151,7 +150,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                         widget.chat.isPlaying = true;
                         _chatProvider.notifyListeners();
                         await widget.chat.audioPlayer
-                            .setUrl(widget.chat.fileUrl!);
+                            .setUrl(widget.chat.fileUrl!  + '/${auth.accessToken!}');
                         _controller.forward();
                         _controller.repeat();
                         await widget.chat.audioPlayer.play();
@@ -258,7 +257,7 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
               trimCollapsedText: 'more',
               trimExpandedText: '...less',
               onTap: (tappedText) {
-                debugPrint(tappedText);
+                debugPrint('tappedText $tappedText');
                 if (tappedText.startsWith('#')) {
                   debugPrint('DetectableText >>>>>>> #');
                 } else if (tappedText.startsWith('@')) {

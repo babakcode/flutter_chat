@@ -1,8 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_babakcode/constants/config.dart';
 import 'package:chat_babakcode/models/user.dart';
 import 'package:flutter/material.dart';
-import '../../../services/request_manager.dart';
+import '../../../constants/app_constants.dart';
 
 class DisplayProfilePage extends StatelessWidget {
   final User user;
@@ -37,7 +36,7 @@ class DisplayProfilePage extends StatelessWidget {
                               return const Center();
                             },
                             imageUrl:
-                                '${AppConfig.baseUrl}/${user.profileUrl}')
+                                '${AppConstants.baseUrl}/${user.profileUrl}')
                         : const Icon(Icons.person),
                   ),
                 ),
