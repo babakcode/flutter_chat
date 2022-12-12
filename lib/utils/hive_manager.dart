@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room_member.dart';
 import 'package:flutter/foundation.dart';
@@ -237,5 +239,13 @@ class HiveManager {
     await chatsBox.clear();
     await roomBox.clear();
     await usersBox.clear();
+  }
+
+  Future<void> deleteChat(String chatId, Room room) async{
+    await chatsBox.delete(chatId);
+    final indexOfChat = room.chatList.indexWhere((element) => element.id == chatId);
+    if(indexOfChat != -1){
+      room.chatList.removeAt(indexOfChat);
+    }
   }
 }

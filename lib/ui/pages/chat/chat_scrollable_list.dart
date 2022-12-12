@@ -1,4 +1,7 @@
+import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/ui/pages/profile/profile_user_page.dart';
+import 'package:chat_babakcode/ui/widgets/app_text.dart';
+import 'package:chat_babakcode/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +11,8 @@ import '../../../constants/app_constants.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_button_transparent.dart';
 import 'app_text_item.dart';
 import 'package:swipe_to/swipe_to.dart';
 
@@ -21,7 +26,6 @@ class ChatScrollableList extends StatefulWidget {
 }
 
 class _ChatScrollableListState extends State<ChatScrollableList> {
-
   @override
   void initState() {
     super.initState();
@@ -31,7 +35,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
         .addListener(_chatProvider.changeScrollIndexListener);
 
     if (_selectedRoom.firstOpenRoom) {
-      if(_selectedRoom.chatList.length > 16){
+      if (_selectedRoom.chatList.length > 16) {
         _selectedRoom.firstOpenRoom = false;
       }
       try {
@@ -127,6 +131,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
     final _width = MediaQuery.of(context).size.width;
 
     final chatProvider = context.watch<ChatProvider>();
+    final globalSettingProvider = context.watch<GlobalSettingProvider>();
 
     final room = chatProvider.selectedRoom!;
 
@@ -155,84 +160,162 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
       }
     }
 
-    return SwipeTo(
-      onLeftSwipe: () {
-        _chatProvider.enableChatReplay(index);
+    return InkWell(
+      splashColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      focusColor: Colors.transparent,
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return chatActionDialog(globalSettingProvider, fromMyAccount, index,
+                chatProvider, context, chat);
+          },
+        );
       },
-      onRightSwipe: () {
-        _chatProvider.enableChatReplay(index);
-      },
-      child: Container(
-        padding: EdgeInsets.only(
-            right: 8,
-            left: 8,
-            bottom: middleChatFromUser
-                ? 2
-                : nextChatFromUser
-                    ? 2
-                    : previousChatFromUser
-                        ? 2
-                        : 16,
-            top: middleChatFromUser
-                ? 2
-                : previousChatFromUser
-                    ? 2
-                    : nextChatFromUser
-                        ? 2
-                        : 16),
-        alignment: fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (!fromMyAccount)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: SizedBox(
-                  height: 36,
-                  width: 36,
-                  child: nextChatFromUser
-                      ? null
-                      : Card(
-                          margin: EdgeInsets.zero,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                    builder: (context) =>
-                                        ProfileUserPage(user: chat.user!),
-                                  ),
-                                );
-                              },
-                              child: chat.user?.profileUrl == null
-                                  ? Image.asset(
-                                      'assets/images/p2.jpg',
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.network(
-                                      chat.user!.profileUrl!,
-                                      fit: BoxFit.cover,
-                                    )),
-                        ),
+      child: SwipeTo(
+        onLeftSwipe: () {
+          _chatProvider.enableChatReplay(index);
+        },
+        onRightSwipe: () {
+          _chatProvider.enableChatReplay(index);
+        },
+        child: Container(
+          padding: EdgeInsets.only(
+              right: 8,
+              left: 8,
+              bottom: middleChatFromUser
+                  ? 2
+                  : nextChatFromUser
+                      ? 2
+                      : previousChatFromUser
+                          ? 2
+                          : 16,
+              top: middleChatFromUser
+                  ? 2
+                  : previousChatFromUser
+                      ? 2
+                      : nextChatFromUser
+                          ? 2
+                          : 16),
+          alignment:
+              fromMyAccount ? Alignment.bottomRight : Alignment.bottomLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!fromMyAccount)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: SizedBox(
+                    height: 36,
+                    width: 36,
+                    child: nextChatFromUser
+                        ? null
+                        : Card(
+                            margin: EdgeInsets.zero,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                            clipBehavior: Clip.antiAliasWithSaveLayer,
+                            child: InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          ProfileUserPage(user: chat.user!),
+                                    ),
+                                  );
+                                },
+                                child: chat.user?.profileUrl == null
+                                    ? Image.asset(
+                                        'assets/images/p2.jpg',
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.network(
+                                        chat.user!.profileUrl!,
+                                        fit: BoxFit.cover,
+                                      )),
+                          ),
+                  ),
                 ),
+              Container(
+                constraints: BoxConstraints(
+                  maxWidth: _width *
+                      (GlobalSettingProvider.isPhonePortraitSize ? .8 : .3),
+                ),
+                child: AppChatItem(index, fromMyAccount, previousChatFromUser,
+                    nextChatFromUser, middleChatFromUser),
               ),
-            Container(
-              constraints: BoxConstraints(
-                maxWidth: _width *
-                    (GlobalSettingProvider.isPhonePortraitSize ? .8 : .3),
-              ),
-              child: AppChatItem(index, fromMyAccount, previousChatFromUser,
-                  nextChatFromUser, middleChatFromUser),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+Widget chatActionDialog(
+    GlobalSettingProvider globalSettingProvider,
+    bool isMyMessage,
+    int index,
+    ChatProvider _chatProvider,
+    BuildContext context,
+    Chat chat) {
+  String? copyTextContent;
+  if (chat is ChatTextModel) {
+    copyTextContent = chat.text;
+  } else if (chat is ChatPhotoModel) {
+    copyTextContent = chat.text;
+  } else if (chat is ChatDocModel) {
+    copyTextContent = chat.text;
+  } else if (chat is ChatVoiceModel) {
+    copyTextContent = chat.text;
+  }
+  return Dialog(
+    backgroundColor: globalSettingProvider.isDarkTheme
+        ? AppConstants.scaffoldDarkBackground
+        : AppConstants.scaffoldLightBackground,
+    shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.radiusCircular)),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const AppText('Reply text'),
+              onTap: () {
+                _chatProvider.enableChatReplay(index);
+                Navigator.pop(context);
+              },
+            ),
+            if (copyTextContent != null)
+              ListTile(
+                title: const AppText('Copy text'),
+                onTap: () {
+                  Utils.coptText(copyTextContent!);
+                  Navigator.pop(context);
+                },
+              ),
+            if (isMyMessage)
+              ListTile(
+                title: const AppText(
+                  'Delete text',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+                onTap: () {
+                  _chatProvider.emitAction('deleteChat', chat.id);
+                  Navigator.pop(context);
+                },
+              )
+          ],
+        ),
+      ),
+    ),
+  );
 }
 //3f782171543144e6a06f00f46f95865ea52b8bca8519a90a6e294c2a79d2a4de rubbed-highway-balloon-position-snow-stock-whale-stiff-whatever-worse-lunch-turn-spider-daughter-fun-hole

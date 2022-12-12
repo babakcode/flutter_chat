@@ -106,6 +106,7 @@ class ChatProvider extends ChangeNotifier {
     socket.on('userRooms', _userRoomsEvent);
     socket.on('userRoomChats', _userRoomChatsEvent);
     socket.on('receiveChat', _receiveChatEvent);
+    socket.on('action', _actionEvent);
 
     /// check keyboard appeared
     chatFocusNode.addListener(() {
@@ -1063,5 +1064,29 @@ class ChatProvider extends ChangeNotifier {
         notifyListeners();
       }
     });
+  }
+
+  void emitAction(type, value){
+    socket.emitWithAck('action', {'type' : type ,'value' : value}, ack: (data) {
+     _actionEvent(data);
+    });
+  }
+
+  _actionEvent(data) async{
+    if (kDebugMode) {
+      print('_actionEvent $data');
+    }
+    if(data['success']){
+      if(data['type'] == 'deleteChat'){
+        final indexOfRoom = rooms.indexWhere((element) => element.id == data['room']);
+        if(indexOfRoom != -1){
+          final room = rooms[indexOfRoom];
+          await _hiveManager.deleteChat(data['chat'],room);
+          notifyListeners();
+        }
+      }
+    }else{
+      Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+    }
   }
 }
