@@ -692,12 +692,13 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                         children: [
                           Text(
                             chatProvider.replyTo!.user!.name!,
+                            maxLines: 1,
                             style: const TextStyle(color: Colors.blueGrey),
                           ),
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(Utils.displayLastChat(chatProvider.replyTo!))
+                          AppText(Utils.displayLastChat(chatProvider.replyTo!), maxLines: 1,)
                         ],
                       ),
                     ),
@@ -705,7 +706,7 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                 ),
                 IconButton(
                     onPressed: () {
-                      chatProvider.clearChatReplay();
+                      chatProvider.clearChatReply();
                     },
                     icon: const Icon(Icons.close_rounded))
               ],
