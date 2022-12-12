@@ -35,6 +35,7 @@ class ChatProvider extends ChangeNotifier {
   /// auth provider proxy
   Auth? auth;
 
+
   void initAuth(Auth auth) => this.auth = auth;
 
   Future saveLastViewPortSeenIndex(Room selectedRoom) async {
@@ -1088,5 +1089,23 @@ class ChatProvider extends ChangeNotifier {
     }else{
       Utils.showSnack(navigatorKey.currentContext!, data['msg']);
     }
+  }
+
+  bool showSearchRoomsBox = false;
+
+  List<Room>? roomsFromSearch;
+
+  checkSearchMode() {
+    showSearchRoomsBox = !showSearchRoomsBox;
+    notifyListeners();
+  }
+
+  void findRooms(String content) {
+    if(content.isEmpty){
+      roomsFromSearch = null;
+    }else{
+      roomsFromSearch = rooms.where((element) => element.roomName == content).toList();
+    }
+    notifyListeners();
   }
 }

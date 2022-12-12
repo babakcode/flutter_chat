@@ -10,6 +10,7 @@ import 'package:chat_babakcode/ui/pages/qr_code/qr_scanner.dart';
 import 'package:chat_babakcode/ui/pages/search/search_user_page.dart';
 import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
+import 'package:chat_babakcode/ui/widgets/app_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -55,7 +56,15 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           slivers: [
             SliverAppBar(
               pinned: true,
-              title: Text(chatProvider.connectionStatus ?? 'Chats'),
+
+              title: !chatProvider.showSearchRoomsBox?Text(chatProvider.connectionStatus ?? 'Chats') : TextField(
+                onChanged: (value) {
+                  chatProvider.findRooms(value);
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Room name'
+                ),
+              ),
               leading: _width < 960
                   ? IconButton(
                       tooltip: 'open navigation menu',
@@ -67,7 +76,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 IconButton(
                   onPressed: () => {
                     /*showSearchUsersByToken(context)*/
-                    NotificationController.createNewNotification()
+                    //NotificationController.createNewNotification()
+
+                    chatProvider.checkSearchMode()
                   },
                   icon: const Icon(Icons.search_rounded),
                 ),
@@ -123,7 +134,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    Room room = chatProvider.rooms[index];
+                    Room room = chatProvider.roomsFromSearch != null ? chatProvider.roomsFromSearch![index] : chatProvider.rooms[index];
                     Room.populateRoomFields(room, chatProvider.auth!.myUser!);
 
                     return Padding(
@@ -161,7 +172,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       ),
                     );
                   },
-                  childCount: chatProvider.rooms.length,
+                  childCount: chatProvider.roomsFromSearch != null ? chatProvider.roomsFromSearch!.length :chatProvider.rooms.length,
                 ),
               ),
             ),
