@@ -356,7 +356,7 @@ class ChatProvider extends ChangeNotifier {
       return;
     }
     print("replyTo != null = ${replyTo != null}");
-    print("replay : ${replyTo?.toSaveFormat()}");
+    print("reply : ${replyTo?.toSaveFormat()}");
 
     Map data = {
       'roomId': room.id ?? 'new',
@@ -400,7 +400,7 @@ class ChatProvider extends ChangeNotifier {
 
     chatController.clear();
     if (replyTo != null) {
-      clearChatReplay();
+      clearChatReply();
     }
 
     socket.emitWithAck('sendChat', data, ack: (data) {
@@ -997,12 +997,12 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  void enableChatReplay(int index) {
+  void enableChatReply(int index) {
     replyTo = selectedRoom?.chatList[index];
     notifyListeners();
   }
 
-  void clearChatReplay() {
+  void clearChatReply() {
     replyTo = null;
     notifyListeners();
   }

@@ -36,12 +36,12 @@ class HiveManager {
 
       //#region replyId to save format
       if (chat.replyId != null) {
-        Chat replayChat = chat.replyId!;
-        await _updateUserIfExist(replayChat.user!);
-        replayChat.replyId = null;
-        final saveReplayChatMap = Chat.chatToMap(replayChat);
-        saveChatItemMap['replyId'] = saveReplayChatMap;
-        saveChatItemMap['replyId']['user'] = replayChat.user!.id;
+        Chat replyChat = chat.replyId!;
+        await _updateUserIfExist(replyChat.user!);
+        replyChat.replyId = null;
+        final saveReplyChatMap = Chat.chatToMap(replyChat);
+        saveChatItemMap['replyId'] = saveReplyChatMap;
+        saveChatItemMap['replyId']['user'] = replyChat.user!.id;
       }
       //#endregion
 
@@ -223,8 +223,8 @@ class HiveManager {
         // print(saveRoomItem['lastChat']);
         final replyChat = room.lastChat!.replyId!;
         replyChat.replyId = null;
-        final saveReplayChatMap = Chat.chatToMap(replyChat);
-        saveRoomItem['lastChat']['replyId'] = saveReplayChatMap;
+        final saveReplyChatMap = Chat.chatToMap(replyChat);
+        saveRoomItem['lastChat']['replyId'] = saveReplyChatMap;
         saveRoomItem['lastChat']['replyId']['user'] = replyChat.user!.id;
       }
       //#endregion

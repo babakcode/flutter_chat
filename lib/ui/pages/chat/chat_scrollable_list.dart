@@ -175,10 +175,10 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
       },
       child: SwipeTo(
         onLeftSwipe: () {
-          _chatProvider.enableChatReplay(index);
+          _chatProvider.enableChatReply(index);
         },
         onRightSwipe: () {
-          _chatProvider.enableChatReplay(index);
+          _chatProvider.enableChatReply(index);
         },
         child: Container(
           padding: EdgeInsets.only(
@@ -289,7 +289,7 @@ Widget chatActionDialog(
             ListTile(
               title: const AppText('Reply text'),
               onTap: () {
-                _chatProvider.enableChatReplay(index);
+                _chatProvider.enableChatReply(index);
                 Navigator.pop(context);
               },
             ),

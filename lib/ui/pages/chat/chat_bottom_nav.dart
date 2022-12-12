@@ -706,7 +706,7 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                 ),
                 IconButton(
                     onPressed: () {
-                      chatProvider.clearChatReplay();
+                      chatProvider.clearChatReply();
                     },
                     icon: const Icon(Icons.close_rounded))
               ],
