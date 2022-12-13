@@ -24,13 +24,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="chat_babakcode">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+  <link rel="manifest" href="icons/site.webmanifest">
+  <link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#5bbad5">
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content="icons/mstile-144x144.png">
+  <meta name="theme-color" content="#ffffff">
 
   <title>Business Chat Application</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/default-style.css">
 
   <script>
     // The value below is injected by flutter build, do not touch.
@@ -40,31 +47,17 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("/firebase-messaging-sw.js");
-  });
-}
-</script>
-<!--<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>-->
-<!--<script>-->
-<!--     const firebaseConfig = {-->
-<!--       apiKey: "AIzaSyC7lfF_K5-Wktm6DSv5ZoNk18F1MvVpQAI",-->
-<!--       authDomain: "babakcode-chat.firebaseapp.com",-->
-<!--       projectId: "babakcode-chat",-->
-<!--       storageBucket: "babakcode-chat.appspot.com",-->
-<!--       messagingSenderId: "69437946182",-->
-<!--       appId: "1:69437946182:web:3ca0be4cb3f2caa0284d47",-->
-<!--       measurementId: "G-M8P6YDB49X"-->
-<!--     };-->
 
-<!--      // Initialize Firebase-->
-<!--      firebase.initializeApp(firebaseConfig);-->
-<!--    </script>-->
+<div id="loader">
+  <h1 id="loader-title">Business Chat</h1>
+  <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+</div>
+
   <script>
     window.addEventListener('load', function(ev) {
         navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        // navigator.serviceWorker.register("/flutter_service_worker.js");
+
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
@@ -73,6 +66,7 @@ if ("serviceWorker" in navigator) {
       }).then(function(engineInitializer) {
         return engineInitializer.initializeEngine();
       }).then(function(appRunner) {
+        document.getElementById('loader').remove();
         return appRunner.runApp();
       });
     });
