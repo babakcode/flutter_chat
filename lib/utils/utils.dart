@@ -80,20 +80,42 @@ class Utils {
     }
   }
 
-  static String displayLastChat(Chat data) {
+  static String displayChatSubTitle(Chat data) {
     String displayLastChat = '';
     if (data is ChatTextModel) {
-      ChatTextModel? chat = data;
-      displayLastChat = chat.text ?? '';
+      displayLastChat = data.text ?? '';
     } else if (data is ChatPhotoModel) {
       displayLastChat = 'Photo';
+      if(data.text != null){
+        displayLastChat += ' ${data.text}';
+      }
     } else if (data is ChatDocModel) {
       displayLastChat = 'Document';
+      if(data.text != null){
+        displayLastChat += ' ${data.text}';
+      }
     } else if (data is ChatVoiceModel) {
       displayLastChat = 'Voice';
+      if(data.text != null){
+        displayLastChat += ' ${data.text}';
+      }
     } else if (data is ChatUpdateRequireModel) {
       displayLastChat =
       'this message is not supported on your version of business chat!';
+    }
+    return displayLastChat;
+  }
+
+  static String? getChatText(Chat data) {
+    String? displayLastChat;
+    if (data is ChatTextModel) {
+      displayLastChat = data.text;
+    } else if (data is ChatPhotoModel) {
+      displayLastChat = data.text;
+    } else if (data is ChatDocModel) {
+      displayLastChat = data.text;
+    } else if (data is ChatVoiceModel) {
+      displayLastChat = data.text;
     }
     return displayLastChat;
   }

@@ -76,6 +76,9 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                     /// for replay chat
                     _replyOffStateSection(chatProvider),
 
+                    /// for edit chat
+                    _editOffStateSection(chatProvider),
+
                     /// input box
                     /// emoji + chat + attachment + send chat card
                     _chatInputSection(context),
@@ -698,7 +701,7 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(Utils.displayLastChat(chatProvider.replyTo!), maxLines: 1,)
+                          AppText(Utils.displayChatSubTitle(chatProvider.replyTo!), maxLines: 1,)
                         ],
                       ),
                     ),
@@ -707,6 +710,52 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                 IconButton(
                     onPressed: () {
                       chatProvider.clearChatReply();
+                    },
+                    icon: const Icon(Icons.close_rounded))
+              ],
+            ),
+          )
+        : const SizedBox(),
+  );
+}
+
+Widget _editOffStateSection(ChatProvider chatProvider) {
+
+  return Offstage(
+    offstage: chatProvider.editTo == null,
+    child: chatProvider.editTo != null
+        ? Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Icon(Icons.edit_rounded),
+                ),
+                Expanded(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Text(
+                          //   chatProvider.replyTo!.user!.name!,
+                          //   maxLines: 1,
+                          //   style: const TextStyle(color: Colors.blueGrey),
+                          // ),
+                          AppText(Utils.getChatText(chatProvider.editTo!) ?? 'empty text', maxLines: 1,)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                    onPressed: () {
+                      chatProvider.clearChatEdit();
                     },
                     icon: const Icon(Icons.close_rounded))
               ],
