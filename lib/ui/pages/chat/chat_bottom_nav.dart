@@ -71,7 +71,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                         chatProvider, globalSetting, _width),
 
                     /// for search `@users`
-                    _atSignSection(chatProvider),
+                    //_atSignSection(chatProvider),
 
                     /// for replay chat
                     _replyOffStateSection(chatProvider),
