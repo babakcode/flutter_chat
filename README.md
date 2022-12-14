@@ -30,8 +30,8 @@ for `web`, `ios` and etc. click on the following link address:
 ### web application
 
 <p float="left">
-  <img src="zScreenshots/web 1.JPG" width="465px" />
-  <img src="zScreenshots/web 2.JPG" width="465px" /> 
+  <img src="zScreenshots/web 1.JPG" width="500px" />
+  <img src="zScreenshots/web 2.JPG" width="500px" /> 
 </p>
 
 
