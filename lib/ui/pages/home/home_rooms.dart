@@ -344,8 +344,17 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                 // loading = false;
                                 // notifyListeners();
 
-                                final room = data['room'];
+                                Room room = data['room'];
+
                                 chatProvider.selectedRoom = room;
+                                Future.microtask(() =>
+                                    chatProvider.notifyListeners());
+                                // if(chatProvider.rooms.where((element) => element.id == chatProvider.selectedRoom!.id).isEmpty){
+                                //   chatProvider.rooms.add(room);
+                                //   int index = chatProvider.rooms.indexWhere((element) => element.id == room.id);
+                                //   chatProvider.selectedRoom = chatProvider.rooms[index];
+                                // }
+
                                 Navigator.pop(context);
 
                                 if (GlobalSettingProvider.isPhonePortraitSize) {

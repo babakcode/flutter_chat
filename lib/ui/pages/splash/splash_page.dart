@@ -123,6 +123,14 @@ class _SplashPageState extends State<SplashPage> {
                 ),
                 width: 60,
               ),
+              const SizedBox(
+                height: 12,
+              ),
+              const AppText(
+                "Pre release version",
+                size: 12,
+                fontWeight: FontWeight.bold,
+              ),
               SizedBox(
                 height: MediaQuery.of(context).size.height * .20,
               ),

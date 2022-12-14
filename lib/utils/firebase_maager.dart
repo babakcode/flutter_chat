@@ -12,17 +12,13 @@ import 'package:provider/provider.dart';
 class FirebaseManager {
   static Future<void> initFirebaseOnPhone() async {
     await Firebase.initializeApp();
-    if (kDebugMode) {
-      print('------ firebase token --- is : ');
-      firebaseToken().then((value) => print(value));
-    }
   }
 
   static Future<void> setupInteractedMessage() async {
     // Get any messages which caused the application to open from
     // a terminated state.
     RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    await FirebaseMessaging.instance.getInitialMessage();
 
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
@@ -56,10 +52,10 @@ class FirebaseManager {
             'notification data type : ${notificationData['data'].runtimeType}');
         switch (notificationData['type']) {
           case 'chat':
-            // if (notificationData['data']['room']['_id'] == chatsProvider.selectedRoom?.id ||
-            //     notificationData['data']['user']['_id'] == chatsProvider.auth?.myUser?.id) {
-            //   break;
-            // }
+          // if (notificationData['data']['room']['_id'] == chatsProvider.selectedRoom?.id ||
+          //     notificationData['data']['user']['_id'] == chatsProvider.auth?.myUser?.id) {
+          //   break;
+          // }
             NotificationController.createNewChatNotification(
                 message.notification, jsonDecode(notificationData['data']));
             // final roomIndex = chatsProvider.rooms
@@ -87,19 +83,14 @@ class FirebaseManager {
 
   static Future<void> initFirebaseOnWeb() async {
     await Firebase.initializeApp(
-        options: const FirebaseOptions(
-            apiKey: 'AIzaSyC7lfF_K5-Wktm6DSv5ZoNk18F1MvVpQAI',
-            appId: '1:69437946182:web:3ca0be4cb3f2caa0284d47',
-            messagingSenderId: '69437946182',
-            storageBucket: "babakcode-chat.appspot.com",
-            authDomain: "babakcode-chat.firebaseapp.com",
-            measurementId: "measurementId",
-            projectId: 'babakcode-chat'),
+      options: const FirebaseOptions(
+          apiKey: 'AIzaSyC7lfF_K5-Wktm6DSv5ZoNk18F1MvVpQAI',
+          appId: '1:69437946182:web:3ca0be4cb3f2caa0284d47',
+          messagingSenderId: '69437946182',
+          storageBucket: "babakcode-chat.appspot.com",
+          authDomain: "babakcode-chat.firebaseapp.com",
+          measurementId: "measurementId",
+          projectId: 'babakcode-chat'),
     );
-
-    if (kDebugMode) {
-      print('------ firebase token --- is : ');
-      firebaseToken(validKey: 'BFTI0oZqWmZufcm4T3J71Cs5icD7ULqmFM2OHaKaYjjF83xBt6h6fBwYy8Wf9L1WMWfCk1L_rgyrObIRGRff17M').then((value) => print(value));
-    }
   }
 }

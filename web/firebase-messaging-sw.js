@@ -1,9 +1,5 @@
-importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/8.4.1/firebase-messaging.js");
-
-//Using singleton breaks instantiating messaging()
-// App firebase = FirebaseWeb.instance.app;
-
+importScripts("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js");
+importScripts("https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js");
 
 firebase.initializeApp({
 apiKey: "AIzaSyC7lfF_K5-Wktm6DSv5ZoNk18F1MvVpQAI",

@@ -1108,4 +1108,14 @@ class ChatProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void scrollToReply(Chat chat) {
+    int indexOfChat = selectedRoom!.chatList.indexWhere((element) => element.id == chat.id);
+    if(indexOfChat != -1){
+
+      itemScrollController.scrollTo(
+          index: indexOfChat, duration: const Duration(seconds: 1), alignment: .5,
+      );
+    }
+  }
 }
