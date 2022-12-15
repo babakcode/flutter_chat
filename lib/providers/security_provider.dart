@@ -13,7 +13,7 @@ class SecurityProvider extends ChangeNotifier{
       return;
     }
     context.read<GlobalSettingProvider>().hideSecurityRecoveryPhraseAlert();
-    Utils.coptText(myRecoveryPhrases!);
+    Utils.copyText(myRecoveryPhrases!);
   }
   bool loadingPhrases = false;
   String? myRecoveryPhrases;

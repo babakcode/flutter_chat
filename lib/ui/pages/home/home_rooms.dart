@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
@@ -606,8 +607,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           width: 36,
           child: room.roomImage == null
               ? Room.generateProfileImageByName(room)
-              : Image.network(
-                  room.roomImage!,
+              : CachedNetworkImage(
+            imageUrl:
+            room.roomImage!,
                   fit: BoxFit.cover,
                 ),
         ),
