@@ -513,7 +513,7 @@ class ChatProvider extends ChangeNotifier {
       }
       var hasPermission = await recordVoice.hasPermission();
       if (hasPermission && pressedOnRecordButton) {
-        Utils.vibrate(300);
+        Utils.vibrate(100);
         // Start recording
         var _voicePath =
             '${appDocDir.path}/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
@@ -875,10 +875,10 @@ class ChatProvider extends ChangeNotifier {
           _receivedChats.add(Chat.detectChatModelType(item));
         }
         if (_receivedChats.isEmpty) {
-          selectedRoom!.reachedToStart = true;
+          selectedRoom?.reachedToStart = true;
         }
-        selectedRoom!.chatList.addAll(_receivedChats);
-        selectedRoom!.chatList
+        selectedRoom?.chatList.addAll(_receivedChats);
+        selectedRoom?.chatList
             .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
         _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
       }
@@ -1112,8 +1112,11 @@ class ChatProvider extends ChangeNotifier {
 
   List<Room>? roomsFromSearch;
 
-  checkSearchMode() {
+  toggleLocalRoomsSearchMode() {
     showSearchRoomsBox = !showSearchRoomsBox;
+    if(!showSearchRoomsBox){
+      roomsFromSearch = null;
+    }
     notifyListeners();
   }
 

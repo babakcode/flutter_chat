@@ -10,6 +10,7 @@ import 'package:detectable_text_field/widgets/detectable_text_field.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -163,8 +164,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
           // ),
           Expanded(
             child: DetectableTextField(
-              detectionRegExp:
-                  detectionRegExp(hashtag: false, atSign: true, url: true)!,
+              detectionRegExp: hashTagAtSignUrlRegExp,
               minLines: 1,
               onDetectionFinished: searchAtSignUserProvider.onDetectionFinished,
               onDetectionTyped: searchAtSignUserProvider.onDetectionTyped,
@@ -172,6 +172,10 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
               controller: chatProvider.chatController,
               keyboardType: TextInputType.multiline,
               textInputAction: TextInputAction.newline,
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(
+                    RegExp(r'^[ ]')),
+              ],
               maxLines: 6,
               decoration: const InputDecoration(
                   hintText: "Message", border: InputBorder.none),

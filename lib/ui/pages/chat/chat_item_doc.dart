@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:chat_babakcode/constants/app_constants.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
-import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:open_file_plus/open_file_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -14,7 +13,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:url_launcher/url_launcher.dart';
 import '../../../models/room.dart';
 import '../../../providers/chat_provider.dart';
-import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
+import '../../widgets/app_detectable_text.dart';
 import '../../widgets/app_text.dart';
 
 class ChatItemDoc extends StatelessWidget {
@@ -22,7 +21,8 @@ class ChatItemDoc extends StatelessWidget {
   final ChatDocModel chat;
   final RoomType roomType;
 
-  const ChatItemDoc(this.fromMyAccount, {Key? key, required this.chat, required this.roomType})
+  const ChatItemDoc(this.fromMyAccount,
+      {Key? key, required this.chat, required this.roomType})
       : super(key: key);
 
   @override
@@ -53,7 +53,8 @@ class ChatItemDoc extends StatelessWidget {
                     ? AppConstants.textColor
                     : AppConstants.textColor[100],
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusCircular),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusCircular),
                 ),
                 clipBehavior: Clip.antiAliasWithSaveLayer,
                 child: LoginProvider.platform == 'android' ||
@@ -115,12 +116,13 @@ class ChatItemDoc extends StatelessWidget {
                         })
                     : IconButton(onPressed: () async {
                         // await launchUrl(Uri.parse(chat.fileUrl!));
-                    if(kIsWeb){
-                      if (!await launchUrl(Uri.parse(chat.fileUrl! + '/${auth.accessToken!}'))) {
-                        throw 'Could not launch ${AppConstants.appLandingWebPageUri}';
-                      }
-                    }
-                  // OpenFile.open(chat.fileUrl!);
+                        if (kIsWeb) {
+                          if (!await launchUrl(Uri.parse(
+                              chat.fileUrl! + '/${auth.accessToken!}'))) {
+                            throw 'Could not launch ${chat.fileUrl!}/${auth.accessToken!}';
+                          }
+                        }
+                        // OpenFile.open(chat.fileUrl!);
                       }, icon:
                         Consumer<ChatProvider>(builder: (_, chatProvider, __) {
                         return const Icon(Icons.file_present_rounded);
@@ -129,22 +131,26 @@ class ChatItemDoc extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    if(roomType != RoomType.pvUser) Container(
-                      alignment: Alignment.topRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: AppText(
-                        chat.user!.name!,
-                        fontWeight: FontWeight.bold,
-                        maxLines: 1,
+                    if (roomType != RoomType.pvUser)
+                      Container(
+                        alignment: Alignment.topRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: AppText(
+                          chat.user!.name!,
+                          fontWeight: FontWeight.bold,
+                          maxLines: 1,
+                        ),
                       ),
-                    ),
-                    AppText(chat.fileUrl ?? 'document sending...',
-                        maxLines: 1, size: 12,
+                    AppText(
+                      chat.fileUrl ?? 'document sending...',
+                      maxLines: 1,
+                      size: 12,
                       color: globalSetting.isDarkTheme
-                      ? fromMyAccount
-                      ? AppConstants.textColor[200]
-                          : AppConstants.textColor[700]
-                      : AppConstants.textColor[700],),
+                          ? fromMyAccount
+                              ? AppConstants.textColor[200]
+                              : AppConstants.textColor[700]
+                          : AppConstants.textColor[700],
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Row(
@@ -156,12 +162,13 @@ class ChatItemDoc extends StatelessWidget {
                             intl.DateFormat('HH:mm')
                                 .format(chat.utcDate ?? DateTime.now()),
                             style: TextStyle(
-                                fontSize: 12,
-                                color: globalSetting.isDarkTheme
-                            ? fromMyAccount
-                            ? AppConstants.textColor[200]
-                                : AppConstants.textColor[700]
-                                : AppConstants.textColor[700],),
+                              fontSize: 12,
+                              color: globalSetting.isDarkTheme
+                                  ? fromMyAccount
+                                      ? AppConstants.textColor[200]
+                                      : AppConstants.textColor[700]
+                                  : AppConstants.textColor[700],
+                            ),
                           ),
                           const SizedBox(
                             width: 4,
@@ -173,8 +180,8 @@ class ChatItemDoc extends StatelessWidget {
                             size: 8,
                             color: globalSetting.isDarkTheme
                                 ? fromMyAccount
-                                ? AppConstants.textColor[200]
-                                : AppConstants.textColor[700]
+                                    ? AppConstants.textColor[200]
+                                    : AppConstants.textColor[700]
                                 : AppConstants.textColor[700],
                           )
                         ],
@@ -189,32 +196,13 @@ class ChatItemDoc extends StatelessWidget {
         if (chat.text != null)
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: detectable.DetectableText(
-              text: chat.text ?? '',
-              trimLines: 10,
-              moreStyle: const TextStyle(color: Colors.blueGrey),
-              lessStyle: const TextStyle(color: Colors.blueGrey),
-              colorClickableText: Colors.blue,
-              trimMode: detectable.TrimMode.Line,
-              trimCollapsedText: 'more',
-              trimExpandedText: '...less',
-              onTap: (tappedText) {
-                debugPrint(tappedText);
-                if (tappedText.startsWith('#')) {
-                  debugPrint('DetectableText >>>>>>> #');
-                } else if (tappedText.startsWith('@')) {
-                  debugPrint('DetectableText >>>>>>> @');
-                } else if (tappedText.startsWith('http')) {
-                  debugPrint('DetectableText >>>>>>> http');
-                }
-              },
-              detectionRegExp: hashTagAtSignUrlRegExp,
-              basicStyle: TextStyle(
-                  color: globalSetting.isDarkTheme
-                      ? fromMyAccount
-                          ? AppConstants.textColor[200]
-                          : AppConstants.textColor[700]
-                      : AppConstants.textColor[700]),
+            child: AppDetectableText(
+              chat.text ?? '',
+              textColor: globalSetting.isDarkTheme
+                  ? fromMyAccount
+                      ? AppConstants.textColor[200]
+                      : AppConstants.textColor[700]
+                  : AppConstants.textColor[700],
             ),
           ),
       ],

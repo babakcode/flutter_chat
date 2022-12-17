@@ -88,7 +88,7 @@ class Utils {
     }
 
     if ((await Vibration.hasCustomVibrationsSupport()) ?? false) {
-    Vibration.vibrate(duration: 1000);
+    Vibration.vibrate(duration: millisecond);
     } else {
     Vibration.vibrate();
     await Future.delayed(Duration(milliseconds: millisecond));

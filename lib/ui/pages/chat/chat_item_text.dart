@@ -1,12 +1,11 @@
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room.dart';
-import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
 import 'package:intl/intl.dart' as intl;
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
+import '../../widgets/app_detectable_text.dart';
 import '../../widgets/app_text.dart';
 
 class ChatItemText extends StatelessWidget {
@@ -14,7 +13,8 @@ class ChatItemText extends StatelessWidget {
   final ChatTextModel chat;
   final RoomType roomType;
 
-  const ChatItemText(this.fromMyAccount, {Key? key, required this.chat, required this.roomType})
+  const ChatItemText(this.fromMyAccount,
+      {Key? key, required this.chat, required this.roomType})
       : super(key: key);
 
   @override
@@ -28,45 +28,26 @@ class ChatItemText extends StatelessWidget {
         crossAxisAlignment:
             fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if(roomType != RoomType.pvUser) Container(
-            alignment: Alignment.topRight,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: AppText(
-              chat.user!.name!,
-              fontWeight: FontWeight.bold,
-              maxLines: 1,
+          if (roomType != RoomType.pvUser)
+            Container(
+              alignment: Alignment.topRight,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: AppText(
+                chat.user!.name!,
+                fontWeight: FontWeight.bold,
+                maxLines: 1,
+              ),
             ),
-          ),
           Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: detectable.DetectableText(
-              text: chat.text ?? '',
-              trimLines: 10,
-              moreStyle: const TextStyle(color: Colors.blueGrey),
-              lessStyle: const TextStyle(color: Colors.blueGrey),
-              colorClickableText: Colors.blue,
-              trimMode: detectable.TrimMode.Line,
-              trimCollapsedText: 'more',
-              trimExpandedText: '...less',
-              onTap: (tappedText) {
-                debugPrint(tappedText);
-                if (tappedText.startsWith('#')) {
-                  debugPrint('DetectableText >>>>>>> #');
-                } else if (tappedText.startsWith('@')) {
-                  debugPrint('DetectableText >>>>>>> @');
-                } else if (tappedText.startsWith('http')) {
-                  debugPrint('DetectableText >>>>>>> http');
-                }
-              },
-              detectionRegExp: hashTagAtSignUrlRegExp,
-              basicStyle: TextStyle(
-                  color: globalSettingProvider.isDarkTheme
-                      ? fromMyAccount
-                          ? AppConstants.textColor[200]
-                          : AppConstants.textColor[700]
-                      : AppConstants.textColor[700]),
-            ),
-          ),
+              padding: const EdgeInsets.all(10.0),
+              child: AppDetectableText(
+                chat.text ?? '',
+                textColor: globalSettingProvider.isDarkTheme
+                    ? fromMyAccount
+                        ? AppConstants.textColor[200]
+                        : AppConstants.textColor[700]
+                    : AppConstants.textColor[700],
+              ),),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             child: Row(
