@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/ui/pages/profile/profile_user_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
@@ -219,24 +220,25 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                                 borderRadius: BorderRadius.circular(14)),
                             clipBehavior: Clip.antiAliasWithSaveLayer,
                             child: InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    CupertinoPageRoute(
-                                      builder: (context) =>
-                                          ProfileUserPage(user: chat.user!),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) =>
+                                        ProfileUserPage(user: chat.user!),
+                                  ),
+                                );
+                              },
+                              child: chat.user?.profileUrl == null
+                                  ? Image.asset(
+                                      'assets/images/p2.jpg',
+                                      fit: BoxFit.cover,
+                                    )
+                                  : CachedNetworkImage(
+                                      imageUrl: chat.user!.profileUrl!,
+                                      fit: BoxFit.cover,
                                     ),
-                                  );
-                                },
-                                child: chat.user?.profileUrl == null
-                                    ? Image.asset(
-                                        'assets/images/p2.jpg',
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.network(
-                                        chat.user!.profileUrl!,
-                                        fit: BoxFit.cover,
-                                      )),
+                            ),
                           ),
                   ),
                 ),
@@ -302,7 +304,7 @@ Widget chatActionDialog(
               ListTile(
                 title: const AppText('Copy text'),
                 onTap: () {
-                  Utils.coptText(copyTextContent!);
+                  Utils.copyText(copyTextContent!);
                   Navigator.pop(context);
                 },
               ),
@@ -335,4 +337,3 @@ Widget chatActionDialog(
     ),
   );
 }
-//3f782171543144e6a06f00f46f95865ea52b8bca8519a90a6e294c2a79d2a4de rubbed-highway-balloon-position-snow-stock-whale-stiff-whatever-worse-lunch-turn-spider-daughter-fun-hole

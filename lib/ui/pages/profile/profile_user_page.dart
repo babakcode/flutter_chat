@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_babakcode/main.dart';
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room.dart';
@@ -69,7 +70,8 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
                     background: user.profileUrl == null
                         ? Image.asset("assets/images/p2.jpg",
                             width: double.infinity, fit: BoxFit.cover)
-                        : Image.network(user.profileUrl!,
+                        : CachedNetworkImage(
+                        imageUrl: user.profileUrl!,
                             width: double.infinity, fit: BoxFit.cover),
                   ),
                 );
@@ -264,7 +266,7 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
                                 ));
                             return;
                           }
-                          Utils.coptText(user.username ?? '');
+                          Utils.copyText(user.username ?? '');
                         },
                         tileColor: globalSettingProvider.isDarkTheme
                             ? AppConstants.textColor[900]

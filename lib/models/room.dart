@@ -1,5 +1,6 @@
 import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'chat.dart';
@@ -12,12 +13,14 @@ class Room extends AppCollections {
   DateTime? changeAt;
   DateTime? createAt;
   bool? deleted;
+  String? identifier;
   List<RoomMember>? members = [];
   RoomType? roomType;
   Chat? lastChat;
   String? roomImage;
   List<Chat> chatList = [];
   int? lastIndex;
+  bool? read;
   int minViewPortSeenIndex = 0;
   bool verified = false;
 
@@ -54,6 +57,8 @@ class Room extends AppCollections {
       ..changeAt = changeAtLocal
       ..createAt = createAtLocal
       ..deleted = json['deleted']
+      ..identifier = json['identifier']
+      ..read = json['read']
       ..verified = json['verified'] ?? false
       ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
       ..members = (json['members'] as List).map((member) {
@@ -74,6 +79,8 @@ class Room extends AppCollections {
         'createAt': createAt?.toUtc().toString(),
         'deleted': deleted,
         'members': members,
+        'identifier': identifier,
+        'read': read,
         'verified': verified,
         'roomType': _RoomUtils.roomTypeToString(roomType!),
         'lastChat': lastChat?.toSaveFormat(),
@@ -96,8 +103,14 @@ class _RoomUtils {
   static Widget generateProfileImageByName(Room room) {
     String name = room.roomName ?? 'guest';
     String family = '';
-    if (name.contains(' ')) {
-      family = ' ' + name.split(' ')[1][0];
+    try{
+      if (name.contains(' ')) {
+        family = ' ' + name.split(' ')[1][0];
+      }
+    }catch(e){
+      if (kDebugMode) {
+        print('generateProfileImageByName exception : $e');
+      }
     }
 
     return Center(child: AppText(name[0] + family));
@@ -110,7 +123,6 @@ class _RoomUtils {
             room.members![1].user!.id == myAccount.id) {
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
-          room.roomType = RoomType.pvUser;
           break;
         }
 

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
 import 'package:chat_babakcode/ui/pages/profile/profile_user_page.dart';
@@ -61,8 +62,8 @@ class HomeSettingComponent extends StatelessWidget {
                     height: 100,
                     width: 100,
                     fit: BoxFit.cover,
-                  ): Image.network(
-                    auth.myUser!.profileUrl!,
+                  ): CachedNetworkImage(
+                    imageUrl: auth.myUser!.profileUrl!,
                     height: 100,
                     width: 100,
                     fit: BoxFit.cover,
@@ -99,7 +100,7 @@ class HomeSettingComponent extends StatelessWidget {
                   height: 10,
                 ),
                 ListTile(
-                  onTap: () => Utils.coptText(auth.myUser?.publicToken ?? ''),
+                  onTap: () => Utils.copyText(auth.myUser?.publicToken ?? ''),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24)),
                   title: const AppText('copy token'),

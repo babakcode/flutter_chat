@@ -35,7 +35,6 @@ class ChatProvider extends ChangeNotifier {
   /// auth provider proxy
   Auth? auth;
 
-
   void initAuth(Auth auth) => this.auth = auth;
 
   Future saveLastViewPortSeenIndex(Room selectedRoom) async {
@@ -196,7 +195,8 @@ class ChatProvider extends ChangeNotifier {
       _loadMoreNext();
     } else if (minIndexOfChatListOnViewPort <= 3 &&
         selectedRoom!.reachedToStart == false &&
-
+        selectedRoom!.chatList.isNotEmpty &&
+        selectedRoom!.chatList.first.chatNumberId != 1 &&
         /// load more (previous) chats
         ///
         /// change reachedToStart to true when the chat list empty after request
@@ -305,22 +305,38 @@ class ChatProvider extends ChangeNotifier {
     /// search from server
 
     bool foundLocalExistGroup = false;
-    rooms
-        .where((element) => element.roomType == RoomType.pvUser)
-        .toList()
-        .forEach((room) {
-      if (room.members!
-          .where((element) =>
-              ((searchType == 'token')
-                  ? element.user!.publicToken
-                  : element.user?.username) ==
-              searchText)
-          .isNotEmpty) {
+    if ((searchType == 'token' && searchText == auth?.myUser?.publicToken) ||
+        (searchType == 'username' && searchText == auth?.myUser?.username)) {
+      // this account is for mine
+      int indexOfRoom = rooms.indexWhere((room) =>
+          room.members![0].user!.id == auth!.myUser!.id &&
+          room.members![1].user!.id == auth!.myUser!.id);
+      if(indexOfRoom != -1){
+        print('----------------------------------');
+        print('room found');
+        print('indexOfRoom = $indexOfRoom');
+        print('----------------------------------');
         foundLocalExistGroup = true;
         callBack
-            .call({'success': true, 'findFromExistRoom': true, 'room': room});
+            .call({'success': true, 'findFromExistRoom': true, 'room': rooms[indexOfRoom]});
       }
-    });
+    } else {
+      rooms
+          .where((element) => element.roomType == RoomType.pvUser)
+          .forEach((room) {
+        if (room.members!
+            .where((element) =>
+                ((searchType == 'token')
+                    ? element.user!.publicToken
+                    : element.user?.username) ==
+                searchText)
+            .isNotEmpty) {
+          foundLocalExistGroup = true;
+          callBack
+              .call({'success': true, 'findFromExistRoom': true, 'room': room});
+        }
+      });
+    }
     if (foundLocalExistGroup) {
       return;
     }
@@ -357,8 +373,6 @@ class ChatProvider extends ChangeNotifier {
     if (chatController.text.isEmpty) {
       return;
     }
-    print("replyTo != null = ${replyTo != null}");
-    print("reply : ${replyTo?.toSaveFormat()}");
 
     Map data = {
       'roomId': room.id ?? 'new',
@@ -488,10 +502,13 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  bool pressedOnRecordButton = false;
   final recordVoice = Record();
 
   void recordStart() async {
     if (showSendChat == false && showPreUploadFile == false) {
+      pressedOnRecordButton = true;
+
       // Check and request permission
       Directory appDocDir;
       if (kIsWeb) {
@@ -500,9 +517,10 @@ class ChatProvider extends ChangeNotifier {
         appDocDir = await getApplicationDocumentsDirectory();
       }
       var hasPermission = await recordVoice.hasPermission();
-      if (hasPermission) {
+      if (hasPermission && pressedOnRecordButton) {
+        notifyListeners();
+        Utils.vibrate(100);
         // Start recording
-
         var _voicePath =
             '${appDocDir.path}/audio_${DateFormat('yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.m4a';
         if (await recordVoice.hasPermission()) {
@@ -525,6 +543,10 @@ class ChatProvider extends ChangeNotifier {
   void recordStop(BuildContext context, Room room) {
     if (kDebugMode) {
       print('recordStop');
+    }
+    if (pressedOnRecordButton) {
+      pressedOnRecordButton = false;
+      notifyListeners();
     }
     if (showSendChat) {
       return;
@@ -859,10 +881,10 @@ class ChatProvider extends ChangeNotifier {
           _receivedChats.add(Chat.detectChatModelType(item));
         }
         if (_receivedChats.isEmpty) {
-          selectedRoom!.reachedToStart = true;
+          selectedRoom?.reachedToStart = true;
         }
-        selectedRoom!.chatList.addAll(_receivedChats);
-        selectedRoom!.chatList
+        selectedRoom?.chatList.addAll(_receivedChats);
+        selectedRoom?.chatList
             .sort((a, b) => a.chatNumberId!.compareTo(b.chatNumberId!));
         _hiveManager.saveChats(_receivedChats, selectedRoom!.id!);
       }
@@ -1031,11 +1053,10 @@ class ChatProvider extends ChangeNotifier {
       return;
     }
 
-    try{
-
+    try {
       FirebaseManager.firebaseToken(
-          validKey:
-          'BEOJb0aM5gE-_c8ro6-c1SrOQGF7NzTAbDylWNh1C82pP4oTYImJxzL_ZENcIMvuHEjvX8L_jJxR07JkK3PmC34')
+              validKey:
+                  'BEOJb0aM5gE-_c8ro6-c1SrOQGF7NzTAbDylWNh1C82pP4oTYImJxzL_ZENcIMvuHEjvX8L_jJxR07JkK3PmC34')
           .then((value) {
         socket.emitWithAck('firebaseToken', value, ack: (res) {
           if (kDebugMode) {
@@ -1044,7 +1065,7 @@ class ChatProvider extends ChangeNotifier {
         });
         sentOnceFirebaseToken = true;
       });
-    }catch(e){
+    } catch (e) {
       if (kDebugMode) {
         print('FirebaseManager.firebaseToken exception $e');
       }
@@ -1081,26 +1102,27 @@ class ChatProvider extends ChangeNotifier {
     });
   }
 
-  void emitAction(type, value){
-    socket.emitWithAck('action', {'type' : type ,'value' : value}, ack: (data) {
-     _actionEvent(data);
+  void emitAction(type, value) {
+    socket.emitWithAck('action', {'type': type, 'value': value}, ack: (data) {
+      _actionEvent(data);
     });
   }
 
-  _actionEvent(data) async{
+  _actionEvent(data) async {
     if (kDebugMode) {
       print('_actionEvent $data');
     }
-    if(data['success']){
-      if(data['type'] == 'deleteChat'){
-        final indexOfRoom = rooms.indexWhere((element) => element.id == data['room']);
-        if(indexOfRoom != -1){
+    if (data['success']) {
+      if (data['type'] == 'deleteChat') {
+        final indexOfRoom =
+            rooms.indexWhere((element) => element.id == data['room']);
+        if (indexOfRoom != -1) {
           final room = rooms[indexOfRoom];
-          await _hiveManager.deleteChat(data['chat'],room);
+          await _hiveManager.deleteChat(data['chat'], room);
           notifyListeners();
         }
       }
-    }else{
+    } else {
       Utils.showSnack(navigatorKey.currentContext!, data['msg']);
     }
   }
@@ -1109,17 +1131,33 @@ class ChatProvider extends ChangeNotifier {
 
   List<Room>? roomsFromSearch;
 
-  checkSearchMode() {
+  toggleLocalRoomsSearchMode() {
     showSearchRoomsBox = !showSearchRoomsBox;
+    if(!showSearchRoomsBox){
+      roomsFromSearch = null;
+    }
     notifyListeners();
   }
 
   void findRooms(String content) {
-    if(content.isEmpty){
+    if (content.isEmpty) {
       roomsFromSearch = null;
-    }else{
-      roomsFromSearch = rooms.where((element) => element.roomName == content).toList();
+    } else {
+      roomsFromSearch =
+          rooms.where((element) => element.roomName == content).toList();
     }
     notifyListeners();
+  }
+
+  void scrollToReply(Chat chat) {
+    int indexOfChat =
+        selectedRoom!.chatList.indexWhere((element) => element.id == chat.id);
+    if (indexOfChat != -1) {
+      itemScrollController.scrollTo(
+        index: indexOfChat,
+        duration: const Duration(seconds: 1),
+        alignment: .5,
+      );
+    }
   }
 }

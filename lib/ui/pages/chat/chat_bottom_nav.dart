@@ -10,6 +10,7 @@ import 'package:detectable_text_field/widgets/detectable_text_field.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -166,8 +167,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
           // ),
           Expanded(
             child: DetectableTextField(
-              detectionRegExp:
-                  detectionRegExp(hashtag: false, atSign: true, url: true)!,
+              detectionRegExp: hashTagAtSignUrlRegExp,
               minLines: 1,
               onDetectionFinished: searchAtSignUserProvider.onDetectionFinished,
               onDetectionTyped: searchAtSignUserProvider.onDetectionTyped,
@@ -175,6 +175,9 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
               controller: chatProvider.chatController,
               keyboardType: TextInputType.multiline,
               textInputAction: TextInputAction.newline,
+              inputFormatters: [
+                FilteringTextInputFormatter.deny(RegExp(r'^[ ]')),
+              ],
               maxLines: 6,
               decoration: const InputDecoration(
                   hintText: "Message", border: InputBorder.none),
@@ -229,12 +232,17 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Icon(
-                    chatProvider.showSendChat || chatProvider.showPreUploadFile
-                        ? Icons.send
-                        : Icons.keyboard_voice_rounded,
-                    color: globalSetting.isDarkTheme
-                        ? AppConstants.textColor[800]
-                        : AppConstants.textColor[200],
+                    chatProvider.pressedOnRecordButton
+                        ? Icons.circle
+                        : chatProvider.showSendChat ||
+                                chatProvider.showPreUploadFile
+                            ? Icons.send
+                            : Icons.keyboard_voice_rounded,
+                    color: chatProvider.pressedOnRecordButton
+                        ? Colors.red
+                        : globalSetting.isDarkTheme
+                            ? AppConstants.textColor[800]
+                            : AppConstants.textColor[200],
                   ),
                 ),
               ),
@@ -701,7 +709,10 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(Utils.displayChatSubTitle(chatProvider.replyTo!), maxLines: 1,)
+                          AppText(
+                            Utils.displayChatSubTitle(chatProvider.replyTo!),
+                            maxLines: 1,
+                          )
                         ],
                       ),
                     ),
@@ -715,6 +726,51 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
               ],
             ),
           )
+        : const SizedBox(),
+  );
+}
+Widget _editOffStateSection(ChatProvider chatProvider) {
+
+  return Offstage(
+    offstage: chatProvider.editTo == null,
+    child: chatProvider.editTo != null
+        ? Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: Icon(Icons.edit_rounded),
+          ),
+          Expanded(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Text(
+                    //   chatProvider.replyTo!.user!.name!,
+                    //   maxLines: 1,
+                    //   style: const TextStyle(color: Colors.blueGrey),
+                    // ),
+                    AppText(Utils.getChatText(chatProvider.editTo!) ?? 'empty text', maxLines: 1,)
+                  ],
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+              onPressed: () {
+                chatProvider.clearChatEdit();
+              },
+              icon: const Icon(Icons.close_rounded))
+        ],
+      ),
+    )
         : const SizedBox(),
   );
 }

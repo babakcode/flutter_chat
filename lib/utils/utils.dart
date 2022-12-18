@@ -4,9 +4,11 @@ import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/ui/widgets/app_button.dart';
 import 'package:chat_babakcode/ui/widgets/app_button_transparent.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:vibration/vibration.dart';
 
 import '../constants/app_constants.dart';
 import '../providers/auth_provider.dart';
@@ -73,7 +75,7 @@ class Utils {
         .join();
   }
 
-  static Future<void> coptText(String text, {bool showSnackBar = true}) async {
+  static Future<void> copyText(String text, {bool showSnackBar = true}) async {
     await Clipboard.setData(ClipboardData(text: text));
     if (showSnackBar) {
       showSnack(navigatorKey.currentContext!, 'copied!');
@@ -99,6 +101,38 @@ class Utils {
       if(data.text != null){
         displayLastChat += ' ${data.text}';
       }
+    } else if (data is ChatUpdateRequireModel) {
+      displayLastChat =
+      'this message is not supported on your version of business chat!';
+    }
+    return displayLastChat;
+  }
+
+  static Future<void> vibrate(int millisecond) async {
+    if(kIsWeb){
+      return;
+    }
+
+    if ((await Vibration.hasCustomVibrationsSupport()) ?? false) {
+      Vibration.vibrate(duration: millisecond);
+    } else {
+      Vibration.vibrate();
+      await Future.delayed(Duration(milliseconds: millisecond));
+      Vibration.vibrate();
+    }
+  }
+
+  static String displayLastChat(Chat data) {
+    String displayLastChat = '';
+    if (data is ChatTextModel) {
+      ChatTextModel? chat = data;
+      displayLastChat = chat.text ?? '';
+    } else if (data is ChatPhotoModel) {
+      displayLastChat = 'Photo';
+    } else if (data is ChatDocModel) {
+      displayLastChat = 'Document';
+    } else if (data is ChatVoiceModel) {
+      displayLastChat = 'Voice';
     } else if (data is ChatUpdateRequireModel) {
       displayLastChat =
       'this message is not supported on your version of business chat!';

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_babakcode/models/chat.dart';
 import 'package:chat_babakcode/models/room.dart';
 import 'package:chat_babakcode/providers/auth_provider.dart';
@@ -10,7 +11,6 @@ import 'package:chat_babakcode/ui/pages/qr_code/qr_scanner.dart';
 import 'package:chat_babakcode/ui/pages/search/search_user_page.dart';
 import 'package:chat_babakcode/ui/pages/security/security_page.dart';
 import 'package:chat_babakcode/ui/widgets/app_text.dart';
-import 'package:chat_babakcode/ui/widgets/app_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -20,7 +20,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
-import '../../../utils/notification_controller.dart';
 import '../../../utils/utils.dart';
 import '../qr_code/qr_page.dart';
 
@@ -56,15 +55,14 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           slivers: [
             SliverAppBar(
               pinned: true,
-
-              title: !chatProvider.showSearchRoomsBox?Text(chatProvider.connectionStatus ?? 'Chats') : TextField(
-                onChanged: (value) {
-                  chatProvider.findRooms(value);
-                },
-                decoration: const InputDecoration(
-                  hintText: 'Room name'
-                ),
-              ),
+              title: !chatProvider.showSearchRoomsBox
+                  ? Text(chatProvider.connectionStatus ?? 'Chats')
+                  : TextField(
+                      onChanged: (value) {
+                        chatProvider.findRooms(value);
+                      },
+                      decoration: const InputDecoration(hintText: 'Search'),
+                    ),
               leading: _width < 960
                   ? IconButton(
                       tooltip: 'open navigation menu',
@@ -74,67 +72,66 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   : null,
               actions: [
                 IconButton(
-                  onPressed: () => {
-                    /*showSearchUsersByToken(context)*/
-                    //NotificationController.createNewNotification()
-
-                    chatProvider.checkSearchMode()
-                  },
+                  onPressed: chatProvider.toggleLocalRoomsSearchMode,
                   icon: const Icon(Icons.search_rounded),
                 ),
               ],
             ),
-            if(chatProvider.updateAvailable || globalSettingProvider.showSecurityRecoveryPhrase )
+            if (chatProvider.updateAvailable ||
+                globalSettingProvider.showSecurityRecoveryPhrase)
               SliverList(
-              delegate: SliverChildListDelegate.fixed([
-                if (globalSettingProvider.showSecurityRecoveryPhrase)
-                  ListTile(
-                    tileColor: globalSettingProvider.isDarkTheme
-                        ? AppConstants.textColor[800]
-                        : const Color(0xFFCFE9F8),
-                    title: const Text('Get recovery phrase'),
-                    onTap: () => Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                            builder: (context) => const SecurityPage())),
-                    trailing: Stack(
-                      children:  [
-                        const Icon(Icons.security_rounded),
-                        PhloxAnimations(
-                          loop: true,
-                          duration: const Duration(seconds: 1),
-                          fromOpacity: .01,
-                          toOpacity: 1,
-                          child: Icon(
-                            Icons.circle,
-                            size: 12,
-                            color: AppConstants.blueAccent,
+                delegate: SliverChildListDelegate.fixed([
+                  if (globalSettingProvider.showSecurityRecoveryPhrase)
+                    ListTile(
+                      tileColor: globalSettingProvider.isDarkTheme
+                          ? AppConstants.textColor[800]
+                          : const Color(0xFFCFE9F8),
+                      title: const Text('Get recovery phrase'),
+                      onTap: () => Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                              builder: (context) => const SecurityPage())),
+                      trailing: Stack(
+                        children: [
+                          const Icon(Icons.security_rounded),
+                          PhloxAnimations(
+                            loop: true,
+                            duration: const Duration(seconds: 1),
+                            fromOpacity: .01,
+                            toOpacity: 1,
+                            child: Icon(
+                              Icons.circle,
+                              size: 12,
+                              color: AppConstants.blueAccent,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                if (chatProvider.updateAvailable)
-                  ListTile(
-                    tileColor: AppConstants.blueAccent,
-                    onTap: () async {
-                      if (!await launchUrl(AppConstants.appLandingWebPageUri)) {
-                        throw 'Could not launch ${AppConstants.appLandingWebPageUri}';
-                      }
-                    },
-                    iconColor: Colors.white,
-                    textColor: Colors.white,
-                    title: const Text('Update available'),
-                    trailing: const Icon(Icons.system_update_rounded),
-                  ),
-              ]),
-            ),
+                  if (chatProvider.updateAvailable)
+                    ListTile(
+                      tileColor: AppConstants.blueAccent,
+                      onTap: () async {
+                        if (!await launchUrl(
+                            AppConstants.appLandingWebPageUri)) {
+                          throw 'Could not launch ${AppConstants.appLandingWebPageUri}';
+                        }
+                      },
+                      iconColor: Colors.white,
+                      textColor: Colors.white,
+                      title: const Text('Update available'),
+                      trailing: const Icon(Icons.system_update_rounded),
+                    ),
+                ]),
+              ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(6, 12, 6, 112),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    Room room = chatProvider.roomsFromSearch != null ? chatProvider.roomsFromSearch![index] : chatProvider.rooms[index];
+                    Room room = chatProvider.roomsFromSearch != null
+                        ? chatProvider.roomsFromSearch![index]
+                        : chatProvider.rooms[index];
                     Room.populateRoomFields(room, chatProvider.auth!.myUser!);
 
                     return Padding(
@@ -143,6 +140,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                         title: _roomItemTitle(room, globalSettingProvider),
                         subtitle: _roomItemSubTitle(room),
                         leading: _roomItemLeading(room),
+                        onLongPress: () {
+                          /// todo: add block user, remove chat list
+                        },
                         onTap: () {
                           chatProvider.changeSelectedRoom(room);
                           if (_width < 600) {
@@ -172,7 +172,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       ),
                     );
                   },
-                  childCount: chatProvider.roomsFromSearch != null ? chatProvider.roomsFromSearch!.length :chatProvider.rooms.length,
+                  childCount: chatProvider.roomsFromSearch != null
+                      ? chatProvider.roomsFromSearch!.length
+                      : chatProvider.rooms.length,
                 ),
               ),
             ),
@@ -268,18 +270,18 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
   floatingOnPressedEvent(BuildContext context) {
     final globalSettingProvider = context.read<GlobalSettingProvider>();
     final _width = MediaQuery.of(context).size.width;
-
+    final _maxWidthSection = (_width <= 500
+        ? 360
+        : _width > 760
+        ? 742
+        : _width).toDouble();
     showModalBottomSheet(
       isScrollControlled: true,
       clipBehavior: Clip.antiAliasWithSaveLayer,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(
-          maxWidth: _width <= 500
-              ? 360
-              : _width > 760
-                  ? 742
-                  : _width),
+          maxWidth: _maxWidthSection),
       backgroundColor: globalSettingProvider.isDarkTheme
           ? AppConstants.textColor[800]
           : AppConstants.textColor[100],
@@ -299,7 +301,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
             ),
             const Center(
               child: AppText(
-                'Add conversation',
+                'Create a new conversation',
                 size: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -317,7 +319,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               ),
             ),
             GridView.count(
-              crossAxisCount: _width ~/ 130,
+              crossAxisCount: _maxWidthSection ~/ 100,
               shrinkWrap: true,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               physics: const NeverScrollableScrollPhysics(),
@@ -344,8 +346,17 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                 // loading = false;
                                 // notifyListeners();
 
-                                final room = data['room'];
+                                Room room = data['room'];
+
                                 chatProvider.selectedRoom = room;
+                                Future.microtask(
+                                    () => chatProvider.notifyListeners());
+                                // if(chatProvider.rooms.where((element) => element.id == chatProvider.selectedRoom!.id).isEmpty){
+                                //   chatProvider.rooms.add(room);
+                                //   int index = chatProvider.rooms.indexWhere((element) => element.id == room.id);
+                                //   chatProvider.selectedRoom = chatProvider.rooms[index];
+                                // }
+
                                 Navigator.pop(context);
 
                                 if (GlobalSettingProvider.isPhonePortraitSize) {
@@ -505,22 +516,26 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
   Widget _roomItemTitle(Room room, GlobalSettingProvider settingProvider) {
     return Row(
       children: [
-        Flexible(
-          child: Text(
-            room.roomName ?? 'guest',
-            overflow: TextOverflow.ellipsis,
-            softWrap: false,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-            maxLines: 1,
-          ),
-        ),
-
-        if (room.verified)
-          SvgPicture.asset(
-            'assets/svg/verified_account.svg',
-            height: 25,
-            width: 25,
-          ),
+        Expanded(
+            child: Row(
+          children: [
+            Flexible(
+              child: Text(
+                room.roomName ?? 'guest',
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1,
+              ),
+            ),
+            if (room.verified)
+              SvgPicture.asset(
+                'assets/svg/verified_account.svg',
+                height: 24,
+                width: 24,
+              ),
+          ],
+        )),
 
         /// show not read chats count
         if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
@@ -597,8 +612,8 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
           width: 36,
           child: room.roomImage == null
               ? Room.generateProfileImageByName(room)
-              : Image.network(
-                  room.roomImage!,
+              : CachedNetworkImage(
+                  imageUrl: room.roomImage!,
                   fit: BoxFit.cover,
                 ),
         ),

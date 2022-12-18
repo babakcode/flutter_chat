@@ -51,6 +51,7 @@ dependencies:
   flutter_staggered_grid_view: ^0.6.2
   url_launcher: ^6.1.7
   swipe_to: ^1.0.2
+  vibration: ^1.7.6
 
 
 dev_dependencies:

@@ -91,6 +91,7 @@ class SearchUserProvider extends ChangeNotifier {
             final room = data['room'];
             chatProvider?.selectedRoom = room;
             Navigator.pop(context);
+            Navigator.pop(context);
 
             if (GlobalSettingProvider.isPhonePortraitSize) {
               Navigator.push(

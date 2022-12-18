@@ -83,6 +83,7 @@ class AppChatItem extends StatelessWidget {
             children: [
               if (chat.replyId != null)
                 AppButtonTransparent(
+                  onPressed: () => chatProvider.scrollToReply(chat.replyId!),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

@@ -28,21 +28,7 @@ class _ChatPageState extends State<ChatPage> {
     final auth = context.read<Auth>();
 
     if (chatProvider.selectedRoom != null) {
-      if (chatProvider.selectedRoom!.roomType == RoomType.pvUser) {
-        if (chatProvider.selectedRoom!.members![0].user!.id ==
-                auth.myUser!.id &&
-            chatProvider.selectedRoom!.members![1].user!.id ==
-                auth.myUser!.id) {
-          chatProvider.selectedRoom!.roomName = 'my Messages';
-          chatProvider.selectedRoom!.roomImage = auth.myUser!.profileUrl;
-        } else {
-          User friend = chatProvider.selectedRoom!.members!
-              .firstWhere((element) => element.user!.id != auth.myUser!.id)
-              .user!;
-          chatProvider.selectedRoom!.roomName = friend.name;
-          chatProvider.selectedRoom!.roomImage = friend.profileUrl;
-        }
-      }
+      Room.populateRoomFields(chatProvider.selectedRoom!, auth.myUser!);
 
       if (_width >= 595 && Navigator.canPop(context) && _canPop) {
         Future.microtask(() {
@@ -67,6 +53,13 @@ class _ChatPageState extends State<ChatPage> {
         appBar: chatProvider.selectedRoom == null
             ? null
             : AppBar(
+          // flexibleSpace: SafeArea(
+          //   child: InkWell(
+          //     onTap: (){
+          //       Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileUserPage(user: user),))
+          //     },
+          //   ),
+          // ),
                 leading: IconButton(
                     onPressed: () {
                       if (Navigator.canPop(context)) {

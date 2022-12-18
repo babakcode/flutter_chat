@@ -12,6 +12,7 @@ import '../../../models/room.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/chat_provider.dart';
 import '../../../providers/global_setting_provider.dart';
+import '../../widgets/app_detectable_text.dart';
 import '../../widgets/app_text.dart';
 
 class ChatItemPhoto extends StatelessWidget {
@@ -149,32 +150,13 @@ class ChatItemPhoto extends StatelessWidget {
           if (chat.text != null)
             Padding(
               padding: const EdgeInsets.all(10.0),
-              child: detectable.DetectableText(
-                text: chat.text ?? '',
-                trimLines: 10,
-                moreStyle: const TextStyle(color: Colors.blueGrey),
-                lessStyle: const TextStyle(color: Colors.blueGrey),
-                colorClickableText: Colors.blue,
-                trimMode: detectable.TrimMode.Line,
-                trimCollapsedText: 'more',
-                trimExpandedText: '...less',
-                onTap: (tappedText) {
-                  debugPrint(tappedText);
-                  if (tappedText.startsWith('#')) {
-                    debugPrint('DetectableText >>>>>>> #');
-                  } else if (tappedText.startsWith('@')) {
-                    debugPrint('DetectableText >>>>>>> @');
-                  } else if (tappedText.startsWith('http')) {
-                    debugPrint('DetectableText >>>>>>> http');
-                  }
-                },
-                detectionRegExp: hashTagAtSignUrlRegExp,
-                basicStyle: TextStyle(
-                    color: globalSettingProvider.isDarkTheme
-                        ? fromMyAccount
-                            ? AppConstants.textColor[200]
-                            : AppConstants.textColor[700]
-                        : AppConstants.textColor[700]),
+              child: AppDetectableText(
+                chat.text ?? '',
+                textColor: globalSettingProvider.isDarkTheme
+                    ? fromMyAccount
+                    ? AppConstants.textColor[200]
+                    : AppConstants.textColor[700]
+                    : AppConstants.textColor[700],
               ),
             ),
         ],

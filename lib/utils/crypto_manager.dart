@@ -1,14 +1,13 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:encrypt/encrypt.dart' as encrypt;
-
-import '../constants/app_constants.dart';
+import 'package:flutter/foundation.dart';
 
 class CryptoManager {
+  static String get globalEncryptKey => 'jwudownwaodw21ewje2elq2ekwamkwda';
 
   final _encryptor = encrypt.Encrypter(encrypt.AES(
-      encrypt.Key.fromUtf8(AppConstants.globalEncryptKey),
+      encrypt.Key.fromUtf8(globalEncryptKey),
       mode: encrypt.AESMode.ctr,
       padding: null));
 
@@ -19,7 +18,9 @@ class CryptoManager {
           iv: encrypt.IV(Uint8List.fromList(hex.decode(mapHash['iv']))));
       return utf8.decode(decrypted);
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print("decryptData exception $e");
+      }
       return null;
     }
   }

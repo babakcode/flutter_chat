@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart' as intl;
 import '../../../providers/chat_provider.dart';
 import 'package:detectable_text_field/detectable_text_field.dart' as detectable;
+import '../../widgets/app_detectable_text.dart';
 import '../../widgets/app_text.dart';
 
 class ChatItemVoice extends StatefulWidget {
@@ -21,7 +22,8 @@ class ChatItemVoice extends StatefulWidget {
   final ChatVoiceModel chat;
   final RoomType roomType;
 
-  const ChatItemVoice(this.fromMyAccount, {Key? key, required this.chat, required this.roomType})
+  const ChatItemVoice(this.fromMyAccount,
+      {Key? key, required this.chat, required this.roomType})
       : super(key: key);
 
   @override
@@ -74,7 +76,8 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                     ? AppConstants.textColor
                     : AppConstants.textColor[100],
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusCircular),
+                  borderRadius:
+                      BorderRadius.circular(AppConstants.radiusCircular),
                 ),
                 clipBehavior: Clip.antiAliasWithSaveLayer,
                 child: LoginProvider.platform == 'android' ||
@@ -108,7 +111,8 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                                       onPressed: () async {
                                         if (exist == false) {
                                           chatProvider.downloadFile(
-                                              widget.chat.fileUrl!  + '/${auth.accessToken!}',
+                                              widget.chat.fileUrl! +
+                                                  '/${auth.accessToken!}',
                                               fullPath,
                                               widget.chat);
                                         } else {
@@ -149,8 +153,8 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
                     : IconButton(onPressed: () async {
                         widget.chat.isPlaying = true;
                         _chatProvider.notifyListeners();
-                        await widget.chat.audioPlayer
-                            .setUrl(widget.chat.fileUrl!  + '/${auth.accessToken!}');
+                        await widget.chat.audioPlayer.setUrl(
+                            widget.chat.fileUrl! + '/${auth.accessToken!}');
                         _controller.forward();
                         _controller.repeat();
                         await widget.chat.audioPlayer.play();
@@ -168,23 +172,19 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
               Expanded(
                 child: Column(
                   children: [
-                    if(widget.roomType != RoomType.pvUser) Container(
-                      width: double.infinity,
-                      alignment: Alignment.topRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: AppText(
-                        widget.chat.user!.name!,
-                        fontWeight: FontWeight.bold,
-                        maxLines: 1,
+                    if (widget.roomType != RoomType.pvUser)
+                      Container(
+                        width: double.infinity,
+                        alignment: Alignment.topRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: AppText(
+                          widget.chat.user!.name!,
+                          fontWeight: FontWeight.bold,
+                          maxLines: 1,
+                        ),
                       ),
-                    ),
                     Lottie.asset(
-                        'assets/json/equalizer_${
-                            globalSetting.isDarkTheme
-                                ? widget.fromMyAccount
-                                ? 'light'
-                                : 'dark'
-                                : 'dark'}.json',
+                        'assets/json/equalizer_${globalSetting.isDarkTheme ? widget.fromMyAccount ? 'light' : 'dark' : 'dark'}.json',
                         width: double.infinity,
                         height: 36,
                         controller: _controller, onLoaded: (composition) {
@@ -243,39 +243,18 @@ class _ChatItemVoiceState extends State<ChatItemVoice>
             ],
           ),
         ),
-
         if (widget.chat.text != null)
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: detectable.DetectableText(
-              text: widget.chat.text ?? '',
-              trimLines: 10,
-              moreStyle: const TextStyle(color: Colors.blueGrey),
-              lessStyle: const TextStyle(color: Colors.blueGrey),
-              colorClickableText: Colors.blue,
-              trimMode: detectable.TrimMode.Line,
-              trimCollapsedText: 'more',
-              trimExpandedText: '...less',
-              onTap: (tappedText) {
-                debugPrint('tappedText $tappedText');
-                if (tappedText.startsWith('#')) {
-                  debugPrint('DetectableText >>>>>>> #');
-                } else if (tappedText.startsWith('@')) {
-                  debugPrint('DetectableText >>>>>>> @');
-                } else if (tappedText.startsWith('http')) {
-                  debugPrint('DetectableText >>>>>>> http');
-                }
-              },
-              detectionRegExp: hashTagAtSignUrlRegExp,
-              basicStyle: TextStyle(
-                  color: globalSetting.isDarkTheme
-                      ? widget.fromMyAccount
+            child: AppDetectableText(
+              widget.chat.text ?? '',
+              textColor: globalSetting.isDarkTheme
+                  ? widget.fromMyAccount
                       ? AppConstants.textColor[200]
                       : AppConstants.textColor[700]
-                      : AppConstants.textColor[700]),
+                  : AppConstants.textColor[700],
             ),
           ),
-
       ],
     );
   }
