@@ -729,6 +729,7 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
         : const SizedBox(),
   );
 }
+
 Widget _editOffStateSection(ChatProvider chatProvider) {
 
   return Offstage(
@@ -771,52 +772,6 @@ Widget _editOffStateSection(ChatProvider chatProvider) {
         ],
       ),
     )
-        : const SizedBox(),
-  );
-}
-
-Widget _editOffStateSection(ChatProvider chatProvider) {
-
-  return Offstage(
-    offstage: chatProvider.editTo == null,
-    child: chatProvider.editTo != null
-        ? Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Icon(Icons.edit_rounded),
-                ),
-                Expanded(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Text(
-                          //   chatProvider.replyTo!.user!.name!,
-                          //   maxLines: 1,
-                          //   style: const TextStyle(color: Colors.blueGrey),
-                          // ),
-                          AppText(Utils.getChatText(chatProvider.editTo!) ?? 'empty text', maxLines: 1,)
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                    onPressed: () {
-                      chatProvider.clearChatEdit();
-                    },
-                    icon: const Icon(Icons.close_rounded))
-              ],
-            ),
-          )
         : const SizedBox(),
   );
 }
