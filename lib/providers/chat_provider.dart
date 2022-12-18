@@ -195,7 +195,8 @@ class ChatProvider extends ChangeNotifier {
       _loadMoreNext();
     } else if (minIndexOfChatListOnViewPort <= 3 &&
         selectedRoom!.reachedToStart == false &&
-
+        selectedRoom!.chatList.isNotEmpty &&
+        selectedRoom!.chatList.first.chatNumberId != 1 &&
         /// load more (previous) chats
         ///
         /// change reachedToStart to true when the chat list empty after request
@@ -308,9 +309,13 @@ class ChatProvider extends ChangeNotifier {
         (searchType == 'username' && searchText == auth?.myUser?.username)) {
       // this account is for mine
       int indexOfRoom = rooms.indexWhere((room) =>
-          room.members?[0].user?.id == auth?.myUser?.id &&
-          room.members?[1].user?.id == auth?.myUser?.id);
+          room.members![0].user!.id == auth!.myUser!.id &&
+          room.members![1].user!.id == auth!.myUser!.id);
       if(indexOfRoom != -1){
+        print('----------------------------------');
+        print('room found');
+        print('indexOfRoom = $indexOfRoom');
+        print('----------------------------------');
         foundLocalExistGroup = true;
         callBack
             .call({'success': true, 'findFromExistRoom': true, 'room': rooms[indexOfRoom]});
@@ -502,7 +507,6 @@ class ChatProvider extends ChangeNotifier {
   void recordStart() async {
     if (showSendChat == false && showPreUploadFile == false) {
       pressedOnRecordButton = true;
-      // notifyListeners();
 
       // Check and request permission
       Directory appDocDir;
@@ -513,6 +517,7 @@ class ChatProvider extends ChangeNotifier {
       }
       var hasPermission = await recordVoice.hasPermission();
       if (hasPermission && pressedOnRecordButton) {
+        notifyListeners();
         Utils.vibrate(100);
         // Start recording
         var _voicePath =
@@ -540,7 +545,7 @@ class ChatProvider extends ChangeNotifier {
     }
     if (pressedOnRecordButton) {
       pressedOnRecordButton = false;
-      // notifyListeners();
+      notifyListeners();
     }
     if (showSendChat) {
       return;

@@ -4,6 +4,8 @@ import 'package:chat_babakcode/models/user.dart';
 import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/ui/pages/splash/splash_page.dart';
 import 'package:chat_babakcode/utils/crypto_manager.dart';
+import 'package:chat_babakcode/utils/firebase_maager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +38,13 @@ class Auth extends ChangeNotifier {
     await _chatProvider?.clearDatabase();
     _chatProvider?.rooms = [];
     _chatProvider?.selectedRoom = null;
+    try{
+      await FirebaseManager.delete();
+    }catch(e){
+      if (kDebugMode) {
+        print('firebase delete exception $e');
+      }
+    }
 
     Navigator.pushAndRemoveUntil(
         navigatorKey.currentContext!,

@@ -173,8 +173,7 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
               keyboardType: TextInputType.multiline,
               textInputAction: TextInputAction.newline,
               inputFormatters: [
-                FilteringTextInputFormatter.deny(
-                    RegExp(r'^[ ]')),
+                FilteringTextInputFormatter.deny(RegExp(r'^[ ]')),
               ],
               maxLines: 6,
               decoration: const InputDecoration(
@@ -230,12 +229,17 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Icon(
-                    chatProvider.showSendChat || chatProvider.showPreUploadFile
-                        ? Icons.send
-                        : Icons.keyboard_voice_rounded,
-                    color: globalSetting.isDarkTheme
-                        ? AppConstants.textColor[800]
-                        : AppConstants.textColor[200],
+                    chatProvider.pressedOnRecordButton
+                        ? Icons.circle
+                        : chatProvider.showSendChat ||
+                                chatProvider.showPreUploadFile
+                            ? Icons.send
+                            : Icons.keyboard_voice_rounded,
+                    color: chatProvider.pressedOnRecordButton
+                        ? Colors.red
+                        : globalSetting.isDarkTheme
+                            ? AppConstants.textColor[800]
+                            : AppConstants.textColor[200],
                   ),
                 ),
               ),
@@ -702,7 +706,10 @@ Widget _replyOffStateSection(ChatProvider chatProvider) {
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(Utils.displayLastChat(chatProvider.replyTo!), maxLines: 1,)
+                          AppText(
+                            Utils.displayLastChat(chatProvider.replyTo!),
+                            maxLines: 1,
+                          )
                         ],
                       ),
                     ),

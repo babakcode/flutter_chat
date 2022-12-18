@@ -20,6 +20,7 @@ class Room extends AppCollections {
   String? roomImage;
   List<Chat> chatList = [];
   int? lastIndex;
+  bool? read;
   int minViewPortSeenIndex = 0;
   bool verified = false;
 
@@ -56,7 +57,8 @@ class Room extends AppCollections {
       ..changeAt = changeAtLocal
       ..createAt = createAtLocal
       ..deleted = json['deleted']
-      ..identifier = json['deleted']
+      ..identifier = json['identifier']
+      ..read = json['read']
       ..verified = json['verified'] ?? false
       ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
       ..members = (json['members'] as List).map((member) {
@@ -78,6 +80,7 @@ class Room extends AppCollections {
         'deleted': deleted,
         'members': members,
         'identifier': identifier,
+        'read': read,
         'verified': verified,
         'roomType': _RoomUtils.roomTypeToString(roomType!),
         'lastChat': lastChat?.toSaveFormat(),
@@ -120,7 +123,6 @@ class _RoomUtils {
             room.members![1].user!.id == myAccount.id) {
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
-          room.roomType = RoomType.pvUser;
           break;
         }
 

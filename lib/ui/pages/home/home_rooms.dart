@@ -270,18 +270,18 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
   floatingOnPressedEvent(BuildContext context) {
     final globalSettingProvider = context.read<GlobalSettingProvider>();
     final _width = MediaQuery.of(context).size.width;
-
+    final _maxWidthSection = (_width <= 500
+        ? 360
+        : _width > 760
+        ? 742
+        : _width).toDouble();
     showModalBottomSheet(
       isScrollControlled: true,
       clipBehavior: Clip.antiAliasWithSaveLayer,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       constraints: BoxConstraints(
-          maxWidth: _width <= 500
-              ? 360
-              : _width > 760
-                  ? 742
-                  : _width),
+          maxWidth: _maxWidthSection),
       backgroundColor: globalSettingProvider.isDarkTheme
           ? AppConstants.textColor[800]
           : AppConstants.textColor[100],
@@ -319,7 +319,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               ),
             ),
             GridView.count(
-              crossAxisCount: _width ~/ 130,
+              crossAxisCount: _maxWidthSection ~/ 100,
               shrinkWrap: true,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               physics: const NeverScrollableScrollPhysics(),
