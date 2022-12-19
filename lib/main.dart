@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:chat_babakcode/providers/auth_provider.dart';
+import 'package:chat_babakcode/providers/group_provider.dart';
 import 'package:chat_babakcode/providers/home_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/providers/global_setting_provider.dart';
@@ -17,6 +18,7 @@ import 'package:url_strategy/url_strategy.dart';
 import 'constants/app_constants.dart';
 import 'providers/chat_provider.dart';
 import 'providers/search_user_provider.dart';
+import 'providers/channel_provider.dart';
 import 'utils/notification_controller.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -89,7 +91,9 @@ class _Provider extends StatelessWidget {
         ChangeNotifierProvider(
           create: (c) => HomeProvider(),
         ),
-        ChangeNotifierProxyProvider<ChatProvider , ProfileProvider>(create: (context) => ProfileProvider(), update: (context, value, previous) => previous!..initChatProvider(value),)
+        ChangeNotifierProxyProvider<ChatProvider , ProfileProvider>(create: (context) => ProfileProvider(), update: (context, value, previous) => previous!..initChatProvider(value),),
+        ChangeNotifierProxyProvider<ChatProvider , ChannelProvider>(create: (context) => ChannelProvider(), update: (context, value, previous) => previous!..initChatProvider(value),),
+        ChangeNotifierProxyProvider<ChatProvider , GroupProvider>(create: (context) => GroupProvider(), update: (context, value, previous) => previous!..initChatProvider(value),)
       ],
       child: const MyApp(),
     );

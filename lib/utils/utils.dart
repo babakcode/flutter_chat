@@ -82,17 +82,43 @@ class Utils {
     }
   }
 
+  static String displayChatSubTitle(Chat data) {
+    String displayLastChat = '';
+    if (data is ChatTextModel) {
+      displayLastChat = data.text ?? '';
+    } else if (data is ChatPhotoModel) {
+      displayLastChat = 'Photo';
+      if(data.text != null){
+        displayLastChat += ' ${data.text}';
+      }
+    } else if (data is ChatDocModel) {
+      displayLastChat = 'Document';
+      if(data.text != null){
+        displayLastChat += ' ${data.text}';
+      }
+    } else if (data is ChatVoiceModel) {
+      displayLastChat = 'Voice';
+      if(data.text != null){
+        displayLastChat += ' ${data.text}';
+      }
+    } else if (data is ChatUpdateRequireModel) {
+      displayLastChat =
+      'this message is not supported on your version of business chat!';
+    }
+    return displayLastChat;
+  }
+
   static Future<void> vibrate(int millisecond) async {
     if(kIsWeb){
       return;
     }
 
     if ((await Vibration.hasCustomVibrationsSupport()) ?? false) {
-    Vibration.vibrate(duration: millisecond);
+      Vibration.vibrate(duration: millisecond);
     } else {
-    Vibration.vibrate();
-    await Future.delayed(Duration(milliseconds: millisecond));
-    Vibration.vibrate();
+      Vibration.vibrate();
+      await Future.delayed(Duration(milliseconds: millisecond));
+      Vibration.vibrate();
     }
   }
 
@@ -110,6 +136,20 @@ class Utils {
     } else if (data is ChatUpdateRequireModel) {
       displayLastChat =
       'this message is not supported on your version of business chat!';
+    }
+    return displayLastChat;
+  }
+
+  static String? getChatText(Chat data) {
+    String? displayLastChat;
+    if (data is ChatTextModel) {
+      displayLastChat = data.text;
+    } else if (data is ChatPhotoModel) {
+      displayLastChat = data.text;
+    } else if (data is ChatDocModel) {
+      displayLastChat = data.text;
+    } else if (data is ChatVoiceModel) {
+      displayLastChat = data.text;
     }
     return displayLastChat;
   }
