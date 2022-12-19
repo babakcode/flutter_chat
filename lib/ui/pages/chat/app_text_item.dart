@@ -110,7 +110,7 @@ class AppChatItem extends StatelessWidget {
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(Utils.displayChatSubTitle(chat.replyId!),
+                          AppText(Utils.displayLastChat(chat.replyId!),
                               color: globalSettingProvider.isDarkTheme
                                   ? fromMyAccount
                                   ? AppConstants.textColor[200]
