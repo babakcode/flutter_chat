@@ -266,19 +266,14 @@ Widget chatActionDialog(
     BuildContext context,
     Chat chat) {
   String? copyTextContent;
-  bool hasText = false;
   if (chat is ChatTextModel) {
     copyTextContent = chat.text;
-    hasText = true;
   } else if (chat is ChatPhotoModel) {
     copyTextContent = chat.text;
-    hasText = true;
   } else if (chat is ChatDocModel) {
     copyTextContent = chat.text;
-    hasText = true;
   } else if (chat is ChatVoiceModel) {
     copyTextContent = chat.text;
-    hasText = true;
   }
   return Dialog(
     backgroundColor: globalSettingProvider.isDarkTheme
@@ -294,7 +289,7 @@ Widget chatActionDialog(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: const AppText('Reply chat'),
+              title: const AppText('Reply text'),
               onTap: () {
                 _chatProvider.enableChatReply(index);
                 Navigator.pop(context);
@@ -305,18 +300,6 @@ Widget chatActionDialog(
                 title: const AppText('Copy text'),
                 onTap: () {
                   Utils.copyText(copyTextContent!);
-                  Navigator.pop(context);
-                },
-              ),
-            if (isMyMessage && hasText)
-              ListTile(
-                title: const AppText(
-                  'Edit text',
-                ),
-                onTap: () {
-                  _chatProvider.enableChatEdit(index, copyTextContent);
-
-                  //_chatProvider.emitAction('deleteChat', chat.id);
                   Navigator.pop(context);
                 },
               ),

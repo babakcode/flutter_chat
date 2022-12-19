@@ -364,7 +364,6 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Chat? replyTo;
-  Chat? editTo;
 
   void emitText(Room room) {
     if (!showSendChat) {
@@ -1028,19 +1027,6 @@ class ChatProvider extends ChangeNotifier {
 
   void clearChatReply() {
     replyTo = null;
-    notifyListeners();
-  }
-
-  void enableChatEdit(int index, String? textContent) {
-    editTo = selectedRoom?.chatList[index];
-    chatController.text = textContent ?? '';
-    notifyListeners();
-  }
-
-  void clearChatEdit() {
-    editTo = null;
-    chatController.text = '';
-
     notifyListeners();
   }
 

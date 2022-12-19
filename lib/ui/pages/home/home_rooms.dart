@@ -6,7 +6,6 @@ import 'package:chat_babakcode/providers/chat_provider.dart';
 import 'package:chat_babakcode/providers/home_provider.dart';
 import 'package:chat_babakcode/providers/login_provider.dart';
 import 'package:chat_babakcode/ui/pages/chat/chat_page.dart';
-import 'package:chat_babakcode/ui/pages/create_group/create_group_page.dart';
 import 'package:chat_babakcode/ui/pages/home/home_setting.dart';
 import 'package:chat_babakcode/ui/pages/qr_code/qr_scanner.dart';
 import 'package:chat_babakcode/ui/pages/search/search_user_page.dart';
@@ -22,7 +21,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
 import '../../../utils/utils.dart';
-import '../create_channel/create_channel_page.dart';
 import '../qr_code/qr_page.dart';
 
 class HomeRoomsComponent extends StatefulWidget {
@@ -273,17 +271,17 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
     final globalSettingProvider = context.read<GlobalSettingProvider>();
     final _width = MediaQuery.of(context).size.width;
     final _maxWidthSection = (_width <= 500
-            ? 360
-            : _width > 760
-                ? 742
-                : _width)
-        .toDouble();
+        ? 360
+        : _width > 760
+        ? 742
+        : _width).toDouble();
     showModalBottomSheet(
       isScrollControlled: true,
       clipBehavior: Clip.antiAliasWithSaveLayer,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      constraints: BoxConstraints(maxWidth: _maxWidthSection),
+      constraints: BoxConstraints(
+          maxWidth: _maxWidthSection),
       backgroundColor: globalSettingProvider.isDarkTheme
           ? AppConstants.textColor[800]
           : AppConstants.textColor[100],
@@ -398,6 +396,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                 //     notifyListeners();
                                 //   }
                                 // }
+
                               } else {
                                 Utils.showSnack(context, data['msg']);
                               }
@@ -459,48 +458,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       minLeadingWidth: 30,
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                              builder: (context) => const CreateChannelPage(),
-                            ));
-                      },
-                      trailing:
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                      tileColor: globalSettingProvider.isDarkTheme
-                          ? AppConstants.textColor[900]
-                          : AppConstants.scaffoldLightBackground,
-                    )),
-
-                Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    child: ListTile(
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 10),
-                      leading: Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        clipBehavior: Clip.antiAliasWithSaveLayer,
-                        child: const SizedBox(
-                            height: 36,
-                            width: 36,
-                            child: Icon(Icons.group_add_rounded)),
-                      ),
-                      title: const AppText("create group"),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      minLeadingWidth: 30,
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                              builder: (context) => const CreateGroupPage(),
-                            ));
-                      },
+                      onTap: () {},
                       trailing:
                           const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                       tileColor: globalSettingProvider.isDarkTheme
