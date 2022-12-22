@@ -60,16 +60,13 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               title: !chatProvider.showSearchRoomsBox
                   ? Text(chatProvider.connectionStatus ?? 'Chats')
                   : TextField(
-                      onChanged: (value) {
-                        chatProvider.findRooms(value);
-                      },
+                      onChanged: chatProvider.findRooms,
                       decoration: const InputDecoration(hintText: 'Search'),
                     ),
               leading: _width < 960
                   ? IconButton(
                       tooltip: 'open navigation menu',
-                      onPressed: () =>
-                          _roomScaffoldKey.currentState?.openDrawer(),
+                      onPressed: _roomScaffoldKey.currentState?.openDrawer,
                       icon: const Icon(Icons.menu_rounded))
                   : null,
               actions: [
@@ -339,7 +336,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       );
                       if (result != null) {
                         final chatProvider = context.read<ChatProvider>();
-                        chatProvider.searchUser(
+                        chatProvider.searchRoom(
                             searchType: 'token',
                             searchText: result,
                             context: context,
@@ -399,7 +396,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                 //   }
                                 // }
                               } else {
-                                Utils.showSnack( data['msg']);
+                                Utils.showSnack(data['msg']);
                               }
                             });
                       }
@@ -472,7 +469,6 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                           ? AppConstants.textColor[900]
                           : AppConstants.scaffoldLightBackground,
                     )),
-
                 Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -542,13 +538,14 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                   size: 42,
                 )),
             Expanded(
-                flex: 1,
-                child: AppText(
-                  text,
-                  color: globalSettingProvider.isDarkTheme
-                      ? AppConstants.textColor[100]
-                      : AppConstants.primarySwatch[700],
-                ))
+              flex: 1,
+              child: AppText(
+                text,
+                color: globalSettingProvider.isDarkTheme
+                    ? AppConstants.textColor[100]
+                    : AppConstants.primarySwatch[700],
+              ),
+            )
           ],
         ),
       ),
@@ -559,25 +556,37 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
     return Row(
       children: [
         Expanded(
-            child: Row(
-          children: [
-            Flexible(
-              child: Text(
-                room.roomName ?? 'guest',
-                overflow: TextOverflow.ellipsis,
-                softWrap: false,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                maxLines: 1,
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  room.roomName ?? 'guest',
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                ),
               ),
-            ),
-            if (room.verified)
-              SvgPicture.asset(
-                'assets/svg/verified_account.svg',
-                height: 24,
-                width: 24,
+              if (room.verified)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: SvgPicture.asset(
+                    'assets/svg/verified_account.svg',
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Icon(
+                  __iconRoomType(room.roomType!),
+                  color: Colors.blueGrey,
+                  size: 12,
+                ),
               ),
-          ],
-        )),
+            ],
+          ),
+        ),
 
         /// show not read chats count
         if ((room.lastChat?.chatNumberId ?? -1) - (room.lastIndex ?? -1) > 0)
@@ -616,22 +625,8 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               maxLines: 1,
             ),
           Expanded(child: Builder(builder: (context) {
-            String displayLastChat = '';
-            if (room.lastChat is ChatTextModel) {
-              ChatTextModel? chat = room.lastChat as ChatTextModel;
-              displayLastChat = chat.text ?? '';
-            } else if (room.lastChat is ChatPhotoModel) {
-              displayLastChat = 'Photo';
-            } else if (room.lastChat is ChatDocModel) {
-              displayLastChat = 'Document';
-            } else if (room.lastChat is ChatVoiceModel) {
-              displayLastChat = 'Voice';
-            } else if (room.lastChat is ChatUpdateRequireModel) {
-              displayLastChat =
-                  'this message is not supported on your version of business chat!';
-            }
             return Text(
-              displayLastChat,
+              Utils.displayChatSubTitle(room.lastChat!),
               overflow: TextOverflow.ellipsis,
               softWrap: false,
               style: const TextStyle(fontSize: 12),
@@ -660,4 +655,18 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                 ),
         ),
       );
+
+  IconData? __iconRoomType(RoomType roomType) {
+    switch (roomType) {
+      case RoomType.channel:
+        return Icons.notifications_rounded;
+      case RoomType.publicGroup:
+        return Icons.groups_rounded;
+      case RoomType.pvGroup:
+        return Icons.group_rounded;
+      case RoomType.pvUser:
+      default:
+        return Icons.person_rounded;
+    }
+  }
 }

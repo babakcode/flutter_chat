@@ -295,8 +295,9 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void searchUser(
-      {required String searchType,
+  void searchRoom(
+      {
+        required String searchType,
       required String searchText,
       required BuildContext context,
       required Function callBack}) {
@@ -309,8 +310,9 @@ class ChatProvider extends ChangeNotifier {
         (searchType == 'username' && searchText == auth?.myUser?.username)) {
       // this account is for mine
       int indexOfRoom = rooms.indexWhere((room) =>
-          room.members![0].user!.id == auth!.myUser!.id &&
-          room.members![1].user!.id == auth!.myUser!.id);
+        room.roomType == RoomType.pvGroup &&
+          room.members?[0].user?.id == auth?.myUser?.id &&
+          room.members?[1].user?.id == auth?.myUser?.id);
       if(indexOfRoom != -1){
         print('----------------------------------');
         print('room found');
