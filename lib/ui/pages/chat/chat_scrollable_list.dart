@@ -138,6 +138,17 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
 
     final chat = room.chatList[index];
 
+    if (chat is ChatActionModel) {
+      return Center(
+        child: Container(
+            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.all(4),
+            color: AppConstants
+                .primarySwatch[globalSettingProvider.isDarkTheme ? 900 : 200],
+            child: AppText(chat.actionText ?? '')),
+      );
+    }
+
     bool fromMyAccount = chat.user!.id == chatProvider.auth!.myUser!.id;
     bool previousChatFromUser = false;
     bool nextChatFromUser = false;

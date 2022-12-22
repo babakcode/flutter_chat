@@ -9,6 +9,7 @@ part 'chat_text_model.dart';
 part 'chat_photo_model.dart';
 part 'chat_voice_model.dart';
 part 'chat_doc_model.dart';
+part 'chat_action_model.dart';
 
 HiveManager _hiveManager = HiveManager();
 
@@ -36,6 +37,8 @@ abstract class Chat extends AppCollections {
         return ChatPhotoModel(chat);
       case 'voice':
         return ChatVoiceModel(chat);
+      case 'action':
+        return ChatActionModel(chat);
       case 'doc':
         return ChatDocModel(chat);
       default:

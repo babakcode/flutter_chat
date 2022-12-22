@@ -14,11 +14,11 @@ import '../constants/app_constants.dart';
 import '../providers/auth_provider.dart';
 
 class Utils {
-  static void showSnack(BuildContext context, text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  static void showSnack(text) {
+    ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(SnackBar(content: Text(text)));
   }
 
-  static Widget showWarningDialog(BuildContext context) {
+  static Widget showLogOutDialog(BuildContext context) {
     final auth = context.read<Auth>();
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -78,7 +78,7 @@ class Utils {
   static Future<void> copyText(String text, {bool showSnackBar = true}) async {
     await Clipboard.setData(ClipboardData(text: text));
     if (showSnackBar) {
-      showSnack(navigatorKey.currentContext!, 'copied!');
+      showSnack('copied!');
     }
   }
 
@@ -95,6 +95,11 @@ class Utils {
       displayLastChat = 'Document';
       if(data.text != null){
         displayLastChat += ' ${data.text}';
+      }
+    } else if (data is ChatActionModel) {
+      displayLastChat = '';
+      if(data.actionText != null){
+        displayLastChat += ' ${data.actionText}';
       }
     } else if (data is ChatVoiceModel) {
       displayLastChat = 'Voice';
@@ -120,37 +125,5 @@ class Utils {
       await Future.delayed(Duration(milliseconds: millisecond));
       Vibration.vibrate();
     }
-  }
-
-  static String displayLastChat(Chat data) {
-    String displayLastChat = '';
-    if (data is ChatTextModel) {
-      ChatTextModel? chat = data;
-      displayLastChat = chat.text ?? '';
-    } else if (data is ChatPhotoModel) {
-      displayLastChat = 'Photo';
-    } else if (data is ChatDocModel) {
-      displayLastChat = 'Document';
-    } else if (data is ChatVoiceModel) {
-      displayLastChat = 'Voice';
-    } else if (data is ChatUpdateRequireModel) {
-      displayLastChat =
-      'this message is not supported on your version of business chat!';
-    }
-    return displayLastChat;
-  }
-
-  static String? getChatText(Chat data) {
-    String? displayLastChat;
-    if (data is ChatTextModel) {
-      displayLastChat = data.text;
-    } else if (data is ChatPhotoModel) {
-      displayLastChat = data.text;
-    } else if (data is ChatDocModel) {
-      displayLastChat = data.text;
-    } else if (data is ChatVoiceModel) {
-      displayLastChat = data.text;
-    }
-    return displayLastChat;
   }
 }

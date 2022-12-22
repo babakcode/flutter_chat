@@ -758,7 +758,7 @@ Widget _editOffStateSection(ChatProvider chatProvider) {
                     //   maxLines: 1,
                     //   style: const TextStyle(color: Colors.blueGrey),
                     // ),
-                    AppText(Utils.getChatText(chatProvider.editTo!) ?? 'empty text', maxLines: 1,)
+                    AppText(Utils.displayChatSubTitle(chatProvider.editTo!), maxLines: 1,)
                   ],
                 ),
               ),

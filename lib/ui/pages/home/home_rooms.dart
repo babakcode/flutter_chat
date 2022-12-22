@@ -399,7 +399,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                                 //   }
                                 // }
                               } else {
-                                Utils.showSnack(context, data['msg']);
+                                Utils.showSnack( data['msg']);
                               }
                             });
                       }

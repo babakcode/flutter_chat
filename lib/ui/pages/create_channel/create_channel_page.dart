@@ -1,16 +1,9 @@
 import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../constants/app_constants.dart';
 import '../../../providers/channel_provider.dart';
-import '../../../providers/global_setting_provider.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/app_text.dart';
-import '../../widgets/app_text_field.dart';
 
 class CreateChannelPage extends StatelessWidget {
   const CreateChannelPage({Key? key}) : super(key: key);
@@ -27,7 +20,7 @@ class CreateChannelPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: channelProvider.createChannel,
             icon: const Icon(Icons.check_rounded),
           ),
         ],
@@ -38,9 +31,10 @@ class CreateChannelPage extends StatelessWidget {
           alignment: Alignment.topCenter,
           width: MediaQuery.of(context).size.width,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth:500),
+            constraints: const BoxConstraints(maxWidth: 500),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -56,18 +50,26 @@ class CreateChannelPage extends StatelessWidget {
                           minWidth: 60,
                           height: 60,
                           onPressed: channelProvider.selectImage,
-                          child: channelProvider.channelImage == null ?const Icon(Icons.add_a_photo_rounded)
-                          : Image.memory(kIsWeb ? channelProvider.channelImage!.bytes! : File(channelProvider.channelImage!.path!).readAsBytesSync(),
-                            height: 60,
-                            width: 60,
-                            fit: BoxFit.cover,)
-                          ),
+                          child: channelProvider.channelImage == null
+                              ? const Icon(Icons.add_a_photo_rounded)
+                              : Image.memory(
+                                  kIsWeb
+                                      ? channelProvider.channelImage!.bytes!
+                                      : File(channelProvider
+                                              .channelImage!.path!)
+                                          .readAsBytesSync(),
+                                  height: 60,
+                                  width: 60,
+                                  fit: BoxFit.cover,
+                                )),
                       const SizedBox(
                         width: 10,
                       ),
-                      const Expanded(
+                      Expanded(
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Channel name'),
+                          controller: channelProvider.channelNameController,
+                          decoration:
+                              const InputDecoration(hintText: 'Channel name'),
                         ),
                       )
                     ],
@@ -75,8 +77,9 @@ class CreateChannelPage extends StatelessWidget {
                   const SizedBox(
                     height: 10,
                   ),
-                  const TextField(
-                    decoration: InputDecoration(hintText: 'Description'),
+                  TextField(
+                    controller: channelProvider.channelDescriptionController,
+                    decoration: const InputDecoration(hintText: 'Description'),
                   ),
                   const SizedBox(
                     height: 14,
@@ -88,8 +91,10 @@ class CreateChannelPage extends StatelessWidget {
                   const SizedBox(
                     height: 10,
                   ),
-                  const TextField(
-                    decoration: InputDecoration(hintText: 'Username',prefixText: '@'),
+                  TextField(
+                    controller: channelProvider.channelLinkController,
+                    decoration: const InputDecoration(
+                        hintText: 'Username', prefixText: '@'),
                   ),
                   const SizedBox(
                     height: 14,

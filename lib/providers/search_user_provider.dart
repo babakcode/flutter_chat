@@ -134,7 +134,7 @@ class SearchUserProvider extends ChangeNotifier {
             // }
 
           }else{
-            Utils.showSnack(context, data['msg']);
+            Utils.showSnack( data['msg']);
           }
         });
   }

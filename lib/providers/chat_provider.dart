@@ -358,7 +358,7 @@ class ChatProvider extends ChangeNotifier {
       } else {
         callBack.call(
             {'success': false, 'findFromExistRoom': false, 'msg': data['msg']});
-        Utils.showSnack(context, data['msg']);
+        Utils.showSnack(data['msg']);
       }
     });
   }
@@ -426,7 +426,7 @@ class ChatProvider extends ChangeNotifier {
       if (data['success']) {
         _receiveChatEvent(data, fakeChat);
       } else {
-        Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+        Utils.showSnack( data['msg']);
       }
     });
   }
@@ -496,7 +496,7 @@ class ChatProvider extends ChangeNotifier {
 
           _receiveChatEvent(data, fakeChat);
         } else {
-          Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+          Utils.showSnack( data['msg']);
         }
       });
     }
@@ -735,7 +735,7 @@ class ChatProvider extends ChangeNotifier {
               _hiveManager.saveChats(targetRoom.chatList, targetRoom.id!,
                   clearSavedList: true);
             } else {
-              Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+              Utils.showSnack( data['msg']);
             }
           });
         }
@@ -1123,7 +1123,7 @@ class ChatProvider extends ChangeNotifier {
         }
       }
     } else {
-      Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+      Utils.showSnack( data['msg']);
     }
   }
 

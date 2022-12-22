@@ -50,6 +50,7 @@ class AppChatItem extends StatelessWidget {
     final Room room = chatProvider.selectedRoom!;
     Chat chat = room.chatList[index];
 
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(

@@ -27,7 +27,7 @@ class LoginProvider extends ChangeNotifier {
 
   void registerNewToken() async {
     if (nameTextController.text.isEmpty || tokenDigit == null) {
-      Utils.showSnack(navigatorKey.currentContext!, 'Name is empty!');
+      Utils.showSnack( 'Name is empty!');
       return;
     }
     loading = true;
@@ -43,7 +43,7 @@ class LoginProvider extends ChangeNotifier {
         return;
       }
       final body = res.data;
-      Utils.showSnack(navigatorKey.currentContext!, body['msg']);
+      Utils.showSnack( body['msg']);
 
       if (res.statusCode == 201) {
         await auth?.saveUserDetails(
@@ -64,8 +64,7 @@ class LoginProvider extends ChangeNotifier {
 
   recoveryToken() async {
     if (recoveryPhraseTextController.text.isEmpty) {
-      Utils.showSnack(
-          navigatorKey.currentContext!, 'Recovery phrase is empty!');
+      Utils.showSnack('Recovery phrase is empty!');
       return;
     }
     loading = true;
@@ -81,7 +80,7 @@ class LoginProvider extends ChangeNotifier {
         return;
       }
       final body = res.data;
-      Utils.showSnack(navigatorKey.currentContext!, body['msg']);
+      Utils.showSnack( body['msg']);
 
       // print(RequestManager.decryptData(res?.data['text']));
       if (res.statusCode == 200) {

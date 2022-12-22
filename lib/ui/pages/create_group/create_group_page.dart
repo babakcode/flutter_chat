@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chat_babakcode/ui/widgets/app_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:group_radio_button/group_radio_button.dart';
@@ -20,7 +21,7 @@ class CreateGroupPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: groupProvider.createGroup,
             icon: const Icon(Icons.check_rounded),
           ),
         ],
@@ -33,7 +34,8 @@ class CreateGroupPage extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20),
               child: Column(
                 // mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -64,9 +66,10 @@ class CreateGroupPage extends StatelessWidget {
                       const SizedBox(
                         width: 10,
                       ),
-                      const Expanded(
+                      Expanded(
                         child: TextField(
-                          decoration: InputDecoration(hintText: 'Group name'),
+                          controller: groupProvider.groupNameController,
+                          decoration: const InputDecoration(hintText: 'Group name'),
                         ),
                       )
                     ],
@@ -74,14 +77,15 @@ class CreateGroupPage extends StatelessWidget {
                   const SizedBox(
                     height: 10,
                   ),
-                  const TextField(
-                    decoration: InputDecoration(hintText: 'Description'),
+                   TextField(
+                    controller: groupProvider.groupDescriptionController,
+                    decoration: const InputDecoration(hintText: 'Description'),
                   ),
                   const SizedBox(
                     height: 14,
                   ),
                   const Text(
-                    'You can provide an optional description for your\group.',
+                    'You can provide an optional description for your group.',
                     style: TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(
@@ -89,7 +93,10 @@ class CreateGroupPage extends StatelessWidget {
                   ),
                   RadioListTile(
                     title: const Text('Public Group'),
-                    subtitle: const Text('Public groups can be found in search, anyone can join them', style: TextStyle(fontSize: 12),),
+                    subtitle: const Text(
+                      'Public groups can be found in search, anyone can join them',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     value: false,
                     groupValue: groupProvider.getIsPrivate,
                     onChanged: (p0) {
@@ -101,7 +108,9 @@ class CreateGroupPage extends StatelessWidget {
                   ),
                   RadioListTile(
                     title: const Text('Private Group'),
-                    subtitle: const Text('Private Groups can only be joined via invite link',style: TextStyle(fontSize: 12)),
+                    subtitle: const Text(
+                        'Private Groups can only be joined via invite link',
+                        style: TextStyle(fontSize: 12)),
                     value: true,
                     groupValue: groupProvider.getIsPrivate,
                     onChanged: (p0) {
@@ -111,9 +120,13 @@ class CreateGroupPage extends StatelessWidget {
                   const SizedBox(
                     height: 10,
                   ),
-                  const TextField(
-                    decoration: InputDecoration(hintText: 'Username', prefixText: '@'),
-                  ),
+                  groupProvider.getIsPrivate
+                      ? AppText(groupProvider.privateLink)
+                      : TextField(
+                          controller: groupProvider.groupLinkController,
+                          decoration: const InputDecoration(
+                              hintText: 'Username', prefixText: '@'),
+                        ),
                   const SizedBox(
                     height: 14,
                   ),

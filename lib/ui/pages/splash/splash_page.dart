@@ -26,6 +26,10 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
+      /// hide bottom navigation bar
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          overlays: [SystemUiOverlay.top]);
+
       final sharedProvider = context.read<GlobalSettingProvider>();
       if (sharedProvider.settingBox.get('dark') == null) {
         sharedProvider.darkTheme(
@@ -33,7 +37,9 @@ class _SplashPageState extends State<SplashPage> {
       }
     });
 
-    try {
+    if (kIsWeb) {
+      LoginProvider.platform = 'web';
+    } else {
       LoginProvider.platform = Platform.isAndroid
           ? 'android'
           : Platform.isIOS
@@ -41,41 +47,13 @@ class _SplashPageState extends State<SplashPage> {
               : Platform.isWindows
                   ? 'windows'
                   : 'web';
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      LoginProvider.platform = 'web';
     }
-    if (context.read<Auth>().loggedIn) {
-      Future.delayed(
-          const Duration(seconds: 2),
-          () => Navigator.pushAndRemoveUntil(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => const HomePage(),
-                ),
-                (route) => false,
-              ));
-      // Navigator.
-    } else {
-      Future.delayed(
-          const Duration(seconds: 6),
-          () => Navigator.pushAndRemoveUntil(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => const LoginPage(),
-                ),
-                (route) => false,
-              ));
-    }
+
+    _navigate(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    /// hide bottom navigation bar
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.top]);
 
     final globalSetting = context.watch<GlobalSettingProvider>();
 
@@ -138,6 +116,22 @@ class _SplashPageState extends State<SplashPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _navigate(BuildContext context) async {
+    final loggedIn = context.read<Auth>().loggedIn;
+    await Future.delayed(Duration(seconds: loggedIn ? 2 : 6));
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => loggedIn ? const HomePage() : const LoginPage(),
+      ),
+      (route) => false,
     );
   }
 }

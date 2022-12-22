@@ -214,7 +214,7 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
                                   // }
 
                                 }else{
-                                  Utils.showSnack(context, data['msg']);
+                                  Utils.showSnack( data['msg']);
                                 }
                               });
 

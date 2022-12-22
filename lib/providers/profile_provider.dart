@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:chat_babakcode/main.dart';
 import 'package:chat_babakcode/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,7 +18,7 @@ class ProfileProvider extends ChangeNotifier {
 
   updateUserInfo({required String type, required String content}) {
     if (type == 'name' && content.trim().isEmpty) {
-      Utils.showSnack(navigatorKey.currentContext!, 'name is empty');
+      Utils.showSnack( 'name is empty');
       return;
     }
     var body = {'type': type, 'content': content};
@@ -40,7 +38,7 @@ class ProfileProvider extends ChangeNotifier {
             }
             Navigator.pop(navigatorKey.currentContext!);
           }
-          Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+          Utils.showSnack( data['msg']);
 
         } catch (e) {
           if (kDebugMode) {
@@ -77,7 +75,7 @@ class ProfileProvider extends ChangeNotifier {
           if (data['success'] == true) {
             await chatProvider?.auth?.changeProfileImage(data['url']);
           }
-          Utils.showSnack(navigatorKey.currentContext!, data['msg']);
+          Utils.showSnack( data['msg']);
         } catch (e) {
           if (kDebugMode) {
             print('exception #004 $e');
