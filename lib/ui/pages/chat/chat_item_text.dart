@@ -6,7 +6,6 @@ import 'package:intl/intl.dart' as intl;
 import '../../../constants/app_constants.dart';
 import '../../../providers/global_setting_provider.dart';
 import '../../widgets/app_detectable_text.dart';
-import '../../widgets/app_text.dart';
 
 class ChatItemText extends StatelessWidget {
   final bool fromMyAccount;
@@ -28,18 +27,8 @@ class ChatItemText extends StatelessWidget {
         crossAxisAlignment:
             fromMyAccount ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (roomType != RoomType.pvUser)
-            Container(
-              alignment: Alignment.topRight,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: AppText(
-                chat.user!.name!,
-                fontWeight: FontWeight.bold,
-                maxLines: 1,
-              ),
-            ),
           Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
               child: AppDetectableText(
                 chat.text ?? '',
                 textColor: globalSettingProvider.isDarkTheme
@@ -49,7 +38,7 @@ class ChatItemText extends StatelessWidget {
                     : AppConstants.textColor[700],
               ),),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -57,7 +46,8 @@ class ChatItemText extends StatelessWidget {
                   intl.DateFormat('HH:mm')
                       .format(chat.utcDate ?? DateTime.now()),
                   style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
                       color: globalSettingProvider.isDarkTheme
                           ? fromMyAccount
                               ? AppConstants.textColor[200]

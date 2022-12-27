@@ -197,6 +197,7 @@ class ChatProvider extends ChangeNotifier {
         selectedRoom!.reachedToStart == false &&
         selectedRoom!.chatList.isNotEmpty &&
         selectedRoom!.chatList.first.chatNumberId != 1 &&
+
         /// load more (previous) chats
         ///
         /// change reachedToStart to true when the chat list empty after request
@@ -297,7 +298,7 @@ class ChatProvider extends ChangeNotifier {
 
   void searchRoom(
       {
-        required String searchType,
+      // required String searchType,
       required String searchText,
       required BuildContext context,
       required Function callBack}) {
@@ -306,57 +307,94 @@ class ChatProvider extends ChangeNotifier {
     /// search from server
 
     bool foundLocalExistGroup = false;
-    if ((searchType == 'token' && searchText == auth?.myUser?.publicToken) ||
-        (searchType == 'username' && searchText == auth?.myUser?.username)) {
+    if (searchText == auth?.myUser?.publicToken ||
+        searchText == auth?.myUser?.username) {
       // this account is for mine
       int indexOfRoom = rooms.indexWhere((room) =>
-        room.roomType == RoomType.pvGroup &&
+          room.roomType == RoomType.pvUser &&
           room.members?[0].user?.id == auth?.myUser?.id &&
           room.members?[1].user?.id == auth?.myUser?.id);
-      if(indexOfRoom != -1){
-        print('----------------------------------');
-        print('room found');
-        print('indexOfRoom = $indexOfRoom');
-        print('----------------------------------');
+      if (indexOfRoom != -1) {
+        // room found
         foundLocalExistGroup = true;
-        callBack
-            .call({'success': true, 'findFromExistRoom': true, 'room': rooms[indexOfRoom]});
+        callBack.call({
+          'success': true,
+          'findFromExistRoom': true,
+          'room': rooms[indexOfRoom]
+        });
       }
     } else {
-      rooms
-          .where((element) => element.roomType == RoomType.pvUser)
-          .forEach((room) {
+      /// search by identifier
+      final indexOfRoom =
+          rooms.indexWhere((element) => element.identifier == searchText);
+
+      if (indexOfRoom != -1) {
+        callBack.call({
+          'success': true,
+          'findFromExistRoom': true,
+          'room': rooms[indexOfRoom]
+        });
+        return;
+      }
+
+      /// search by user username or token
+      for (final room
+          in rooms.where((element) => element.roomType == RoomType.pvUser)) {
+        /// each room
         if (room.members!
-            .where((element) =>
-                ((searchType == 'token')
-                    ? element.user!.publicToken
-                    : element.user?.username) ==
-                searchText)
+            .where((member) =>
+                member.user?.username == searchText ||
+                member.user?.publicToken == searchText)
             .isNotEmpty) {
           foundLocalExistGroup = true;
           callBack
               .call({'success': true, 'findFromExistRoom': true, 'room': room});
+          break;
         }
-      });
+      }
     }
     if (foundLocalExistGroup) {
       return;
     }
 
-    socket.emitWithAck('searchUser', {
-      'searchType': searchType,
-      'searchText': searchText,
+    socket.emitWithAck('searchRoom', {
+      'search': searchText,
     }, ack: (data) {
       if (kDebugMode) {
-        print("socket.emitWithAck('searchUser', data = $data);");
+        print("socket.emitWithAck('searchRoom', data = $data);");
       }
 
       if (data['success']) {
-        callBack.call({
-          'success': true,
-          'findFromExistRoom': false,
-          'room': Room.fromJson(data['room'], false)
-        });
+
+        print(data?['chats']);
+
+        final room = Room.fromJson(data['room'], false);
+
+        if(room.roomType == RoomType.pvUser){
+          callBack.call({
+            'success': true,
+            'findFromExistRoom': false,
+            'room': room
+          });
+        }else if(room.roomType == RoomType.channel ||
+            room.roomType == RoomType.publicGroup){
+
+          room.chatList = Chat.getChatsFromJsonList(data?['chats']);
+
+          callBack.call({
+            'success': true,
+            'findFromExistRoom': false,
+            'room': room
+          });
+        }else if(room.roomType == RoomType.pvGroup){
+          room.chatList = Chat.getChatsFromJsonList(data?['chats']);
+
+          callBack.call({
+            'success': true,
+            'findFromExistRoom': false,
+            'room': room
+          });
+        }
       } else {
         callBack.call(
             {'success': false, 'findFromExistRoom': false, 'msg': data['msg']});
@@ -428,7 +466,7 @@ class ChatProvider extends ChangeNotifier {
       if (data['success']) {
         _receiveChatEvent(data, fakeChat);
       } else {
-        Utils.showSnack( data['msg']);
+        Utils.showSnack(data['msg']);
       }
     });
   }
@@ -498,7 +536,7 @@ class ChatProvider extends ChangeNotifier {
 
           _receiveChatEvent(data, fakeChat);
         } else {
-          Utils.showSnack( data['msg']);
+          Utils.showSnack(data['msg']);
         }
       });
     }
@@ -709,7 +747,7 @@ class ChatProvider extends ChangeNotifier {
         /// that means we won't load more of list
         if (chat.chatNumberId! - 1 ==
                 targetRoom
-                    .chatList[targetRoom.chatList.length - 1].chatNumberId ||
+                    .chatList?[targetRoom.chatList.length - 1].chatNumberId ||
             targetRoom.reachedToEnd) {
           targetRoom.chatList.add(chat);
         } else if (chat.user!.id == auth!.myUser!.id &&
@@ -737,7 +775,7 @@ class ChatProvider extends ChangeNotifier {
               _hiveManager.saveChats(targetRoom.chatList, targetRoom.id!,
                   clearSavedList: true);
             } else {
-              Utils.showSnack( data['msg']);
+              Utils.showSnack(data['msg']);
             }
           });
         }
@@ -825,9 +863,9 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> _loadMoreNext() async {
-    // if(loadingLoadMoreNext){
-    //   return;
-    // }
+    if(loadingLoadMoreNext){
+      return;
+    }
 
     loadingLoadMoreNext = true;
     notifyListeners();
@@ -1125,7 +1163,7 @@ class ChatProvider extends ChangeNotifier {
         }
       }
     } else {
-      Utils.showSnack( data['msg']);
+      Utils.showSnack(data['msg']);
     }
   }
 
@@ -1135,7 +1173,7 @@ class ChatProvider extends ChangeNotifier {
 
   toggleLocalRoomsSearchMode() {
     showSearchRoomsBox = !showSearchRoomsBox;
-    if(!showSearchRoomsBox){
+    if (!showSearchRoomsBox) {
       roomsFromSearch = null;
     }
     notifyListeners();
@@ -1145,8 +1183,10 @@ class ChatProvider extends ChangeNotifier {
     if (content.isEmpty) {
       roomsFromSearch = null;
     } else {
-      roomsFromSearch =
-          rooms.where((element) => element.roomName == content).toList();
+      content = content.trim().toLowerCase();
+      roomsFromSearch = rooms
+          .where((element) => element.roomName!.toLowerCase().contains(content))
+          .toList();
     }
     notifyListeners();
   }

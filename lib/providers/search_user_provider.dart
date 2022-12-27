@@ -70,7 +70,7 @@ class SearchUserProvider extends ChangeNotifier {
   // initAuth(ChatProvider chatProvider) => this.chatProvider = chatProvider;
   //
 
-  searchUser(BuildContext context) {
+  void search(BuildContext context) {
     String? searchText = userSearchTextEditController.text;
     if (searchWayList.isEmpty) {
       return;
@@ -78,8 +78,8 @@ class SearchUserProvider extends ChangeNotifier {
     loading = true;
     notifyListeners();
 
-    chatProvider?.searchUser(
-        searchType: searchWayList[selectedSearchUserWayIndex],
+    chatProvider?.searchRoom(
+        // searchType: searchWayList[selectedSearchUserWayIndex],
         searchText: searchText,
         context: context,
         callBack: (Map data) {

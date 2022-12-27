@@ -253,6 +253,7 @@ class _ChatScrollableListState extends State<ChatScrollableList> {
                           ),
                   ),
                 ),
+
               Container(
                 constraints: BoxConstraints(
                   maxWidth: _width *

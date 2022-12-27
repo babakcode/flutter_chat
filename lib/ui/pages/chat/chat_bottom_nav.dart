@@ -14,21 +14,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../../../models/chat.dart';
 import '../../../providers/search_user_provider.dart';
 import '../../../utils/utils.dart';
 import '../../widgets/app_text.dart';
 
-class ChatBottomNavComponent extends StatefulWidget {
+class ChatBottomNavComponent extends StatelessWidget {
   final Room room;
 
   const ChatBottomNavComponent({super.key, required this.room});
 
-  @override
-  State<ChatBottomNavComponent> createState() => _ChatBottomNavComponentState();
-}
-
-class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
@@ -42,7 +36,12 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
       _width -= 340;
     }
 
-    bool checkUserCanNotSendChatToThisRoom = widget.room.members == null;
+    bool? channelButtonShow;
+    String? channelButtonString;
+    if(room.roomType == RoomType.channel){
+      channelButtonShow = !room.canSendChat!;
+
+    }
 
     return Card(
       elevation: 20,
@@ -55,16 +54,22 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       child: Column(
         children: [
-          checkUserCanNotSendChatToThisRoom // check blocked
-              ? const Card(
-                  margin: EdgeInsets.zero,
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(14.0),
-                      child: Text('Mute Channel'),
-                    ),
+          !room.canSendChat! // check blocked
+              ? InkWell(
+                onTap: () {
+                  if(chatProvider.rooms.any((element) => element.id == room.id)){
+
+                  }
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  constraints: const BoxConstraints(
+                    minHeight: 62
                   ),
-                )
+                  width: _width,
+                  child: Text('Mute Channel'),
+                ),
+              )
               : Column(
                   children: [
                     /// pre send files section
@@ -214,10 +219,10 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
           ),
 
           GestureDetector(
-            onTap: () => chatProvider.emitChat(widget.room),
+            onTap: () => chatProvider.emitChat(room),
             onLongPress: () => chatProvider.recordStart(),
             onLongPressEnd: (s) =>
-                chatProvider.recordStop(context, widget.room),
+                chatProvider.recordStop(context, room),
             child: Card(
               elevation: 0,
               color: globalSetting.isDarkTheme
@@ -660,118 +665,119 @@ class _ChatBottomNavComponentState extends State<ChatBottomNavComponent> {
       ),
     );
   }
-}
 
-Widget _replyOffStateSection(ChatProvider chatProvider) {
-  // String displayLastChat = '';
-  // if (chatProvider.replyTo != null) {
-  //   if (chatProvider.replyTo is ChatTextModel) {
-  //     ChatTextModel? chat = chatProvider.replyTo as ChatTextModel;
-  //     displayLastChat = chat.text ?? '';
-  //   } else if (chatProvider.replyTo is ChatPhotoModel) {
-  //     displayLastChat = 'Photo';
-  //   } else if (chatProvider.replyTo is ChatDocModel) {
-  //     displayLastChat = 'Document';
-  //   } else if (chatProvider.replyTo is ChatVoiceModel) {
-  //     displayLastChat = 'Voice';
-  //   } else if (chatProvider.replyTo is ChatUpdateRequireModel) {
-  //     displayLastChat =
-  //         'this message is not supported on your version of business chat!';
-  //   }
-  // }
+  Widget _replyOffStateSection(ChatProvider chatProvider) {
+    // String displayLastChat = '';
+    // if (chatProvider.replyTo != null) {
+    //   if (chatProvider.replyTo is ChatTextModel) {
+    //     ChatTextModel? chat = chatProvider.replyTo as ChatTextModel;
+    //     displayLastChat = chat.text ?? '';
+    //   } else if (chatProvider.replyTo is ChatPhotoModel) {
+    //     displayLastChat = 'Photo';
+    //   } else if (chatProvider.replyTo is ChatDocModel) {
+    //     displayLastChat = 'Document';
+    //   } else if (chatProvider.replyTo is ChatVoiceModel) {
+    //     displayLastChat = 'Voice';
+    //   } else if (chatProvider.replyTo is ChatUpdateRequireModel) {
+    //     displayLastChat =
+    //         'this message is not supported on your version of business chat!';
+    //   }
+    // }
 
-  return Offstage(
-    offstage: chatProvider.replyTo == null,
-    child: chatProvider.replyTo != null
-        ? Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Icon(Icons.reply_all_rounded),
-                ),
-                Expanded(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            chatProvider.replyTo!.user!.name!,
-                            maxLines: 1,
-                            style: const TextStyle(color: Colors.blueGrey),
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          AppText(
-                            Utils.displayChatSubTitle(chatProvider.replyTo!),
-                            maxLines: 1,
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                    onPressed: () {
-                      chatProvider.clearChatReply();
-                    },
-                    icon: const Icon(Icons.close_rounded))
-              ],
+    return Offstage(
+      offstage: chatProvider.replyTo == null,
+      child: chatProvider.replyTo != null
+          ? Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              child: Icon(Icons.reply_all_rounded),
             ),
-          )
-        : const SizedBox(),
-  );
-}
-
-Widget _editOffStateSection(ChatProvider chatProvider) {
-
-  return Offstage(
-    offstage: chatProvider.editTo == null,
-    child: chatProvider.editTo != null
-        ? Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Icon(Icons.edit_rounded),
-          ),
-          Expanded(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Text(
-                    //   chatProvider.replyTo!.user!.name!,
-                    //   maxLines: 1,
-                    //   style: const TextStyle(color: Colors.blueGrey),
-                    // ),
-                    AppText(Utils.displayChatSubTitle(chatProvider.editTo!), maxLines: 1,)
-                  ],
+            Expanded(
+              child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        chatProvider.replyTo!.user!.name!,
+                        maxLines: 1,
+                        style: const TextStyle(color: Colors.blueGrey),
+                      ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      AppText(
+                        Utils.displayChatSubTitle(chatProvider.replyTo!),
+                        maxLines: 1,
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          IconButton(
-              onPressed: () {
-                chatProvider.clearChatEdit();
-              },
-              icon: const Icon(Icons.close_rounded))
-        ],
-      ),
-    )
-        : const SizedBox(),
-  );
+            IconButton(
+                onPressed: () {
+                  chatProvider.clearChatReply();
+                },
+                icon: const Icon(Icons.close_rounded))
+          ],
+        ),
+      )
+          : const SizedBox(),
+    );
+  }
+
+  Widget _editOffStateSection(ChatProvider chatProvider) {
+
+    return Offstage(
+      offstage: chatProvider.editTo == null,
+      child: chatProvider.editTo != null
+          ? Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              child: Icon(Icons.edit_rounded),
+            ),
+            Expanded(
+              child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Text(
+                      //   chatProvider.replyTo!.user!.name!,
+                      //   maxLines: 1,
+                      //   style: const TextStyle(color: Colors.blueGrey),
+                      // ),
+                      AppText(Utils.displayChatSubTitle(chatProvider.editTo!), maxLines: 1,)
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+                onPressed: () {
+                  chatProvider.clearChatEdit();
+                },
+                icon: const Icon(Icons.close_rounded))
+          ],
+        ),
+      )
+          : const SizedBox(),
+    );
+  }
+
 }

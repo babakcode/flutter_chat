@@ -20,7 +20,8 @@ class Room extends AppCollections {
   String? roomImage;
   List<Chat> chatList = [];
   int? lastIndex;
-  bool? read;
+  bool? canSendChat;
+  int? membersLength;
   int minViewPortSeenIndex = 0;
   bool verified = false;
 
@@ -54,14 +55,15 @@ class Room extends AppCollections {
       ..id = json['_id']
       ..roomName = json['roomName']
       ..lastIndex = json['property']['lastIndex']
+      ..canSendChat = json['property']['canSendChat']
+      ..membersLength = json['property']['membersLength']
       ..changeAt = changeAtLocal
       ..createAt = createAtLocal
       ..deleted = json['deleted']
       ..identifier = json['identifier']
-      ..read = json['read']
       ..verified = json['verified'] ?? false
       ..minViewPortSeenIndex = json['minViewPortSeenIndex'] ?? 0
-      ..members = (json['members'] as List).map((member) {
+      ..members = json['members'] == null ? null : (json['members'] as List).map((member) {
         var roomMember = RoomMember.fromJson(member);
         return roomMember;
       }).toList()
@@ -80,12 +82,15 @@ class Room extends AppCollections {
         'deleted': deleted,
         'members': members,
         'identifier': identifier,
-        'read': read,
         'verified': verified,
         'roomType': _RoomUtils.roomTypeToString(roomType!),
         'lastChat': lastChat?.toSaveFormat(),
         'roomImage': roomImage,
-        'property': {'lastIndex': lastIndex},
+        'property': {
+          'lastIndex': lastIndex,
+          'canSendChat': canSendChat,
+          'membersLength': membersLength,
+        },
         'minViewPortSeenIndex': minViewPortSeenIndex,
       };
 
@@ -119,8 +124,8 @@ class _RoomUtils {
   static populateRoomFields(Room room, User myAccount) {
     switch (room.roomType) {
       case RoomType.pvUser:
-        if (room.members![0].user!.id == myAccount.id &&
-            room.members![1].user!.id == myAccount.id) {
+        if (room.members?[0].user?.id == myAccount.id &&
+            room.members?[1].user?.id == myAccount.id) {
           room.roomName = 'My Messages';
           room.roomImage = myAccount.profileUrl;
           break;

@@ -50,7 +50,6 @@ class AppChatItem extends StatelessWidget {
     final Room room = chatProvider.selectedRoom!;
     Chat chat = room.chatList[index];
 
-
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -82,10 +81,20 @@ class AppChatItem extends StatelessWidget {
                 ? CrossAxisAlignment.end
                 : CrossAxisAlignment.start,
             children: [
+              if ((room.roomType == RoomType.pvGroup ||room.roomType == RoomType.channel ||
+                      room.roomType == RoomType.publicGroup) &&
+                  !!fromMyAccount)
+                Padding(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), child: AppText(
+                  chat.user!.name!,
+                  size: 12,
+                  fontWeight: FontWeight.bold,
+                  maxLines: 1,
+                )),
               if (chat.replyId != null)
                 AppButtonTransparent(
                   onPressed: () => chatProvider.scrollToReply(chat.replyId!),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -106,17 +115,20 @@ class AppChatItem extends StatelessWidget {
                         children: [
                           Text(
                             chat.replyId!.user!.name!,
-                            style: const TextStyle(color: Colors.blueGrey, fontSize: 12),
+                            style: const TextStyle(
+                                color: Colors.blueGrey, fontSize: 12),
                           ),
                           const SizedBox(
                             height: 4,
                           ),
-                          AppText(Utils.displayChatSubTitle(chat.replyId!),
-                              color: globalSettingProvider.isDarkTheme
-                                  ? fromMyAccount
-                                  ? AppConstants.textColor[200]
-                                  : AppConstants.textColor[700]
-                                  : AppConstants.textColor[700],)
+                          AppText(
+                            Utils.displayChatSubTitle(chat.replyId!),
+                            color: globalSettingProvider.isDarkTheme
+                                ? fromMyAccount
+                                    ? AppConstants.textColor[200]
+                                    : AppConstants.textColor[700]
+                                : AppConstants.textColor[700],
+                          )
                         ],
                       ),
                       if (fromMyAccount)
@@ -161,6 +173,8 @@ class AppChatItem extends StatelessWidget {
                   return ChatItemUpdateRequired(fromMyAccount);
                 },
               ),
+
+
             ],
           )),
     );

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'app_collection.dart';
 import 'package:just_audio/just_audio.dart';
 import 'user.dart';
+
 part 'chat_text_model.dart';
 part 'chat_photo_model.dart';
 part 'chat_voice_model.dart';
@@ -20,6 +21,7 @@ abstract class Chat extends AppCollections {
   DateTime? utcDate;
   bool? edited;
   bool? deleted;
+  bool? seen;
   Chat? replyId;
   int? chatNumberId;
   int? version;
@@ -45,14 +47,14 @@ abstract class Chat extends AppCollections {
         return ChatUpdateRequireModel(chat);
     }
   }
-  Chat(Map json){
 
+  Chat(Map json) {
     DateTime utcDateUtc = DateTime.parse(json['utcDate']);
     var utcDateLocal = DateFormat("yyyy-MM-dd HH:mm:ss")
         .parse(utcDateUtc.toString(), true)
         .toLocal();
 
-    if(json['replyId'] is String){
+    if (json['replyId'] is String) {
       json['replyId'] = _hiveManager.chatsBox.get(json['replyId']);
     }
 
@@ -60,14 +62,12 @@ abstract class Chat extends AppCollections {
     chatNumberId = json['id'];
     user = User.fromJson(json['user']);
     room = json['room'];
-    // text = json['text'];
     deleted = json['deleted'];
-    // fileUrl = json['fileUrl'];
     utcDate = utcDateLocal;
-    // type = chatTypeFromText(json['type']);
+    seen = json['seen'] ?? false;
     edited = json['edited'];
     replyId =
-    json['replyId'] == null ? null : detectChatModelType(json['replyId']);
+        json['replyId'] == null ? null : detectChatModelType(json['replyId']);
     version = json['__v'];
   }
 
@@ -84,14 +84,15 @@ abstract class Chat extends AppCollections {
       'room': room,
       'utcDate': utcDate?.toUtc().toString(),
       'edited': edited,
+      'seen': seen,
       'deleted': deleted,
       'replyId': replyId,
       '__v': version,
     };
   }
 
-  static Map? chatToMap(Chat? chat){
-    if(chat == null){
+  static Map? chatToMap(Chat? chat) {
+    if (chat == null) {
       return null;
     }
     Map saveFormat = chat.toSaveFormat();
@@ -105,9 +106,6 @@ class ChatUpdateRequireModel extends Chat {
   ChatUpdateRequireModel(super.json);
 }
 
-
-
-
-class ChatStickerModel extends Chat{
-  ChatStickerModel(Map json): super(json);
+class ChatStickerModel extends Chat {
+  ChatStickerModel(Map json) : super(json);
 }

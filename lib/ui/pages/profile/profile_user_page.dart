@@ -152,8 +152,8 @@ class _ProfileUserPageState extends State<ProfileUserPage> {
                                 }
                                 return;
                               }
-                              chatProvider.searchUser(
-                                  searchType: 'token',
+                              chatProvider.searchRoom(
+                                  // searchType: 'token',
                                   searchText: user.publicToken!,
                                   context: context,
                               callBack: (data) async {

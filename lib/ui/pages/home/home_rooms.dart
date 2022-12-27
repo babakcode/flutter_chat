@@ -72,7 +72,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               actions: [
                 IconButton(
                   onPressed: chatProvider.toggleLocalRoomsSearchMode,
-                  icon: const Icon(Icons.search_rounded),
+                  icon: Icon(chatProvider.showSearchRoomsBox
+                      ? Icons.close
+                      : Icons.search_rounded),
                 ),
               ],
             ),
@@ -337,7 +339,7 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
                       if (result != null) {
                         final chatProvider = context.read<ChatProvider>();
                         chatProvider.searchRoom(
-                            searchType: 'token',
+                            // searchType: 'token',
                             searchText: result,
                             context: context,
                             callBack: (data) {
@@ -652,6 +654,9 @@ class _HomeRoomsComponentState extends State<HomeRoomsComponent> {
               : CachedNetworkImage(
                   imageUrl: room.roomImage!,
                   fit: BoxFit.cover,
+                  errorWidget: (context, url, error) {
+                    return Image.asset('assets/images/p2.jpg');
+                  },
                 ),
         ),
       );
