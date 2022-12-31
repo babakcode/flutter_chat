@@ -368,8 +368,8 @@ class ChatBottomNavComponent extends StatelessWidget {
                 onTap: () async {
                   final image = await chatProvider.imagePicker.pickImage(
                       source: ImageSource.camera,
-                      maxHeight: 512,
-                      imageQuality: 60);
+                      maxHeight: 1000,
+                      imageQuality: 90);
                   if (image != null) {
                     chatProvider.preSendAttachment(image, type: 'photo');
                   }

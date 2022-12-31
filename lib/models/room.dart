@@ -20,7 +20,7 @@ class Room extends AppCollections {
   String? roomImage;
   List<Chat> chatList = [];
   int? lastIndex;
-  bool? canSendChat;
+  late bool canSendChat;
   int? membersLength;
   int minViewPortSeenIndex = 0;
   bool verified = false;
@@ -55,7 +55,7 @@ class Room extends AppCollections {
       ..id = json['_id']
       ..roomName = json['roomName']
       ..lastIndex = json['property']['lastIndex']
-      ..canSendChat = json['property']['canSendChat']
+      ..canSendChat = json['property']['canSendChat'] ?? false
       ..membersLength = json['property']['membersLength']
       ..changeAt = changeAtLocal
       ..createAt = createAtLocal

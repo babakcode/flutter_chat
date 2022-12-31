@@ -631,7 +631,10 @@ class ChatProvider extends ChangeNotifier {
     }
 
     if (GlobalSettingProvider.isPhonePortraitSize) {
-      selectedRoom = room;
+
+      await Future.delayed(
+          const Duration(milliseconds: 100), () =>
+      selectedRoom = room);
       notifyListeners();
       return;
     }
@@ -666,6 +669,8 @@ class ChatProvider extends ChangeNotifier {
             .addAll(Chat.getChatsFromJsonList(data['chats']));
 
         setConnectionStatus = null;
+
+        rooms.sort((a, b) => b.changeAt!.compareTo(b.changeAt!));
         notifyListeners();
 
         /// save chats
@@ -693,7 +698,7 @@ class ChatProvider extends ChangeNotifier {
           }
         }
 
-        rooms.sort((a, b) => b.changeAt!.compareTo(b.changeAt!));
+        rooms.sort((b, a) => a.changeAt!.compareTo(b.changeAt!));
         notifyListeners();
         if (_rooms.isNotEmpty) {
           auth!.setLastGroupLoadedDate(rooms[0].changeAt!.toUtc().toString());
