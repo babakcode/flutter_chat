@@ -1,5 +1,5 @@
 enum AppEnvironment {
-  dev(_AppEnvironmentProduction()),
+  dev(_AppEnvironmentDevelopment()),
   stage(_AppEnvironmentProduction()),
   prod(_AppEnvironmentProduction());
 
@@ -24,4 +24,14 @@ class _AppEnvironmentProduction extends EnvVariablesDetail {
 
   @override
   String get envName => 'prod';
+}
+
+class _AppEnvironmentDevelopment extends EnvVariablesDetail {
+  const _AppEnvironmentDevelopment();
+
+  @override
+  String get baseApi => 'http://localhost:500001/';
+
+  @override
+  String get envName => 'dev';
 }

@@ -6,7 +6,7 @@ part of 'app_setting_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$appSettingAsyncHash() => r'94eb0c0d6caf72f694abbce8e0e7918d843ee92e';
+String _$appSettingAsyncHash() => r'5509bc02549b496169056ee9e2e2e908c30d3333';
 
 /// See also [AppSettingAsync].
 @ProviderFor(AppSettingAsync)

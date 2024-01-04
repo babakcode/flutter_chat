@@ -24,9 +24,9 @@ class App extends ConsumerWidget {
         theme: AppThemes.theme(AppThemes.colorSeed(data.colorSeed)),
         builder: AppThemes.textScaleBuilder,
       ),
-      error: (error, stackTrace) => Center(
-        child: Text(error.toString()),
-      ),
+      error: (error, stackTrace) {
+        return nil;
+      },
       loading: () => nil,
     );
   }
